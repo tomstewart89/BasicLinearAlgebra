@@ -1,4 +1,4 @@
-#include <Matrix.h>
+#include <BasicLinearAlgebra.h>
 
 /*
  * This example sketch should show you everything you need to know in order to work with the Matrix library. It's a faily long explantion
