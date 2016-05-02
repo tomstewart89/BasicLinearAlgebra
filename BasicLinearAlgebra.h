@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef BLA_H
+#define BLA_H
 
 #include <stdlib.h>
 #include <string.h>
@@ -308,13 +308,6 @@ template<int rows, int cols, class T> Matrix<rows,cols,T> &Subtract(Matrix<rows,
     return C;
 }
 
-// Binary invert operation - the result of the inversion is overwritten onto the input Matrix
-template<int rows, int cols, class T> Matrix<rows,cols,T> &Invert(Matrix<rows,cols,T> &A, Matrix<rows,cols,T> &C, int *res = NULL)
-{
-    C = A;
-    return Invert(C, res);
-}
-
 // Unary transpose operation - result is returned via copying
 template<int rows, int cols, class T> Matrix<cols,rows,T> Transpose(const Matrix<rows,cols,T> &A)
 {
@@ -346,8 +339,8 @@ template<int dim, class T> Matrix<dim,dim,T> Invert(const Matrix<dim,dim,T> &A, 
     return C;
 }
 
-// Binary transpose operation - the result of the inversion goes into the input Matrix 'C'. This is just to keep the interface consistent and doesn't save any memory
-template<int rows, int cols, class T> Matrix<cols,rows,T> &Invert(const Matrix<rows,cols,T> &A, Matrix<cols,rows,T> &C, int *res = NULL)
+// Binary invert operation - the result of the inversion goes into the input Matrix 'C'. This is just to keep the interface consistent and doesn't save any memory
+template<int dim, class T> Matrix<dim,dim,T> &Invert(const Matrix<dim,dim,T> &A, Matrix<dim,dim,T> &C, int *res = NULL)
 {
     C = A;
     C.Invert(res);
@@ -374,5 +367,5 @@ template<int rows, int cols, class T> Print &operator<<(Print &strm, const Matri
     return strm;
 }
 
-#endif // MATRIX_H
+#endif // BLA_H
 
