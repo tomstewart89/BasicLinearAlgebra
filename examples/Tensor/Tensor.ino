@@ -1,4 +1,4 @@
-#include <Matrix.h>
+#include <BasicLinearAlgebra.h>
 
 /*
  * This example sketch shows how the template parameter can be nested to form high dimensional Matrices called 'Tensors'.
