@@ -22,11 +22,11 @@ void setup()
   Matrix<3,3,double> doubleA; // etc
 
   // This includes parameters of type Matrix, meaning that you can declare matrices of more than two dimensions. For example:
-  Matrix<4,4,Matrix<4> > cubeA, cubeB; // a 4x4x4 matrix (rank-3 tensor)
+  Matrix<4,4,Matrix<4> > cubeA, cubeB; // a 4x4x4 matrix (3rd order tensor)
 
   // And so on:
-  Matrix<2,2,Matrix<2,2> > hyperA; // a 2x2x2x2 dimensional matrix (rank-4 tensor)
-  Matrix<3,3,Matrix<3,3, Matrix<3,3> > > tensorA; // a 3x3x3x3x3x3 dimensional matrix (rank-6 tensor)
+  Matrix<2,2,Matrix<2,2> > hyperA; // a 2x2x2x2 dimensional matrix (4th order tensor)
+  Matrix<3,3,Matrix<3,3, Matrix<3,3> > > tensorA; // a 3x3x3x3x3x3 dimensional matrix (6th order tensor)
 
   // You can access the elements of an arbitrary rank tensor with the brackets operator like so:
   cubeA(0,1)(1) = cubeB(2,3)(3) = 56.34;
