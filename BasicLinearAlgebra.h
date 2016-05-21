@@ -128,15 +128,16 @@ public:
         return ret;
     }
 
-    // Set a subsection of the matrix (starting at i,j) to the value of the input object 'obj' if the
-    template<int objRows, int objCols> void Set(const Matrix<objRows,objCols,T> &obj, int row, int col)
+    // Set a subsection of the matrix of dimensions (width,height & starting at destRow,destCol) to the value of the input object 'obj' starting at (srcRow, srcCol)
+    template<int objRows, int objCols> void Set(const Matrix<objRows,objCols,T> &obj, int destRow = 0, int destCol = 0, int srcRow = 0, int srcCol = 0, int height = objRows, int width = objCols)
     {
-        if(row + objRows > rows || col + objCols > cols)
-            invalidAccessFlag = true;
+        // first make sure that the for loops won't try to access memory outside the matrices - this way the functions defaults to taking as much as will fit
+        height = min(height, min(rows - destRow, objRows - srcRow));
+        width = min(width,min(cols - destCol,objCols - srcCol));
 
-        for(int i = 0; i < objRows && (i + row) < rows; i++)
-            for(int j = 0; j < objCols && (j + col) < cols; j++)
-                m[(i+row) * cols + (j+col)] = obj.m[i * objCols + j];
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < width; j++)
+                m[(i+destRow) * cols + (j+destCol)] = obj.m[(i+srcRow) * objCols + (j+srcCol)];
     }
 
     // Set the value of every element to 0
