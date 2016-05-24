@@ -1,6 +1,7 @@
 #ifndef BLA_H
 #define BLA_H
 
+#include "Arduino.h"
 #include <stdlib.h>
 #include <string.h>
 
