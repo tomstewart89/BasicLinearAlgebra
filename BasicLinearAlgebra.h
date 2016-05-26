@@ -66,6 +66,16 @@ public:
         return tmp;
     }
 
+    // Negation
+    Matrix<rows,cols,T> operator-()
+    {
+        Matrix<rows,cols,T> tmp;
+
+        for(int i = 0; i < rows * cols; i++)
+            tmp.m[i] = -m[i];
+
+        return tmp;
+    }
 
     // Element-wise multiplication
     Matrix<rows,cols,T> &operator*=(T k)
