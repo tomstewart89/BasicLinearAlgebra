@@ -66,25 +66,24 @@ void setup()
   Multiply(A,v,D);
 
   // As well as algebra, Matrix supports a few other matrix related operations including transposition:
-  Matrix<1,3> D_T = Transpose(D);
+  Matrix<1,3> D_T = D.Transpose();
 
-  // The transpose function will return a temporary copy. If the matrix is square then that memory useage can be avoided using 
-  // the Transpose member function. Be aware though, that this will modify the original matrix
-  C.Transpose();
+  // The transpose method will return a temporary copy. If you have a matrix of the appropriate dimensions at the ready
+  // you can use Transpose function which will store the result in the second argument
+  
+  Matrix<3,3> C_T;
+  Transpose(C,C_T);
 
-  // In situ Transposition of non-square matrices isn't allowed. To test this, try uncommenting the following line:
-  // D.Transpose();
-
-  // Matrix also supports inversion on square matrices via the invert function:
-  Matrix<3,3> C_inv = Invert(C);
+  // An inverse of a matrix can also be calculated for square matrices via the inverse function:
+  Matrix<3,3> C_inv = C.Inverse();
 
   // If the matrix is singular, the inversion won't work. In those cases Invert will still return a matrix but not a valid inverse. 
   // To check whether that has happened you can pass in pointer like so:
   int res;
-  C_inv = Invert(C, &res); // after this call res will be 0 if the inversion was successful and non-zero otherwise.
+  C_inv = C.Inverse(&res); // after this call res will be 0 if the inversion was successful and non-zero otherwise.
 
-  // Invert can also be called as a member function which modifies the matrix it is called on. It's more memory efficient so use it unless the original matrix needs unmodified
-  C.Invert();
+  // If you want to invert a matrix and set the result to the matrix itself, you can use the Invert function.
+  Invert(C);
 
   // In addition to matrix math  there are functions to concatenate two matrices. You can concatenate matrices horizontally like so:
   Matrix<3,6> AleftOfB = HorzCat(A,B);
