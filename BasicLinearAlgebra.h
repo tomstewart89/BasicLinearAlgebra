@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 template<int rows, int cols = 1, class T = float> class Matrix
 {
@@ -27,7 +28,7 @@ public:
     }
 
     // Unary addition
-    Matrix<rows,cols,T> &operator+=(const Matrix<rows,cols,T> &obj)
+    template<class opT> Matrix<rows,cols,T> &operator+=(const Matrix<rows,cols,opT> &obj)
     {
         for(int i = 0; i < rows * cols; i++)
             m[i] += obj.m[i];
@@ -36,7 +37,7 @@ public:
     }
 
     // Unary subtraction
-    Matrix<rows,cols,T> &operator-=(const Matrix<rows,cols,T> &obj)
+    template<class opT> Matrix<rows,cols,T> &operator-=(const Matrix<rows,cols,opT> &obj)
     {
         for(int i = 0; i < rows * cols; i++)
             m[i] -= obj.m[i];
@@ -45,63 +46,40 @@ public:
     }
 
     // Binary addition
-    Matrix<rows,cols,T> operator+(const Matrix<rows,cols,T> &obj)
+    template<class opT> Matrix<rows,cols,T> operator+(const Matrix<rows,cols,opT> &obj)
     {
-        Matrix<rows,cols,T> tmp;
+        Matrix<rows,cols,T> ret;
 
         for(int i = 0; i < rows * cols; i++)
-            tmp.m[i] = m[i] + obj.m[i];
+            ret.m[i] = m[i] + obj.m[i];
 
-        return tmp;
+        return ret;
     }
 
     // Binary subtraction
-    Matrix<rows,cols,T> operator-(const Matrix<rows,cols,T> &obj)
+    template<class opT> Matrix<rows,cols,T> operator-(const Matrix<rows,cols,opT> &obj)
     {
-        Matrix<rows,cols,T> tmp;
+        Matrix<rows,cols,T> ret;
 
         for(int i = 0; i < rows * cols; i++)
-            tmp.m[i] = m[i] - obj.m[i];
+            ret.m[i] = m[i] - obj.m[i];
 
-        return tmp;
+        return ret;
     }
 
     // Negation
     Matrix<rows,cols,T> operator-()
     {
-        Matrix<rows,cols,T> tmp;
+        Matrix<rows,cols,T> ret;
 
         for(int i = 0; i < rows * cols; i++)
-            tmp.m[i] = -m[i];
+            ret.m[i] = -m[i];
 
-        return tmp;
+        return ret;
     }
 
-    // Element-wise multiplication
-    Matrix<rows,cols,T> &operator*=(T k)
-    {
-        for(int i = 0; i < rows * cols; i++)
-            m[i] *= k;
-
-        return *this;
-    }
-
-    // Copies the value of a matrix of equal size
-    Matrix<rows,cols,T> &operator=(const Matrix<rows,cols,T> &obj)
-    {
-        memcpy(m,obj.m, rows*cols * sizeof(T));
-        return *this;
-    }
-
-    // Set the contents of the matrix using a 2D array
-    Matrix<rows,cols,T> &operator=(T arr[rows][cols])
-    {
-        memcpy(m,(T*)arr, rows*cols * sizeof(T));
-        return *this;
-    }
-
-    // Binary matrix multiplication with
-    template <int operandCols> Matrix<rows,operandCols,T> operator*(const Matrix<cols,operandCols,T> &operand)
+    // Binary matrix multiplication
+    template <int operandCols, class opT> Matrix<rows,operandCols,T> operator*(const Matrix<cols,operandCols,opT> &operand)
     {
         Matrix<rows,operandCols,T> ret;
         int i,j,k;
@@ -114,17 +92,26 @@ public:
         return ret;
     }
 
-    Matrix<rows,cols,T> &operator*=(const Matrix<rows,cols,T> &operand)
+    template<class opT> Matrix<rows,cols,T> &operator*=(const Matrix<rows,cols,opT> &operand)
     {
         int i,j,k;
-        Matrix<rows,cols,T> tmp;
+        Matrix<rows,cols,T> ret;
 
         for(i = 0; i < rows; i++)
             for(j = 0; j < cols; j++)
                 for(k = 0; k < cols; k++)
-                    tmp.m[i * cols + j] += m[i * cols + k] * operand.m[k * cols + j];
+                    ret.m[i * cols + j] += m[i * cols + k] * operand.m[k * cols + j];
 
-        (*this) = tmp;
+        *this = ret;
+        return *this;
+    }
+
+    // Scaling
+    Matrix<rows,cols,T> &operator*=(T k)
+    {
+        for(int i = 0; i < rows * cols; i++)
+            m[i] *= k;
+
         return *this;
     }
 
@@ -139,8 +126,22 @@ public:
         return ret;
     }
 
+    // Copies the value of a matrix of equal size
+    template<class opT> Matrix<rows,cols,T> &operator=(const Matrix<rows,cols,opT> &obj)
+    {
+        memcpy(m,obj.m, rows*cols * sizeof(T));
+        return *this;
+    }
+
+    // Set the contents of the matrix using a 2D array
+    Matrix<rows,cols,T> &operator=(T arr[rows][cols])
+    {
+        memcpy(m,(T*)arr, rows*cols * sizeof(T));
+        return *this;
+    }
+
     // Set a subsection of the matrix of dimensions (width,height & starting at destRow,destCol) to the value of the input object 'obj' starting at (srcRow, srcCol)
-    template<int objRows, int objCols> void Set(const Matrix<objRows,objCols,T> &obj, int destRow = 0, int destCol = 0, int srcRow = 0, int srcCol = 0, int height = objRows, int width = objCols)
+    template<int objRows, int objCols, class opT> void Set(const Matrix<objRows,objCols,opT> &obj, int destRow = 0, int destCol = 0, int srcRow = 0, int srcCol = 0, int height = objRows, int width = objCols)
     {
         // first make sure that the for loops won't try to access memory outside the matrices - this way the functions defaults to taking as much as will fit
         height = min(height, min(rows - destRow, objRows - srcRow));
@@ -166,102 +167,23 @@ public:
             return m[row * cols + col];
     }
 
-    // Unary transpose operation - only supports square matrices
-    void Transpose()
+    // Returns a transpose of this matrix
+    Matrix<cols,rows,T> Transpose()
     {
-        // Accessing the dummyElement from outside it's class isn't allowed, that means that the matrix must be square for this function to compile
-        Matrix<rows,rows>::dummyElement;
+        Matrix<cols,rows,T> ret;
 
-        T tmp;
         for (int i = 0; i < rows; i++)
-            for(int j = 0; j < rows; j++)
-            {
-                tmp = m[i * rows + j];
-                m[i * rows + j] = m[j * rows + i];
-                m[j * rows + i] = tmp;
-            }
+            for(int j = 0; j < cols; j++)
+                ret.m[i * cols + j] = m[j * cols + i];
+
+        return ret;
     }
 
-    // Matrix Inversion Routine - modified from code written by Charlie Matlack: http://playground.arduino.cc/Code/MatrixMath
-    // This function inverts a matrix based on the Gauss Jordan method. Specifically, it uses partial pivoting to improve numeric stability.
-    // The algorithm is drawn from those presented in NUMERICAL RECIPES: The Art of Scientific Computing.
-    void Invert(int *res = NULL)
+    // Returns the inverse of this matrix - only supports square matrices
+    Matrix<rows,cols,T> Inverse(int *res = NULL)
     {
-        // Accessing the dummyElement from outside it's class isn't allowed, that'll enforce that the Matrix be square
-        Matrix<rows,rows>::dummyElement;
-
-        int pivrow, pivrows[rows]; 	// keeps track of current pivot row and row swaps
-        int i,j,k;
-        T tmp;		// used for finding max value and making column swaps
-
-        for (k = 0; k < rows; k++)
-        {
-            // find pivot row, the row with biggest entry in current column
-            tmp = 0;
-            for (i = k; i < rows; i++)
-            {
-                if (abs(m[i*rows+k]) >= tmp)
-                {
-                    tmp = abs(m[i*rows+k]);
-                    pivrow = i;
-                }
-            }
-
-            // check for singular matrix
-            if (m[pivrow*rows+k] == 0.0f)
-                if(res)
-                    *res = 1;
-
-            // Execute pivot (row swap) if needed
-            if (pivrow != k)
-            {
-                // swap row k with pivrow
-                for (j = 0; j < rows; j++)
-                {
-                    tmp = m[k*rows+j];
-                    m[k*rows+j] = m[pivrow*rows+j];
-                    m[pivrow*rows+j] = tmp;
-                }
-            }
-            pivrows[k] = pivrow;	// record row swap (even if no swap happened)
-
-            tmp = 1.0f / m[k*rows+k];	// invert pivot element
-            m[k*rows+k] = 1.0f;		// This element of input matrix becomes result matrix
-
-            // Perform row reduction (divide every element by pivot)
-            for (j = 0; j < rows; j++)
-                m[k*rows+j] = m[k*rows+j]*tmp;
-
-            // Now eliminate all other entries in this column
-            for (i = 0; i < rows; i++)
-            {
-                if (i != k)
-                {
-                    tmp = m[i*rows+k];
-                    m[i*rows+k] = 0.0f;  // The other place where in matrix becomes result mat
-
-                    for (j = 0; j < rows; j++)
-                        m[i*rows+j] = m[i*rows+j] - m[k*rows+j]*tmp;
-                }
-            }
-        }
-
-        // Done, now need to undo pivot row swaps by doing column swaps in reverse order
-        for (k = rows-1; k >= 0; k--)
-        {
-            if (pivrows[k] != k)
-            {
-                for (i = 0; i < rows; i++)
-                {
-                    tmp = m[i*rows+k];
-                    m[i*rows+k] = m[i*rows+pivrows[k]];
-                    m[i*rows+pivrows[k]] = tmp;
-                }
-            }
-        }
-
-        if(res)
-            *res = 0;
+        Matrix<rows,cols,T> ret = *this;
+        return Invert(ret, res);
     }
 
     int Rows() { return rows; }
@@ -270,28 +192,8 @@ public:
 
 template <int rows, int cols, class T> T Matrix<rows,cols,T>::dummyElement;
 
-// Create a new matrix by horizontally concatenating two input matrices
-template<int rows, int cols, int operandCols, class T> Matrix<rows,cols + operandCols,T> HorzCat(const Matrix<rows,cols,T> &A, const Matrix<rows,operandCols,T> &B)
-{
-    Matrix<rows,cols + operandCols,T> ret;
-    ret.Set(A,0,0);
-    ret.Set(B,0,cols);
-
-    return ret;
-}
-
-// Create a new matrix by vertically concatenating two input matrices
-template<int rows, int cols, int operandRows, class T> Matrix<rows + operandRows,cols,T> VertCat(const Matrix<rows,cols,T> &A, const Matrix<operandRows,cols,T> &B)
-{
-    Matrix<rows + operandRows,cols,T> ret;
-    ret.Set(A,0,0);
-    ret.Set(B,rows,0);
-
-    return ret;
-}
-
-// Multiply two matrices and store the result in a third matrix C, this is slightly faster than
-template<int rows, int cols, int operandCols, class T> Matrix<rows,operandCols,T> &Multiply(const Matrix<rows,cols,T> &A, const Matrix<cols,operandCols,T> &B, Matrix<rows,operandCols,T> &C)
+// Multiply two matrices and store the result in a third matrix C, this is slightly faster than using the operator
+template<int rows, int cols, int operandCols, class T, class opT, class retT> Matrix<rows,operandCols,T> &Multiply(const Matrix<rows,cols,T> &A, const Matrix<cols,operandCols,T> &B, Matrix<rows,operandCols,retT> &C)
 {
     int i,j,k;
     C.Clear();
@@ -304,7 +206,7 @@ template<int rows, int cols, int operandCols, class T> Matrix<rows,operandCols,T
     return C;
 }
 
-template<int rows, int cols, class T>  Matrix<rows,cols,T> &Add(const Matrix<rows,cols,T> &A, const Matrix<rows,cols,T> &B, Matrix<rows,cols,T> &C)
+template<int rows, int cols, class T, class opT, class retT>  Matrix<rows,cols,T> &Add(const Matrix<rows,cols,T> &A, const Matrix<rows,cols,T> &B, Matrix<rows,cols,retT> &C)
 {
     for(int i = 0; i < rows * cols; i++)
         C.m[i] = A.m[i] + B.m[i];
@@ -312,7 +214,7 @@ template<int rows, int cols, class T>  Matrix<rows,cols,T> &Add(const Matrix<row
     return C;
 }
 
-template<int rows, int cols, class T> Matrix<rows,cols,T> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,T> &B, Matrix<rows,cols,T> &C)
+template<int rows, int cols, class T, class opT, class retT> Matrix<rows,cols,T> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,T> &B, Matrix<rows,cols,retT> &C)
 {
     for(int i = 0; i < rows * cols; i++)
         C.m[i] = A.m[i] - B.m[i];
@@ -320,11 +222,29 @@ template<int rows, int cols, class T> Matrix<rows,cols,T> &Subtract(Matrix<rows,
     return C;
 }
 
-// Unary transpose operation - result is returned via copying
-template<int rows, int cols, class T> Matrix<cols,rows,T> Transpose(const Matrix<rows,cols,T> &A)
+// Create a new matrix by horizontally concatenating two input matrices
+template<int rows, int cols, int operandCols, class T, class opT> Matrix<rows,cols + operandCols,T> HorzCat(const Matrix<rows,cols,T> &A, const Matrix<rows,operandCols,opT> &B)
 {
-    Matrix<cols,rows,T> C;
+    Matrix<rows,cols + operandCols,T> ret;
+    ret.Set(A,0,0);
+    ret.Set(B,0,cols);
 
+    return ret;
+}
+
+// Create a new matrix by vertically concatenating two input matrices
+template<int rows, int cols, int operandRows, class T, class opT> Matrix<rows + operandRows,cols,T> VertCat(const Matrix<rows,cols,T> &A, const Matrix<operandRows,cols,opT> &B)
+{
+    Matrix<rows + operandRows,cols,T> ret;
+    ret.Set(A,0,0);
+    ret.Set(B,rows,0);
+
+    return ret;
+}
+
+// Transpose operation - the result of the transpose goes into the input Matrix 'C'
+template<int rows, int cols, class T, class retT> Matrix<cols,rows,T> &Transpose(const Matrix<rows,cols,T> &A, Matrix<cols,rows,retT> &C)
+{
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
             C.m[i * cols + j] = A.m[j * cols + i];
@@ -332,35 +252,91 @@ template<int rows, int cols, class T> Matrix<cols,rows,T> Transpose(const Matrix
     return C;
 }
 
-// Binary transpose operation - the result of the transpose goes into the input Matrix 'C'
-template<int rows, int cols, class T> Matrix<cols,rows,T> &Transpose(const Matrix<rows,cols,T> &A, Matrix<cols,rows,T> &C)
+// Matrix Inversion Routine - modified from code written by Charlie Matlack: http://playground.arduino.cc/Code/MatrixMath
+// This function inverts a matrix based on the Gauss Jordan method. Specifically, it uses partial pivoting to improve numeric stability.
+// The algorithm is drawn from those presented in NUMERICAL RECIPES: The Art of Scientific Computing.
+template<int dim, class T> Matrix<dim,dim,T> &Invert(Matrix<dim,dim,T> &A, int *res = NULL)
 {
-    for (int i = 0; i < rows; i++)
-        for(int j = 0; j < cols; j++)
-            C.m[i * cols + j] = A.m[j * cols + i];
+    int pivrow, pivrows[dim]; 	// keeps track of current pivot row and row swaps
+    int i,j,k;
+    T tmp;		// used for finding max value and making column swaps
 
-    return C;
+    for (k = 0; k < dim; k++)
+    {
+        // find pivot row, the row with biggest entry in current column
+        tmp = 0;
+        for (i = k; i < dim; i++)
+        {
+            if(fabs(A.m[i*dim+k]) >= tmp)
+            {
+                tmp = fabs(A.m[i*dim+k]);
+                pivrow = i;
+            }
+        }
+
+        // check for singular matrix
+        if (A.m[pivrow*dim+k] == 0.0f)
+            if(res)
+                *res = 1;
+
+        // Execute pivot (row swap) if needed
+        if (pivrow != k)
+        {
+            // swap row k with pivrow
+            for (j = 0; j < dim; j++)
+            {
+                tmp = A.m[k*dim+j];
+                A.m[k*dim+j] = A.m[pivrow*dim+j];
+                A.m[pivrow*dim+j] = tmp;
+            }
+        }
+        pivrows[k] = pivrow;	// record row swap (even if no swap happened)
+
+        tmp = 1.0f / A.m[k*dim+k];	// invert pivot element
+        A.m[k*dim+k] = 1.0f;		// This element of input matrix becomes result matrix
+
+        // Perform row reduction (divide every element by pivot)
+        for (j = 0; j < dim; j++)
+            A.m[k*dim+j] = A.m[k*dim+j]*tmp;
+
+        // Now eliminate all other entries in this column
+        for (i = 0; i < dim; i++)
+        {
+            if (i != k)
+            {
+                tmp = A.m[i*dim+k];
+                A.m[i*dim+k] = 0.0f;  // The other place where in matrix becomes result mat
+
+                for (j = 0; j < dim; j++)
+                    A.m[i*dim+j] = A.m[i*dim+j] - A.m[k*dim+j]*tmp;
+            }
+        }
+    }
+
+    // Done, now need to undo pivot row swaps by doing column swaps in reverse order
+    for (k = dim-1; k >= 0; k--)
+    {
+        if (pivrows[k] != k)
+        {
+            for (i = 0; i < dim; i++)
+            {
+                tmp = A.m[i*dim+k];
+                A.m[i*dim+k] = A.m[i*dim+pivrows[k]];
+                A.m[i*dim+pivrows[k]] = tmp;
+            }
+        }
+    }
+
+    if(res)
+        *res = 0;
+
+    return A;
 }
 
-// Unary invert operation - result is returned via copying
-template<int dim, class T> Matrix<dim,dim,T> Invert(const Matrix<dim,dim,T> &A, int *res = NULL)
+template<class T> inline Print &operator <<(Print &strm, const T &obj)
 {
-    Matrix<dim,dim,T> C = A;
-    C.Invert(res);
-
-    return C;
+    strm.print(obj); return strm;
 }
-
-// Binary invert operation - the result of the inversion goes into the input Matrix 'C'. This is just to keep the interface consistent and doesn't save any memory
-template<int dim, class T> Matrix<dim,dim,T> &Invert(const Matrix<dim,dim,T> &A, Matrix<dim,dim,T> &C, int *res = NULL)
-{
-    C = A;
-    C.Invert(res);
-
-    return C;
-}
-
-template<class T> inline Print &operator <<(Print &strm, const T &obj) { strm.print(obj); return strm; }
 
 // Stream inserter operator for printing to strings or the serial port
 template<int rows, int cols, class T> Print &operator<<(Print &strm, const Matrix<rows,cols,T> &obj)
