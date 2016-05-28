@@ -98,7 +98,7 @@ void setup()
   Serial << "B: " << B << '\n';
 
   // You can even write some quite complex compound statements very succinctly. For example:
-  Serial << "identity matrix: " << AleftOfB * AonTopOfB - (A * A + B * B) + C * Invert(C) << '\n';
+  Serial << "identity matrix: " << AleftOfB * AonTopOfB - (A * A + B * B) + C * C.Inverse() << '\n';
 
   // Or as a more real life example, here's how you might calculate an updated state estimate for a third order state space model:
   Matrix<3> x; Matrix<2> u; Matrix<3,2> G; Matrix<3,3> F; float dt;
