@@ -193,7 +193,7 @@ public:
 template <int rows, int cols, class T> T Matrix<rows,cols,T>::dummyElement;
 
 // Multiply two matrices and store the result in a third matrix C, this is slightly faster than using the operator
-template<int rows, int cols, int operandCols, class T, class opT, class retT> Matrix<rows,operandCols,T> &Multiply(const Matrix<rows,cols,T> &A, const Matrix<cols,operandCols,T> &B, Matrix<rows,operandCols,retT> &C)
+template<int rows, int cols, int operandCols, class T, class opT, class retT> Matrix<rows,operandCols,retT> &Multiply(const Matrix<rows,cols,T> &A, const Matrix<cols,operandCols,opT> &B, Matrix<rows,operandCols,retT> &C)
 {
     int i,j,k;
     C.Clear();
@@ -206,7 +206,7 @@ template<int rows, int cols, int operandCols, class T, class opT, class retT> Ma
     return C;
 }
 
-template<int rows, int cols, class T, class opT, class retT>  Matrix<rows,cols,T> &Add(const Matrix<rows,cols,T> &A, const Matrix<rows,cols,T> &B, Matrix<rows,cols,retT> &C)
+template<int rows, int cols, class T, class opT, class retT>  Matrix<rows,cols,retT> &Add(const Matrix<rows,cols,T> &A, const Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
 {
     for(int i = 0; i < rows * cols; i++)
         C.m[i] = A.m[i] + B.m[i];
@@ -214,7 +214,7 @@ template<int rows, int cols, class T, class opT, class retT>  Matrix<rows,cols,T
     return C;
 }
 
-template<int rows, int cols, class T, class opT, class retT> Matrix<rows,cols,T> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,T> &B, Matrix<rows,cols,retT> &C)
+template<int rows, int cols, class T, class opT, class retT> Matrix<rows,cols,retT> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
 {
     for(int i = 0; i < rows * cols; i++)
         C.m[i] = A.m[i] - B.m[i];
@@ -243,7 +243,7 @@ template<int rows, int cols, int operandRows, class T, class opT> Matrix<rows + 
 }
 
 // Transpose operation - the result of the transpose goes into the input Matrix 'C'
-template<int rows, int cols, class T, class retT> Matrix<cols,rows,T> &Transpose(const Matrix<rows,cols,T> &A, Matrix<cols,rows,retT> &C)
+template<int rows, int cols, class T, class retT> Matrix<cols,rows,retT> &Transpose(const Matrix<rows,cols,T> &A, Matrix<cols,rows,retT> &C)
 {
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
