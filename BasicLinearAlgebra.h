@@ -152,6 +152,14 @@ public:
                 m[(i+destRow) * cols + (j+destCol)] = obj.m[(i+srcRow) * objCols + (j+srcCol)];
     }
 
+    // Set a subsection of the matrix of dimensions (width,height & starting at destRow,destCol) to the value of the input object 'obj' starting at (srcRow, srcCol)
+    template<int subRows, int subCols> Matrix<subRows,subCols,T> Submatrix(int srcRow, int srcCol)
+    {
+        Matrix<subRows,subCols,T> ret;
+        ret.Set(*this,0,0,srcRow,srcCol,subRows,subCols);
+        return ret;
+    }
+
     // Set the value of every element to 0
     void Clear() { memset(m,'\0',rows*cols*sizeof(T)); }
 
