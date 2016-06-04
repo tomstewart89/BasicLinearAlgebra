@@ -9,12 +9,12 @@
 template<int rows, int cols = 1, class T = float> class Matrix
 {
     static T dummyElement; // dummy variable returned when the () operator is used to access memory outside the matrix. It's a static so it shouldn't take up lots of memory
-
+    mutable T m[rows*cols]; // underlying data storage - it's public but it's better to access the elements using ()
 public:
-    T m[rows*cols]; // underlying data storage - it's public but it's better to access the elements using ()
-    bool invalidAccessFlag;  // a flag to indicate that an invalid access has occurred via the () operator or in the Set() function
 
-    Matrix<rows,cols,T>() : invalidAccessFlag(false) { Clear(); }
+    mutable bool invalidAccessFlag;  // a flag to indicate that an invalid access has occurred via the () operator or in the Set() function
+
+    Matrix<rows,cols,T>() : invalidAccessFlag(false) { /*Clear();*/ }
 
     // Constructor to allow the matrix to be filled from an appropriately sized & typed 2D array
     Matrix<rows,cols,T>(T arr[rows][cols]) : invalidAccessFlag(false)
@@ -24,14 +24,27 @@ public:
 
     Matrix<rows,cols,T>(const Matrix<rows,cols,T> &obj) : invalidAccessFlag(false)
     {
-        memcpy(m,(T*)obj.m, rows*cols * sizeof(T));
+        (*this) = obj;
+    }
+
+    T &operator()(int row, int col = 0) const
+    {
+        // Accessing the dummyElement from outside it's class isn't allowed, that means that the matrix must be square for this function to compile
+        if(row > rows || col > cols)
+        {
+            invalidAccessFlag = true;
+            return dummyElement;
+        }
+        else
+            return m[row * cols + col];
     }
 
     // Unary addition
     template<class opT> Matrix<rows,cols,T> &operator+=(const Matrix<rows,cols,opT> &obj)
     {
-        for(int i = 0; i < rows * cols; i++)
-            m[i] += obj.m[i];
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                (*this)(i,j) += obj(i,j);
 
         return *this;
     }
@@ -39,8 +52,9 @@ public:
     // Unary subtraction
     template<class opT> Matrix<rows,cols,T> &operator-=(const Matrix<rows,cols,opT> &obj)
     {
-        for(int i = 0; i < rows * cols; i++)
-            m[i] -= obj.m[i];
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                (*this)(i,j) -= obj(i,j);
 
         return *this;
     }
@@ -50,8 +64,9 @@ public:
     {
         Matrix<rows,cols,T> ret;
 
-        for(int i = 0; i < rows * cols; i++)
-            ret.m[i] = m[i] + obj.m[i];
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                ret(i,j) = (*this)(i,j) + obj(i,j);
 
         return ret;
     }
@@ -61,8 +76,9 @@ public:
     {
         Matrix<rows,cols,T> ret;
 
-        for(int i = 0; i < rows * cols; i++)
-            ret.m[i] = m[i] - obj.m[i];
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                ret(i,j) = (*this)(i,j) - obj(i,j);
 
         return ret;
     }
@@ -72,8 +88,9 @@ public:
     {
         Matrix<rows,cols,T> ret;
 
-        for(int i = 0; i < rows * cols; i++)
-            ret.m[i] = -m[i];
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                ret(i,j) = -(*this)(i,j);
 
         return ret;
     }
@@ -87,7 +104,7 @@ public:
         for(i = 0; i < rows; i++)
             for(j = 0; j < operandCols; j++)
                 for(k = 0; k < cols; k++)
-                    ret.m[i * operandCols + j] += m[i * cols + k] * operand.m[k * operandCols + j];
+                    ret(i,j) += (*this)(i,k) * operand(k,j);
 
         return ret;
     }
@@ -100,7 +117,7 @@ public:
         for(i = 0; i < rows; i++)
             for(j = 0; j < cols; j++)
                 for(k = 0; k < cols; k++)
-                    ret.m[i * cols + j] += m[i * cols + k] * operand.m[k * cols + j];
+                    ret(i,j) += (*this)(i,k) * operand(k,j);
 
         *this = ret;
         return *this;
@@ -109,8 +126,9 @@ public:
     // Scaling
     Matrix<rows,cols,T> &operator*=(T k)
     {
-        for(int i = 0; i < rows * cols; i++)
-            m[i] *= k;
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                (*this)(i,j) *= k;
 
         return *this;
     }
@@ -119,9 +137,9 @@ public:
     {
         Matrix<rows,cols,T> ret;
 
-        // no need to make a nested loop here
-        for(int i = 0; i < rows * cols; i++)
-            ret.m[i] = m[i] * k;
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                ret(i,j) = (*this)(i,j) * k;
 
         return ret;
     }
@@ -129,14 +147,20 @@ public:
     // Copies the value of a matrix of equal size
     template<class opT> Matrix<rows,cols,T> &operator=(const Matrix<rows,cols,opT> &obj)
     {
-        memcpy(m,obj.m, rows*cols * sizeof(T));
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                (*this)(i,j)  = obj(i,j);
+
         return *this;
     }
 
     // Set the contents of the matrix using a 2D array
     Matrix<rows,cols,T> &operator=(T arr[rows][cols])
     {
-        memcpy(m,(T*)arr, rows*cols * sizeof(T));
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < cols; j++)
+                (*this)(i,j)  = arr[i][j];
+
         return *this;
     }
 
@@ -149,7 +173,7 @@ public:
 
         for(int i = 0; i < height; i++)
             for(int j = 0; j < width; j++)
-                m[(i+destRow) * cols + (j+destCol)] = obj.m[(i+srcRow) * objCols + (j+srcCol)];
+                (*this)(i+destRow,j+destCol) = obj(i+srcRow,j+srcCol);
     }
 
     // Set a subsection of the matrix of dimensions (width,height & starting at destRow,destCol) to the value of the input object 'obj' starting at (srcRow, srcCol)
@@ -160,21 +184,6 @@ public:
         return ret;
     }
 
-    // Set the value of every element to 0
-    void Clear() { memset(m,'\0',rows*cols*sizeof(T)); }
-
-    T &operator()(int row, int col = 0)
-    {
-        // Accessing the dummyElement from outside it's class isn't allowed, that means that the matrix must be square for this function to compile
-        if(row > rows || col > cols)
-        {
-            invalidAccessFlag = true;
-            return dummyElement;
-        }
-        else
-            return m[row * cols + col];
-    }
-
     // Returns a transpose of this matrix
     Matrix<cols,rows,T> Transpose()
     {
@@ -182,7 +191,7 @@ public:
 
         for (int i = 0; i < rows; i++)
             for(int j = 0; j < cols; j++)
-                ret.m[i * cols + j] = m[j * cols + i];
+                ret(i,j) = (*this)(j,i);
 
         return ret;
     }
@@ -209,23 +218,25 @@ template<int rows, int cols, int operandCols, class T, class opT, class retT> Ma
     for(i = 0; i < rows; i++)
         for(j = 0; j < operandCols; j++)
             for(k = 0; k < cols; k++)
-                C.m[i * operandCols + j] += A.m[i * cols + k] * B.m[k * operandCols + j];
+                C(i,j) += A(i,k) * B(k,j);
 
     return C;
 }
 
 template<int rows, int cols, class T, class opT, class retT>  Matrix<rows,cols,retT> &Add(const Matrix<rows,cols,T> &A, const Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
 {
-    for(int i = 0; i < rows * cols; i++)
-        C.m[i] = A.m[i] + B.m[i];
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) + B(i,j);
 
     return C;
 }
 
 template<int rows, int cols, class T, class opT, class retT> Matrix<rows,cols,retT> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
 {
-    for(int i = 0; i < rows * cols; i++)
-        C.m[i] = A.m[i] - B.m[i];
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) - B(i,j);
 
     return C;
 }
@@ -255,7 +266,7 @@ template<int rows, int cols, class T, class retT> Matrix<cols,rows,retT> &Transp
 {
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
-            C.m[i * cols + j] = A.m[j * cols + i];
+            C(i,j) = A(j,i);
 
     return C;
 }
@@ -275,15 +286,15 @@ template<int dim, class T> Matrix<dim,dim,T> &Invert(Matrix<dim,dim,T> &A, int *
         tmp = 0;
         for (i = k; i < dim; i++)
         {
-            if(fabs(A.m[i*dim+k]) >= tmp)
+            if(fabs(A(i,k)) >= tmp)
             {
-                tmp = fabs(A.m[i*dim+k]);
+                tmp = fabs(A(i,k));
                 pivrow = i;
             }
         }
 
         // check for singular matrix
-        if (A.m[pivrow*dim+k] == 0.0f)
+        if (A(pivrow,k) == 0.0f)
             if(res)
                 *res = 1;
 
@@ -293,30 +304,30 @@ template<int dim, class T> Matrix<dim,dim,T> &Invert(Matrix<dim,dim,T> &A, int *
             // swap row k with pivrow
             for (j = 0; j < dim; j++)
             {
-                tmp = A.m[k*dim+j];
-                A.m[k*dim+j] = A.m[pivrow*dim+j];
-                A.m[pivrow*dim+j] = tmp;
+                tmp = A(k,j);
+                A(k,j) = A(pivrow,j);
+                A(pivrow,j) = tmp;
             }
         }
         pivrows[k] = pivrow;	// record row swap (even if no swap happened)
 
-        tmp = 1.0f / A.m[k*dim+k];	// invert pivot element
-        A.m[k*dim+k] = 1.0f;		// This element of input matrix becomes result matrix
+        tmp = 1.0f / A(k,k);	// invert pivot element
+        A(k,k) = 1.0f;		// This element of input matrix becomes result matrix
 
         // Perform row reduction (divide every element by pivot)
         for (j = 0; j < dim; j++)
-            A.m[k*dim+j] = A.m[k*dim+j]*tmp;
+            A(k,j) = A(k,j) * tmp;
 
         // Now eliminate all other entries in this column
         for (i = 0; i < dim; i++)
         {
             if (i != k)
             {
-                tmp = A.m[i*dim+k];
-                A.m[i*dim+k] = 0.0f;  // The other place where in matrix becomes result mat
+                tmp = A(i,k);
+                A(i,k) = 0.0f;  // The other place where in matrix becomes result mat
 
                 for (j = 0; j < dim; j++)
-                    A.m[i*dim+j] = A.m[i*dim+j] - A.m[k*dim+j]*tmp;
+                    A(i,j) = A(i,j) - A(k,j) * tmp;
             }
         }
     }
@@ -328,9 +339,9 @@ template<int dim, class T> Matrix<dim,dim,T> &Invert(Matrix<dim,dim,T> &A, int *
         {
             for (i = 0; i < dim; i++)
             {
-                tmp = A.m[i*dim+k];
-                A.m[i*dim+k] = A.m[i*dim+pivrows[k]];
-                A.m[i*dim+pivrows[k]] = tmp;
+                tmp = A(i,k);
+                A(i,k) = A(i,pivrows[k]);
+                A(i,pivrows[k]) = tmp;
             }
         }
     }
@@ -356,7 +367,7 @@ template<int rows, int cols, class T> Print &operator<<(Print &strm, const Matri
         strm << '{';
 
         for(int j = 0; j < cols; j++)
-            strm << obj.m[i * cols + j] << ((j == cols - 1)? '}' : ',');
+            strm << obj(i,j) << ((j == cols - 1)? '}' : ',');
 
         strm << (i == rows - 1? '}' : ',');
     }
