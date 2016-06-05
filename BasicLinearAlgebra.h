@@ -38,7 +38,7 @@ public:
 
     // Element Access
     T &operator()(int row, int col, bool *invalidAccess) const;
-    template<int height, int width> Matrix<rows,cols,T&> &operator()(Range<height> rowRange, Range<width> colRange) const;
+    template<int height, int width> Matrix<height,width,T&> operator()(Range<height> rowRange, Range<width> colRange) const;
 
     // Addition
     template<class opT> Matrix<rows,cols,T> operator+(const Matrix<rows,cols,opT> &obj);
@@ -86,7 +86,7 @@ public:
 
     // Element Access
     T &operator()(int row, int col, bool *invalidAccess) const;
-    template<int height, int width> Matrix<rows,cols,T&> &operator()(Range<height> rowRange, Range<width> colRange) const;
+    template<int height, int width> Matrix<height,width,T&> operator()(Range<height> rowRange, Range<width> colRange) const;
 
     // Assignment
     template<class opT> Matrix<rows,cols,T&> &operator=(const Matrix<rows,cols,opT> &obj);
@@ -200,7 +200,12 @@ T &Matrix<rows,cols,T>::operator()(int row, int col = 0, bool *invalidAccess = N
         return dummy;
     }
     else
+    {
+        if(invalidAccess)
+            *invalidAccess = false;
+
         return m[row * cols + col];
+    }
 }
 
 template<int rows, int cols, class T>
@@ -210,18 +215,18 @@ T &Matrix<rows,cols,T&>::operator()(int row, int col = 0, bool *invalidAccess = 
 }
 
 template<int rows, int cols, class T>
-template<int height, int width> Matrix<rows,cols,T&> &Matrix<rows,cols,T>::operator()(Range<height> rowRange, Range<width> colRange) const
+template<int height, int width> Matrix<height,width,T&> Matrix<rows,cols,T>::operator()(Range<height> rowRange, Range<width> colRange) const
 {
-    return Matrix<height,width,T&>(*this,rowRange,colRange);
+    return Matrix<height,width,T&>(*this,rowRange.offset,colRange.offset);
 }
 
 template<int rows, int cols, class T>
-template<int height, int width> Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator()(Range<height> rowRange, Range<width> colRange) const
+template<int height, int width> Matrix<height,width,T&> Matrix<rows,cols,T&>::operator()(Range<height> rowRange, Range<width> colRange) const
 {
     rowRange.offset += rowOffset;
     colRange.offset += colOffset;
 
-    return Matrix<height,width,T&>(parent,rowRange,colRange);
+    return Matrix<height,width,T&>(parent,rowRange.offset,colRange.offset);
 }
 
 //////////////////////////////////////////////////////////////////////////// Addition ///////////////////////////////////////////////////////////////////////
@@ -400,7 +405,6 @@ template<int rows, int cols, int operandCols, class T, class opT, class retT>
 Matrix<rows,operandCols,retT> &Multiply(const Matrix<rows,cols,T> &A, const Matrix<cols,operandCols,opT> &B, Matrix<rows,operandCols,retT> &C)
 {
     int i,j,k;
-    C.Clear();
 
     for(i = 0; i < rows; i++)
         for(j = 0; j < operandCols; j++)
@@ -701,8 +705,8 @@ template<int rows, int cols, int operandCols, class T, class opT>
 Matrix<rows,cols+operandCols,T> HorzCat(const Matrix<rows,cols,T> &A, const Matrix<rows,operandCols,opT> &B)
 {
     Matrix<rows,cols + operandCols,T> ret;
-    ret.Set(A,0,0);
-    ret.Set(B,0,cols);
+    ret(Range<rows>(0),Range<cols>(0)) = A;
+    ret(Range<rows>(0),Range<operandCols>(cols)) = B;
 
     return ret;
 }
@@ -711,8 +715,8 @@ template<int rows, int cols, int operandRows, class T, class opT>
 Matrix<rows + operandRows,cols,T> VertCat(const Matrix<rows,cols,T> &A, const Matrix<operandRows,cols,opT> &B)
 {
     Matrix<rows + operandRows,cols,T> ret;
-    ret.Set(A,0,0);
-    ret.Set(B,rows,0);
+    ret(Range<rows>(0),Range<cols>(0)) = A;
+    ret(Range<operandRows>(rows),Range<cols>(0)) = B;
 
     return ret;
 }
