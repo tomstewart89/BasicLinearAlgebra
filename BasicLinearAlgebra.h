@@ -25,16 +25,16 @@ template<int rows, int cols = 1, class T = float> class Matrix : public Indexabl
 {
     mutable T m[rows*cols]; // underlying data storage - access it with ()
 public:
-    Matrix<rows,cols,T>() { (*this) = 0.0; } // !!
 
-    // Constructor to allow the matrix to be filled from an appropriately sized & typed 2D array or matrix
-    Matrix<rows,cols,T>(T arr[rows][cols]) { (*this) = arr; }
-    template<class opT> Matrix<rows,cols,T>(const Matrix<rows,cols,opT> &obj) { (*this) = obj; }
+    // Constructors
+    Matrix<rows,cols,T>() { } // from nothing
+    Matrix<rows,cols,T>(T arr[rows][cols]) { (*this) = arr; } // from an array
+    template<class opT> Matrix<rows,cols,T>(const Matrix<rows,cols,opT> &obj) { (*this) = obj; } // from another matrix
 
     // Assignment
     template<class opT> Matrix<rows,cols,T> &operator=(const Matrix<rows,cols,opT> &obj);
     Matrix<rows,cols,T> &operator=(T arr[rows][cols]);
-    Matrix<rows,cols,T> &operator=(T val);
+    Matrix<rows,cols,T> &Fill(const T &val);
 
     // Element Access
     T &operator()(int row, int col, bool *invalidAccess) const;
@@ -71,17 +71,17 @@ public:
 
 ////////////////////////////////////////////////////////////////// Reference Matrix ///////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class T> class Matrix<rows,cols,T&>
+template<int rows, int cols, class T> class Matrix<rows,cols,T&> : Indexable<T>
 {
     const Indexable<T> &parent; // reference to the parent matrix
     int rowOffset, colOffset;
-
     template<int, int, class> friend class Matrix; // Matrices are all friends with each other
-public:
-    template<int parentRows, int parentCols>
-    Matrix<rows,cols,T&>(const Matrix<parentRows,parentCols,T> &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
 
-    template<int parentRows, int parentCols>
+public:
+    // Constructors
+    Matrix<rows,cols,T&>(const Indexable<T> &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { } // from any Indexable type
+
+    template<int parentRows, int parentCols>  // from a reference matrix - this would also work through the base class but this'll save indirection when making refs of refs
     Matrix<rows,cols,T&>(const Matrix<parentRows,parentCols,T&> &obj, int rowOff, int colOff) : parent(obj.parent), rowOffset(rowOff+obj.rowOffset), colOffset(colOff+obj.colOffset) { }
 
     // Element Access
@@ -91,15 +91,15 @@ public:
     // Assignment
     template<class opT> Matrix<rows,cols,T&> &operator=(const Matrix<rows,cols,opT> &obj);
     Matrix<rows,cols,T&> &operator=(T arr[rows][cols]);
-    Matrix<rows,cols,T&> &operator=(T val);
+    Matrix<rows,cols,T&> &Fill(const T &val);
 
     // Addition
     template<class opT> Matrix<rows,cols,T> operator+(const Matrix<rows,cols,opT> &obj);
-    template<class opT> Matrix<rows,cols,T> &operator+=(const Matrix<rows,cols,opT> &obj);
+    template<class opT> Matrix<rows,cols,T&> &operator+=(const Matrix<rows,cols,opT> &obj);
 
     // Subtraction
     template<class opT> Matrix<rows,cols,T> operator-(const Matrix<rows,cols,opT> &obj);
-    template<class opT> Matrix<rows,cols,T> &operator-=(const Matrix<rows,cols,opT> &obj);
+    template<class opT> Matrix<rows,cols,T&> &operator-=(const Matrix<rows,cols,opT> &obj);
 
     // Multiplication
     template <int operandCols, class opT> Matrix<rows,operandCols,T> operator*(const Matrix<cols,operandCols,opT> &operand);
@@ -110,7 +110,7 @@ public:
 
     // Scaling
     Matrix<rows,cols,T> operator*(T k);
-    Matrix<rows,cols,T> &operator*=(T k);
+    Matrix<rows,cols,T&> &operator*=(T k);
 
     // Returns a transpose of this matrix
     Matrix<cols,rows,T> Transpose();
@@ -165,7 +165,7 @@ Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator=(T arr[rows][cols])
 }
 
 template<int rows, int cols, class T>
-Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator=(T val)
+Matrix<rows,cols,T> &Matrix<rows,cols,T>::Fill(const T &val)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -175,7 +175,7 @@ Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator=(T val)
 }
 
 template<int rows, int cols, class T>
-Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator=(T val)
+Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::Fill(const T &val)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -183,7 +183,6 @@ Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator=(T val)
 
     return *this;
 }
-
 
 ///////////////////////////////////////////////////////////////////////// Element Access ///////////////////////////////////////////////////////////////////
 
@@ -217,7 +216,7 @@ T &Matrix<rows,cols,T&>::operator()(int row, int col = 0, bool *invalidAccess = 
 template<int rows, int cols, class T>
 template<int height, int width> Matrix<height,width,T&> Matrix<rows,cols,T>::operator()(Range<height> rowRange, Range<width> colRange) const
 {
-    return Matrix<height,width,T&>(*this,rowRange.offset,colRange.offset);
+    return Matrix<height,width,T&>(*this, rowRange.offset, colRange.offset);
 }
 
 template<int rows, int cols, class T>
@@ -226,7 +225,7 @@ template<int height, int width> Matrix<height,width,T&> Matrix<rows,cols,T&>::op
     rowRange.offset += rowOffset;
     colRange.offset += colOffset;
 
-    return Matrix<height,width,T&>(parent,rowRange.offset,colRange.offset);
+    return Matrix<height,width,T&>(parent, rowRange.offset, colRange.offset); // so I don't know anything about the parent at this point, which can't be helped. But I can't return
 }
 
 //////////////////////////////////////////////////////////////////////////// Addition ///////////////////////////////////////////////////////////////////////
@@ -266,7 +265,7 @@ template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator+=(const M
 }
 
 template<int rows, int cols, class T>
-template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T&>::operator+=(const Matrix<rows,cols,opT> &obj)
+template<class opT> Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator+=(const Matrix<rows,cols,opT> &obj)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -321,7 +320,7 @@ template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator-=(const M
 }
 
 template<int rows, int cols, class T>
-template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T&>::operator-=(const Matrix<rows,cols,opT> &obj)
+template<class opT> Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator-=(const Matrix<rows,cols,opT> &obj)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -331,7 +330,7 @@ template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T&>::operator-=(const 
 }
 
 template<int rows, int cols, class T, class opT, class retT>
-Matrix<rows,cols,retT> &Subtract(Matrix<rows,cols,T> &A, Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
+Matrix<rows,cols,retT> &Subtract(Matrix<rows,cols,T&> &A, Matrix<rows,cols,opT> &B, Matrix<rows,cols,retT> &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -350,8 +349,13 @@ template <int operandCols, class opT> Matrix<rows,operandCols,T> Matrix<rows,col
 
     for(i = 0; i < rows; i++)
         for(j = 0; j < operandCols; j++)
-            for(k = 0; k < cols; k++)
+        {
+            if(cols > 0)
+                ret(i,j) = (*this)(i,0) * operand(0,j);
+
+            for(k = 1; k < cols; k++)
                 ret(i,j) += (*this)(i,k) * operand(k,j);
+        }
 
     return ret;
 }
@@ -364,8 +368,13 @@ template <int operandCols, class opT> Matrix<rows,operandCols,T> Matrix<rows,col
 
     for(i = 0; i < rows; i++)
         for(j = 0; j < operandCols; j++)
-            for(k = 0; k < cols; k++)
+        {
+            if(cols > 0)
+                ret(i,j) = (*this)(i,0) * operand(0,j);
+
+            for(k = 1; k < cols; k++)
                 ret(i,j) += (*this)(i,k) * operand(k,j);
+        }
 
     return ret;
 }
@@ -378,8 +387,13 @@ template<class opT> Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator*=(const M
 
     for(i = 0; i < rows; i++)
         for(j = 0; j < cols; j++)
-            for(k = 0; k < cols; k++)
+        {
+            if(cols > 0)
+                ret(i,j) = (*this)(i,0) * operand(0,j);
+
+            for(k = 1; k < cols; k++)
                 ret(i,j) += (*this)(i,k) * operand(k,j);
+        }
 
     *this = ret;
     return *this;
@@ -393,8 +407,13 @@ template<class opT> Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator*=(const
 
     for(i = 0; i < rows; i++)
         for(j = 0; j < cols; j++)
-            for(k = 0; k < cols; k++)
+        {
+            if(cols > 0)
+                ret(i,j) = (*this)(i,0) * operand(0,j);
+
+            for(k = 1; k < cols; k++)
                 ret(i,j) += (*this)(i,k) * operand(k,j);
+        }
 
     *this = ret;
     return *this;
@@ -407,9 +426,14 @@ Matrix<rows,operandCols,retT> &Multiply(const Matrix<rows,cols,T> &A, const Matr
     int i,j,k;
 
     for(i = 0; i < rows; i++)
-        for(j = 0; j < operandCols; j++)
-            for(k = 0; k < cols; k++)
+        for(j = 0; j < cols; j++)
+        {
+            if(cols > 0)
+                C(i,j) = A(i,0) * B(0,j);
+
+            for(k = 1; k < cols; k++)
                 C(i,j) += A(i,k) * B(k,j);
+        }
 
     return C;
 }
@@ -477,7 +501,7 @@ Matrix<rows,cols,T> &Matrix<rows,cols,T>::operator*=(T k)
 }
 
 template<int rows, int cols, class T>
-Matrix<rows,cols,T> &Matrix<rows,cols,T&>::operator*=(T k)
+Matrix<rows,cols,T&> &Matrix<rows,cols,T&>::operator*=(T k)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -490,12 +514,12 @@ Matrix<rows,cols,T> &Matrix<rows,cols,T&>::operator*=(T k)
 
 template<int rows, int cols, class T>
 Matrix<cols,rows,T> Matrix<rows,cols,T>::Transpose()
-{
+{   
     Matrix<cols,rows,T> ret;
 
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
-            ret(i,j) = (*this)(j,i);
+            ret(j,i) = (*this)(i,j);
 
     return ret;
 }
@@ -507,7 +531,7 @@ Matrix<cols,rows,T> Matrix<rows,cols,T&>::Transpose()
 
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
-            ret(i,j) = (*this)(j,i);
+            ret(j,i) = (*this)(i,j);
 
     return ret;
 }
@@ -517,7 +541,7 @@ Matrix<cols,rows,retT> &Transpose(const Matrix<rows,cols,T> &A, Matrix<cols,rows
 {
     for (int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
-            C(i,j) = A(j,i);
+            C(j,i) = A(i,j);
 
     return C;
 }

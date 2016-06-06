@@ -18,6 +18,9 @@ void setup()
   // The template parameters have defaults so if you're satisfied with a matrix of type 'float' with only 1 column you can simply write:
   Matrix<3> v;
 
+  // Just like any other variable, Matrices should be initialised to some value before you use them. To set every element of the Matrix to a certain value you can use the Fill function like so:
+  v.Fill(0);
+
   // The matrix elements can be accessed individually using the brackets operator like so:
   v(2,0) = 5.3;
   v(1) = 43.67; // you can also just write v(2) = 5.3; since v has only one column
