@@ -7,5 +7,5 @@ Matrix supports: addition, subtraction and multiplication through operator overl
 
 The matrix Invert function was adapted from code written by Charlie Matlack as part of the MatrixMath library that can be found here: http://playground.arduino.cc/Code/MatrixMath ... thanks!
 
-To get started just go through the HowToUse sketch in the examples folder; that'll explain everything that most users will need to know to work with the library. If you're particularly fond of templates or high dimensional matrices then by all means check out the Tensor example too.
+To get started just go through the HowToUse sketch in the examples folder; that'll explain everything that most users will need to know to work with the library. For more advanced useage on how to take references to matrices check out the References, or for more on how to make a matrix containing elements of your own custom class have a look at the Tensor example.
 
