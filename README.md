@@ -1,5 +1,6 @@
 
-Basic Linear Algebra: A lightweight library for matrix operations on arduino.
+# Basic Linear Algebra
+A lightweight library for matrix operations on arduino.
 
 This library is built around the template class Matrix which allows matrices of arbitrary dimensions to be defined and allocated using stack memory. It also allows for compile time checking of the compatibility of matrices used in any of the operations supported by the library.
 
