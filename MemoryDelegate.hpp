@@ -67,7 +67,7 @@ Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &Multiply(co
     int i,j,k;
 
     for(i = 0; i < rows; i++)
-        for(j = 0; j < cols; j++)
+        for(j = 0; j < operandCols; j++)
         {
             if(cols > 0)
                 C.delegate.m[i * operandCols + j] = A.delegate.m[i * cols] * B.delegate.m[j];

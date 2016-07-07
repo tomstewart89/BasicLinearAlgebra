@@ -206,7 +206,7 @@ Matrix<rows,operandCols,retElemT,retMemT> &Multiply(const Matrix<rows,cols,ElemT
     int i,j,k;
 
     for(i = 0; i < rows; i++)
-        for(j = 0; j < cols; j++)
+        for(j = 0; j < operandCols; j++)
         {
             if(cols > 0)
                 C.delegate(i,j) = A.delegate(i,0) * B.delegate(0,j);
