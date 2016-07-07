@@ -25,21 +25,6 @@ void setup()
   v(2,0) = 5.3;
   v(1) = 43.67; // you can also just write v(2) = 5.3; since v has only one column
 
-  // Note that the brackets operator will always return some value. If you think you might ask for memory outside it's bounds, you can check by passing
-  // a pointer to bool to the accessor like so:
-  bool valid;
-  A(2,2,&valid);
-
-  // If it's set to false, you're all good
-  if(valid == false)
-    Serial << "so far so good\n";
-
-  A(1000,1000,&valid) = 65.9;
-
-  // If not you've made a mistake
-  if(valid == true)
-      Serial << "invalid access\n";
-
   // Or you can set the entire matrix at once using a c-array of the same dimensions and type, like so:
   float arrayA[3][3] = {{3.25,5.67,8.67},{4.55,7.23,9.00},{2.35,5.73,10.56}};
   A = arrayA;
