@@ -20,27 +20,6 @@ template<int rows, int cols = 1, class ElemT = float> struct Array
     }
 };
 
-///////////////////////////////////////////////////////////////// Reference Memory Delegate ///////////////////////////////////////////////////////////////////
-
-template<class ElemT, class MemT> struct Ref
-{
-    const MemT &parent;
-    int rowOffset, colOffset;
-
-    Ref<ElemT,MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
-    Ref<ElemT,MemT>(const Ref<ElemT,MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
-
-    ElemT &operator()(int row, int col) const
-    {
-        return parent(row+rowOffset,col+colOffset);
-    }
-};
-
-template<int rows, int cols, class ElemT = float> using ArrayRef = Ref<ElemT,Array<rows,cols,ElemT> >;
-template<int rows, int cols, class ParentMemT, class ElemT = float> using RefMatrix = Matrix<rows, cols, ElemT, Ref<ElemT,ParentMemT> >;
-
-///////////////////////////////////////////////////////////////// Specialisations For Array Matrices ///////////////////////////////////////////////////////////////////
-
 template<int rows, int cols, class ElemT, class opElemT, class retElemT>
 Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &Add(const Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > &A, const Matrix<rows,cols,opElemT,Array<rows,cols,opElemT> > &B, Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &C)
 {
@@ -78,5 +57,41 @@ Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &Multiply(co
 
     return C;
 }
+
+///////////////////////////////////////////////////////////////// Reference Memory Delegate ///////////////////////////////////////////////////////////////////
+
+template<class ElemT, class MemT> struct Ref
+{
+    const MemT &parent;
+    int rowOffset, colOffset;
+
+    Ref<ElemT,MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
+    Ref<ElemT,MemT>(const Ref<ElemT,MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
+
+    ElemT &operator()(int row, int col) const
+    {
+        return parent(row+rowOffset,col+colOffset);
+    }
+};
+
+template<int rows, int cols, class ElemT = float> using ArrayRef = Ref<ElemT,Array<rows,cols,ElemT> >;
+template<int rows, int cols, class ParentMemT, class ElemT = float> using RefMatrix = Matrix<rows, cols, ElemT, Ref<ElemT,ParentMemT> >;
+
+///////////////////////////////////////////////////////////////// Identity Memory Delegate ///////////////////////////////////////////////////////////////////
+
+template<class ElemT> struct Iden
+{
+    ElemT &operator()(int row, int col) const
+    {
+        static ElemT ret;
+
+        if(row == col)
+            return (ret = 1);
+        else
+            return (ret = 0);
+    }
+};
+
+template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows, cols, ElemT, Iden<ElemT> >;
 
 #endif // MEMORY_DELEGATE_H
