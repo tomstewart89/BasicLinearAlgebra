@@ -94,4 +94,63 @@ template<class ElemT> struct Iden
 
 template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows, cols, ElemT, Iden<ElemT> >;
 
+///////////////////////////////////////////////////////////////// Sparse Memory Delegate ///////////////////////////////////////////////////////////////////
+
+// This uses a hash table to look up row/col/val items. It uses an open addressing collision strategy so we can avoid using dynamic memory
+template<int cols, int tableSize, class ElemT> struct Sparse
+{
+    struct HashItem
+    {
+        mutable int key;
+        mutable ElemT val;
+
+        HashItem() { key = -1; }
+
+    } table[tableSize];
+
+    ElemT &operator()(int row, int col) const
+    {
+        // Make a key out of the row / column
+        int key = row * cols + col;
+
+        // Calculate the hash by taking the modulo of the key with the tableSize
+        int hash = key % tableSize;
+
+        const HashItem *item;
+
+        // Find a item with a key matching the input key
+        for(int i = 0; i < tableSize; i++)
+        {
+            item = table + (hash + i) % tableSize;
+
+            // If the element is empty or unused (val == 0) then the item doesn't exist in the table
+            if(item->key == -1 || item->val == 0)
+            {
+                item->key = key;
+                item->val = 0;
+                break;
+            }
+
+            // If it's key matches the input key then return it
+            if(item->key == key)
+            {
+                break;
+            }
+        }
+
+        // If we landed on a matching key then we're done!
+        if(item->key == key)
+        {
+            return item->val;
+        }
+        else
+        {
+            static ElemT outOfMemory;
+            return outOfMemory;
+        }
+    }
+};
+
+template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows, cols, ElemT, Sparse<cols, tableSize, ElemT> >;
+
 #endif // MEMORY_DELEGATE_H
