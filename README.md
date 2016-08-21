@@ -17,7 +17,7 @@ Matrix<6,3> B;
 ```
 You can do lots of different things with matrices including basic algebra:
 ```
-Matrix<6,2> C = A * B;
+Matrix<6,2> C = B * A;
 ```
 As well as some more advanced operations like Transposition, Concatenation and Inversion. For more on the basic useage of matrices have a look at the [HowToUse](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/HowToUse/HowToUse.ino) example.
 
