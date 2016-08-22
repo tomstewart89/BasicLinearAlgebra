@@ -60,6 +60,8 @@ public:
 
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res);
+    
+    // Returns the determinant of this matrix
     ElemT Det() { return Determinant(*this); }
 
     int Rows() { return rows; }
