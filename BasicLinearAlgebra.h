@@ -1,10 +1,14 @@
 #ifndef BLA_H
 #define BLA_H
 
-#include "Arduino.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "Arduino.h"
+#include "MemoryDelegate.hpp"
+
+///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
 // Represents a range of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
 template<int length> struct Range
@@ -12,10 +16,6 @@ template<int length> struct Range
     int offset;
     Range(int off) : offset(off) { }
 };
-
-#include "MemoryDelegate.hpp"
-
-///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
 template<int rows, int cols = 1, class ElemT = float, class MemT = Array<rows,cols,ElemT> > class Matrix
 {
@@ -60,6 +60,7 @@ public:
 
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res);
+    ElemT Det() { return Determinant(*this); }
 
     int Rows() { return rows; }
     int Cols() { return cols; }
@@ -286,10 +287,38 @@ Matrix<cols,rows,retElemT,retMemT> &Transpose(const Matrix<rows,cols,ElemT,MemT>
     return C;
 }
 
+/////////////////////////////////////////////////////////////////// Determinant //////////////////////////////////////////////////////////////////
+
+template<int dim, class ElemT, class MemT>
+ElemT Determinant(const Matrix<dim,dim,ElemT,MemT> &A)
+{
+    ElemT det;
+
+    // Add the determinants of all the minors
+    for(int i = 0; i < dim; i++)
+    {
+        Minor<ElemT,MemT> del(A.delegate, i, 0);
+        Matrix<dim-1,dim-1,ElemT, Minor<ElemT,MemT> > m(del);
+
+        if(!i)
+            det = Determinant(m);
+        else
+            det += Determinant(m) * (i % 2? -A(i,0) : A(i,0));
+    }
+
+    return det;
+}
+
+template<class ElemT, class MemT>
+ElemT Determinant(Matrix<2,2,ElemT,MemT> &A)
+{
+    return A(0,0) * A(1,1) - A(1,0) * A(0,1);
+}
+
 /////////////////////////////////////////////////////////////////// Inversion //////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::Inverse(int *res = NULL)
+Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::Inverse(int *res)
 {
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret = *this;
     return Invert(ret, res);

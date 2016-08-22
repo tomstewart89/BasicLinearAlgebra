@@ -153,4 +153,22 @@ template<int cols, int tableSize, class ElemT> struct Sparse
 
 template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows, cols, ElemT, Sparse<cols, tableSize, ElemT> >;
 
+//////////////////////////////////////////////////////////// Matrix Minor Memory Delegate ////////////////////////////////////////////////////////////////
+
+template<class ElemT, class MemT> struct Minor
+{
+    const MemT &parent;
+    int i, j;
+
+    Minor<ElemT,MemT>(const MemT &obj, int row, int col) : parent(obj), i(row), j(col) { }
+
+    ElemT &operator()(int row, int col) const
+    {
+        if(row >= i) row++;
+        if(col >= j) col++;
+
+        return parent(row,col);
+    }
+};
+
 #endif // MEMORY_DELEGATE_H
