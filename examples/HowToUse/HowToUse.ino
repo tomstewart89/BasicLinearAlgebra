@@ -59,13 +59,13 @@ void setup()
   Multiply(A,v,D);
 
   // As well as algebra, Matrix supports a few other matrix related operations including transposition:
-  Matrix<1,3> D_T = D.Transpose();
+  Matrix<1,3> D_T = ~D;
 
-  // The transpose method will return a temporary copy. If you have a matrix of the appropriate dimensions at the ready
-  // you can use Transpose function which will store the result in the second argument
-  
-  Matrix<3,3> C_T;
-  Transpose(C,C_T);
+  // And concatenation, both horizontally...
+  Matrix<3,6> AleftOfB = A || B;
+
+  // And vertically
+  Matrix<6,3> AonTopOfB = A && B;
 
   // An inverse of a matrix can also be calculated for square matrices via the inverse function:
   Matrix<3,3> C_inv = C.Inverse();
@@ -77,12 +77,6 @@ void setup()
 
   // If you want to invert a matrix and set the result to the matrix itself, you can use the Invert function.
   Invert(C);
-
-  // In addition to matrix math  there are functions to concatenate two matrices. You can concatenate matrices horizontally like so:
-  Matrix<3,6> AleftOfB = HorzCat(A,B);
-
-  // Or vertically, like so:
-  Matrix<6,3> AonTopOfB = VertCat(A,B);
 
   // If you want to print out the value of any element in the array you can do that like so:
   Serial << "v(1): " << v(1) << '\n';
