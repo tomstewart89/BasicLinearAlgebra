@@ -27,9 +27,16 @@ public:
     Matrix<rows,cols,ElemT,MemT>(MemT &d) : delegate(d) { }
     Matrix<rows,cols,ElemT,MemT>(ElemT arr[rows][cols]) { *this = arr; }
 
+    template<class opElemT, class opMemT>
+    Matrix<rows,cols,ElemT,MemT>(const Matrix<rows,cols,opElemT,opMemT> &obj) { *this = obj; }
+
     // Element Access
     ElemT &operator()(int row, int col = 0) const;
     template<int height, int width> Matrix<height,width,ElemT,Ref<ElemT,MemT> > Submatrix(Range<height> rowRange, Range<width> colRange) const;
+
+    // Concatenation
+    template<int operandCols, class opElemT, class opMemT> Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj);
+    template<int operandRows, class opElemT, class opMemT> Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj);
 
     // Assignment
     template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator=(const Matrix<rows,cols,opElemT,opMemT> &obj);
@@ -51,15 +58,18 @@ public:
     // Negation
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator-();
 
+    // Transposition
+    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > operator~();
+
     // Scaling
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator*(ElemT k);
     Matrix<rows,cols,ElemT,MemT> &operator*=(ElemT k);
 
     // Returns a transpose of this matrix
-    Matrix<cols,rows,ElemT,Array<cols,rows,ElemT> > Transpose();
+    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > Transpose();
 
     // Returns the inverse of this matrix - only supports square matrices
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res);
+    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res = NULL);
     
     // Returns the determinant of this matrix
     ElemT Det() { return Determinant(*this); }
@@ -83,6 +93,26 @@ Matrix<height,width,ElemT,Ref<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Submat
     Ref<ElemT,MemT> ref(delegate, rowRange.offset, colRange.offset);
     return Matrix<height,width,ElemT,Ref<ElemT,MemT> >(ref);
 }
+
+///////////////////////////////////////////////////////////////// Concatenation ////////////////////////////////////////////////////////////////
+
+template<int rows, int cols, class ElemT, class MemT>
+template<int operandCols, class opElemT, class opMemT>
+Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > Matrix<rows,cols,ElemT,MemT>::operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj)
+{
+    HorzCat<cols,ElemT,MemT,opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> >(ref);
+}
+
+template<int rows, int cols, class ElemT, class MemT>
+template<int operandRows, class opElemT, class opMemT>
+Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > Matrix<rows,cols,ElemT,MemT>::operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj)
+{
+    VertCat<rows,ElemT,MemT,opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> >(ref);
+}
+
+
 
 ///////////////////////////////////////////////////////////////// Assignment ///////////////////////////////////////////////////////////////////
 
@@ -235,6 +265,15 @@ Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::op
     return ret;
 }
 
+///////////////////////////////////////////////////////////////// Transposition ////////////////////////////////////////////////////////////////
+
+template<int rows, int cols, class ElemT, class MemT>
+Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::operator~()
+{
+    Trans<ElemT,MemT> ref(delegate);
+    return Matrix<cols,rows,ElemT,Trans<ElemT,MemT> >(ref);
+}
+
 //////////////////////////////////////////////////////////////////// Scaling ///////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class ElemT, class MemT>
@@ -261,30 +300,6 @@ Matrix<rows,operandCols,retElemT,retMemT> &Scale(const Matrix<rows,cols,ElemT,Me
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
             C(i,j) = A(i,j) * B;
-
-    return C;
-}
-
-///////////////////////////////////////////////////////////////// Transposition ////////////////////////////////////////////////////////////////
-
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<cols,rows,ElemT,Array<cols,rows,ElemT> > Matrix<rows,cols,ElemT,MemT>::Transpose()
-{
-    Matrix<cols,rows,ElemT,Array<cols,rows,ElemT> > ret;
-
-    for (int i = 0; i < rows; i++)
-        for(int j = 0; j < cols; j++)
-            ret(j,i) = (*this)(i,j);
-
-    return ret;
-}
-
-template<int rows, int cols, class ElemT, class MemT,class retElemT, class retMemT>
-Matrix<cols,rows,retElemT,retMemT> &Transpose(const Matrix<rows,cols,ElemT,MemT> &A, Matrix<cols,rows,retElemT,retMemT> &C)
-{
-    for (int i = 0; i < rows; i++)
-        for(int j = 0; j < cols; j++)
-            C(j,i) = A(i,j);
 
     return C;
 }
@@ -406,28 +421,6 @@ Matrix<dim,dim,ElemT,MemT> &Invert(Matrix<dim,dim,ElemT,MemT> &A, int *res = NUL
         *res = 0;
 
     return A;
-}
-
-///////////////////////////////////////////////////////////////// Concatenation ////////////////////////////////////////////////////////////////
-
-template<int rows, int cols, int operandCols, class ElemT, class MemT, class opElemT, class opMemT>
-Matrix<rows,cols+operandCols,ElemT,Array<rows,cols+operandCols,ElemT> > HorzCat(const Matrix<rows,cols,ElemT,MemT> &A, const Matrix<rows,operandCols,opElemT,opMemT> &B)
-{
-    Matrix<rows,cols + operandCols,ElemT,Array<rows,cols + operandCols,ElemT> > ret;
-    ret.Submatrix(Range<rows>(0),Range<cols>(0)) = A;
-    ret.Submatrix(Range<rows>(0),Range<operandCols>(cols)) = B;
-
-    return ret;
-}
-
-template<int rows, int cols, int operandRows, class ElemT, class MemT, class opElemT, class opMemT>
-Matrix<rows + operandRows,cols,ElemT,Array<rows + operandRows,cols,ElemT> > VertCat(const Matrix<rows,cols,ElemT,MemT> &A, const Matrix<operandRows,cols,opElemT,opMemT> &B)
-{
-    Matrix<rows + operandRows,cols,ElemT,Array<rows + operandRows,cols,ElemT> > ret;
-    ret.Submatrix(Range<rows>(0),Range<cols>(0)) = A;
-    ret.Submatrix(Range<operandRows>(rows),Range<cols>(0)) = B;
-
-    return ret;
 }
 
 ////////////////////////////////////////////////////////////////// Insertion ///////////////////////////////////////////////////////////////////

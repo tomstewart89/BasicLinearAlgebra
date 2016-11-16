@@ -37,7 +37,7 @@ void setup()
   cubeA + cubeB;
 
   // As does concatenation
-  Matrix<4,8,Matrix<4> > cubeAleftOfcubeB = HorzCat(cubeA,cubeB);
+  Matrix<4,8,Matrix<4> > cubeAleftOfcubeB = cubeA || cubeB;
 
   // You can also do multiplication on square tensors with an even rank
   for(int i = 0; i < 2; i++)

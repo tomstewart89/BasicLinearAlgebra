@@ -171,4 +171,50 @@ template<class ElemT, class MemT> struct Minor
     }
 };
 
+//////////////////////////////////////////////////////////// Transpose Delegate ////////////////////////////////////////////////////////////////
+
+template<class ElemT, class MemT> struct Trans
+{
+    const MemT &parent;
+    int rowOffset, colOffset;
+
+    Trans<ElemT,MemT>(const MemT &obj) : parent(obj) { }
+    Trans<ElemT,MemT>(const Trans<ElemT,MemT> &obj) : parent(obj.parent) { }
+
+    ElemT &operator()(int row, int col) const
+    {
+        return parent(col,row);
+    }
+};
+
+////////////////////////////////////////////////////////// Concatenation Delegates /////////////////////////////////////////////////////////////
+
+template<int leftCols, class ElemT, class LeftMemT, class RightMemT> struct HorzCat
+{
+    const LeftMemT &left;
+    const RightMemT &right;
+
+    HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) { }
+    HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const HorzCat<leftCols, ElemT,LeftMemT,RightMemT> &obj) : left(obj.left), right(obj.right) { }
+
+    ElemT &operator()(int row, int col) const
+    {
+        return col < leftCols? left(row,col) : right(row,col-leftCols);
+    }
+};
+
+template<int topRows, class ElemT, class TopMemT, class BottomMemT> struct VertCat
+{
+    const TopMemT &top;
+    const BottomMemT &bottom;
+
+    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) { }
+    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const HorzCat<topRows, ElemT,TopMemT,BottomMemT> &obj) : top(obj.top), bottom(obj.bottom) { }
+
+    ElemT &operator()(int row, int col) const
+    {
+        return row < topRows? top(row,col) : bottom(row-topRows,col);
+    }
+};
+
 #endif // MEMORY_DELEGATE_H
