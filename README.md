@@ -51,7 +51,7 @@ You can implement the memory delegate in whatever you like so long as it returns
 
 One particularly useful part of being able to override the way matrices access their elements is that it lets us define reference matrices. Reference matrices don't actually own any memory themselves, instead they return the elements of another matrix when we access them. To create a reference matrix you can use the Submatrix method of the matrix class like so:
 ```
-auto ref = A.Submatrix(Range<2>(1),Range<2>(0)));
+auto ref = A.Submatrix(Slice<1,3>(),Range<0,2>()));
 ```
 Here, ref is a 2x2 matrix which returns the elements in the lower 2 rows of the 3x2 matrix A defined above. I've let the compiler infer the type of ref using the 'auto' keyword but if we were to write it out ourselves it'd be:
 ```
