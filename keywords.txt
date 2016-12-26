@@ -6,7 +6,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Range	KEYWORD1
+Slice	KEYWORD1
 IMatrix	KEYWORD1
 Matrix	KEYWORD1
 RefMatrix	KEYWORD1
@@ -19,7 +19,6 @@ TriangularMatrix	KEYWORD1
 
 Submatrix	KEYWORD2
 Fill	KEYWORD2
-Transpose	KEYWORD2
 Inverse	KEYWORD2
 Invert	KEYWORD2
 Rows	KEYWORD2

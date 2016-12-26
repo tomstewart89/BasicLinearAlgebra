@@ -10,12 +10,8 @@
 
 ///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
-// Represents a range of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
-template<int length> struct Range
-{
-    int offset;
-    Range(int off) : offset(off) { }
-};
+// Represents a Slice of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
+template<int start, int end> struct Slice { };
 
 template<int rows, int cols = 1, class ElemT = float, class MemT = Array<rows,cols,ElemT> > class Matrix
 {
@@ -32,11 +28,12 @@ public:
 
     // Element Access
     ElemT &operator()(int row, int col = 0) const;
-    template<int height, int width> Matrix<height,width,ElemT,Ref<ElemT,MemT> > Submatrix(Range<height> rowRange, Range<width> colRange) const;
+    template<int rowStart, int rowEnd, int colStart, int colEnd> Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> > Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const;
+    Matrix<rows,cols,ElemT,Reference<ElemT,MemT> > Ref() const;
 
     // Concatenation
-    template<int operandCols, class opElemT, class opMemT> Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj);
-    template<int operandRows, class opElemT, class opMemT> Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj);
+    template<int operandCols, class opElemT, class opMemT> Matrix<rows,cols + operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj);
+    template<int operandRows, class opElemT, class opMemT> Matrix<rows + operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj);
 
     // Assignment
     template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator=(const Matrix<rows,cols,opElemT,opMemT> &obj);
@@ -65,9 +62,6 @@ public:
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator*(ElemT k);
     Matrix<rows,cols,ElemT,MemT> &operator*=(ElemT k);
 
-    // Returns a transpose of this matrix
-    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > Transpose();
-
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res = NULL);
     
@@ -86,12 +80,20 @@ ElemT &Matrix<rows,cols,ElemT,MemT>::operator()(int row, int col) const
     return delegate(row,col);
 }
 
+// this must have template arguments so that it can return a matrix of he right size, right? can they be inferred somehow>
 template<int rows, int cols, class ElemT, class MemT>
-template<int height, int width>
-Matrix<height,width,ElemT,Ref<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Submatrix(Range<height> rowRange, Range<width> colRange) const
+template<int rowStart, int rowEnd, int colStart, int colEnd>
+Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const
 {
-    Ref<ElemT,MemT> ref(delegate, rowRange.offset, colRange.offset);
-    return Matrix<height,width,ElemT,Ref<ElemT,MemT> >(ref);
+    Reference<ElemT,MemT> ref(delegate, rowStart, rowEnd);
+    return Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> >(ref);
+}
+
+template<int rows, int cols, class ElemT, class MemT>
+Matrix<rows,cols,ElemT,Reference<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Ref() const
+{
+    Reference<ElemT,MemT> ref(delegate, 0,0);
+    return Matrix<rows,cols,ElemT,Reference<ElemT,MemT> >(ref);
 }
 
 ///////////////////////////////////////////////////////////////// Concatenation ////////////////////////////////////////////////////////////////
@@ -271,7 +273,9 @@ template<int rows, int cols, class ElemT, class MemT>
 Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::operator~()
 {
     Trans<ElemT,MemT> ref(delegate);
-    return Matrix<cols,rows,ElemT,Trans<ElemT,MemT> >(ref);
+    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> >tmp(ref);
+
+    return tmp;
 }
 
 //////////////////////////////////////////////////////////////////// Scaling ///////////////////////////////////////////////////////////////////
@@ -337,7 +341,7 @@ ElemT Determinant(Matrix<2,2,ElemT,MemT> &A)
 template<int rows, int cols, class ElemT, class MemT>
 Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::Inverse(int *res)
 {
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret = *this;
+    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret(*this);
     return Invert(ret, res);
 }
 

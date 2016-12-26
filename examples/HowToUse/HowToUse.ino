@@ -67,8 +67,11 @@ void setup()
   // And vertically
   Matrix<6,3> AonTopOfB = A && B;
 
-  // Note that both transposition and concatenation don't change the matrix's actual element, they just change the way 
-  // in which they're interpreted. That means that these operations can be done in O(1) time.
+  // Note that both transposition and concatenation both take copies of the underlying matrices. If you're using large matrices and 
+  // doing concatenations often you might want to take a reference to the operand matrices. Oerating on references doesn't change the
+  // underlying memory so it takes O(1) time to make concatenations and transposes out of them.
+
+  auto refAonTopOfB = A.Ref() && B.Ref(); // auto saves us having to write out the full datatype, which gets a bit convoluted when references are involved
   
   // An inverse of a matrix can also be calculated for square matrices via the inverse function:
   Matrix<3,3> C_inv = C.Inverse();

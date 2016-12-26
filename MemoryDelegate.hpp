@@ -60,13 +60,13 @@ Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &Multiply(co
 
 ///////////////////////////////////////////////////////////////// Reference Memory Delegate ///////////////////////////////////////////////////////////////////
 
-template<class ElemT, class MemT> struct Ref
+template<class ElemT, class MemT> struct Reference
 {
     const MemT &parent;
     int rowOffset, colOffset;
 
-    Ref<ElemT,MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
-    Ref<ElemT,MemT>(const Ref<ElemT,MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
+    Reference<ElemT,MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
+    Reference<ElemT,MemT>(const Reference<ElemT,MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
 
     ElemT &operator()(int row, int col) const
     {
@@ -74,8 +74,8 @@ template<class ElemT, class MemT> struct Ref
     }
 };
 
-template<int rows, int cols, class ElemT = float> using ArrayRef = Ref<ElemT,Array<rows,cols,ElemT> >;
-template<int rows, int cols, class ParentMemT, class ElemT = float> using RefMatrix = Matrix<rows, cols, ElemT, Ref<ElemT,ParentMemT> >;
+template<int rows, int cols, class ElemT = float> using ArrayRef = Reference<ElemT,Array<rows,cols,ElemT> >;
+template<int rows, int cols, class ParentMemT, class ElemT = float> using RefMatrix = Matrix<rows, cols, ElemT, Reference<ElemT,ParentMemT> >;
 
 ///////////////////////////////////////////////////////////////// Identity Memory Delegate ///////////////////////////////////////////////////////////////////
 
@@ -93,6 +93,21 @@ template<class ElemT> struct Iden
 };
 
 template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows, cols, ElemT, Iden<ElemT> >;
+
+///////////////////////////////////////////////////////////////// Zeros Memory Delegate ///////////////////////////////////////////////////////////////////
+
+template<class ElemT> struct Zero
+{
+    ElemT &operator()(int row, int col) const
+    {
+        static ElemT ret;
+
+        return (ret = 0);
+    }
+};
+
+template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows, cols, ElemT, Zero<ElemT> >;
+
 
 ///////////////////////////////////////////////////////////////// Sparse Memory Delegate ///////////////////////////////////////////////////////////////////
 
@@ -157,7 +172,7 @@ template<int rows, int cols, int tableSize = cols, class ElemT = float> using Sp
 
 template<class ElemT, class MemT> struct Minor
 {
-    const MemT &parent;
+    const MemT parent;
     int i, j;
 
     Minor<ElemT,MemT>(const MemT &obj, int row, int col) : parent(obj), i(row), j(col) { }
@@ -175,8 +190,7 @@ template<class ElemT, class MemT> struct Minor
 
 template<class ElemT, class MemT> struct Trans
 {
-    const MemT &parent;
-    int rowOffset, colOffset;
+    const MemT parent;
 
     Trans<ElemT,MemT>(const MemT &obj) : parent(obj) { }
     Trans<ElemT,MemT>(const Trans<ElemT,MemT> &obj) : parent(obj.parent) { }
@@ -191,11 +205,13 @@ template<class ElemT, class MemT> struct Trans
 
 template<int leftCols, class ElemT, class LeftMemT, class RightMemT> struct HorzCat
 {
-    const LeftMemT &left;
-    const RightMemT &right;
+    const LeftMemT left;
+    const RightMemT right;
 
     HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) { }
     HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const HorzCat<leftCols, ElemT,LeftMemT,RightMemT> &obj) : left(obj.left), right(obj.right) { }
+
+    virtual ~HorzCat<leftCols,ElemT,LeftMemT,RightMemT>() { }
 
     ElemT &operator()(int row, int col) const
     {
@@ -205,11 +221,13 @@ template<int leftCols, class ElemT, class LeftMemT, class RightMemT> struct Horz
 
 template<int topRows, class ElemT, class TopMemT, class BottomMemT> struct VertCat
 {
-    const TopMemT &top;
-    const BottomMemT &bottom;
+    const TopMemT top;
+    const BottomMemT bottom;
 
     VertCat<topRows,ElemT,TopMemT,BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) { }
-    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const HorzCat<topRows, ElemT,TopMemT,BottomMemT> &obj) : top(obj.top), bottom(obj.bottom) { }
+    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const VertCat<topRows, ElemT,TopMemT,BottomMemT> &obj) : top(obj.top), bottom(obj.bottom) { }
+
+    virtual ~VertCat<topRows,ElemT,TopMemT,BottomMemT>() { }
 
     ElemT &operator()(int row, int col) const
     {
