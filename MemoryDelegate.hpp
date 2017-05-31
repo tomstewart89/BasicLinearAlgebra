@@ -1,7 +1,7 @@
 #ifndef MEMORY_DELEGATE_H
 #define MEMORY_DELEGATE_H
 
-template<int rows, int cols, class ElemT, class MemT> class Matrix;
+template<int rows, int cols, class MemT> class Matrix;
 
 ///////////////////////////////////////////////////////////////// Array Memory Delegate ///////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,7 @@ Matrix<rows,cols,Array<rows,cols,retElemT> > &Subtract(const Matrix<rows,cols,Ar
 }
 
 template<int rows, int cols, int operandCols, class ElemT, class opElemT, class retElemT>
-Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &Multiply(const Matrix<rows,cols,Array<rows,cols,ElemT> > &A, const Matrix<cols,operandCols,Array<cols,operandCols,opElemT> > &B, Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &C)
+Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &Multiply(const Matrix<rows,cols,Array<rows,cols,ElemT> > &A, const Matrix<cols,operandCols,Array<cols,operandCols,opElemT> > &B, Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &C)
 {
     int i,j,k;
 
@@ -63,7 +63,7 @@ Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &Multiply(const Matri
 
 template<class MemT> struct Reference
 {
-    typedef MemT::elem_t elem_t;
+    typedef typename MemT::elem_t elem_t;
 
     const MemT &parent;
     int rowOffset, colOffset;
@@ -71,14 +71,14 @@ template<class MemT> struct Reference
     Reference<MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
     Reference<MemT>(const Reference<MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
 
-    MemT::elem_t &operator()(int row, int col) const
+    typename MemT::elem_t &operator()(int row, int col) const
     {
         return parent(row+rowOffset, col+colOffset);
     }
 };
 
 template<int rows, int cols, class ElemT = float> using ArrayRef = Reference<Array<rows,cols,ElemT> >;
-template<int rows, int cols, class ParentMemT > using RefMatrix = Matrix<rows, cols, Reference<ParentMemT> >;
+template<int rows, int cols, class ParentMemT > using RefMatrix = Matrix<rows,cols,Reference<ParentMemT> >;
 
 ///////////////////////////////////////////////////////////////// Identity Memory Delegate ///////////////////////////////////////////////////////////////////
 
@@ -97,7 +97,7 @@ template<class ElemT> struct Iden
     }
 };
 
-template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows, cols, ElemT, Iden<ElemT> >;
+template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows,cols,Iden<ElemT> >;
 
 ///////////////////////////////////////////////////////////////// Zeros Memory Delegate ///////////////////////////////////////////////////////////////////
 
@@ -113,7 +113,7 @@ template<class ElemT> struct Zero
     }
 };
 
-template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows, cols, ElemT, Zero<ElemT> >;
+template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows,cols,Zero<ElemT> >;
 
 
 ///////////////////////////////////////////////////////////////// Sparse Memory Delegate ///////////////////////////////////////////////////////////////////
@@ -175,13 +175,13 @@ template<int cols, int tableSize, class ElemT> struct Sparse
     }
 };
 
-template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows, cols, ElemT, Sparse<cols, tableSize, ElemT> >;
+template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows,cols,Sparse<cols,tableSize,ElemT> >;
 
 //////////////////////////////////////////////////////////// Matrix Minor Memory Delegate ////////////////////////////////////////////////////////////////
 
 template<class MemT> struct Minor
 {
-    typedef MemT::elem_t elem_t;
+    typedef typename MemT::elem_t elem_t;
     const MemT parent;
     int i, j;
 
@@ -200,7 +200,7 @@ template<class MemT> struct Minor
 
 template<class MemT> struct Trans
 {
-    typedef MemT::elem_t elem_t;
+    typedef typename MemT::elem_t elem_t;
     const MemT parent;
 
     Trans<MemT>(const MemT &obj) : parent(obj) { }
@@ -216,7 +216,7 @@ template<class MemT> struct Trans
 
 template<int leftCols, class LeftMemT, class RightMemT> struct HorzCat
 {
-    typedef LeftMemT::elem_t elem_t;
+    typedef typename LeftMemT::elem_t elem_t;
     const LeftMemT left;
     const RightMemT right;
 
@@ -233,7 +233,7 @@ template<int leftCols, class LeftMemT, class RightMemT> struct HorzCat
 
 template<int topRows, class TopMemT, class BottomMemT> struct VertCat
 {
-    typedef TopMemT::elem_t elem_t;
+    typedef typename TopMemT::elem_t elem_t;
     const TopMemT top;
     const BottomMemT bottom;
 
