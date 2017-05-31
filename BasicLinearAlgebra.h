@@ -13,60 +13,60 @@
 // Represents a Slice of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
 template<int start, int end> struct Slice { };
 
-template<int rows, int cols = 1, class ElemT = float, class MemT = Array<rows,cols,ElemT> > class Matrix
+template<int rows, int cols = 1, class MemT = Array<rows,cols,MemT::elem_t> > class Matrix
 {
 public:
     MemT delegate;
 
     // Constructors
-    Matrix<rows,cols,ElemT,MemT>() { }
-    Matrix<rows,cols,ElemT,MemT>(MemT &d) : delegate(d) { }
-    Matrix<rows,cols,ElemT,MemT>(ElemT arr[rows][cols]) { *this = arr; }
+    Matrix<rows,cols,MemT>() { }
+    Matrix<rows,cols,MemT>(MemT &d) : delegate(d) { }
+    Matrix<rows,cols,MemT>(MemT::elem_t arr[rows][cols]) { *this = arr; }
 
-    template<class opElemT, class opMemT>
-    Matrix<rows,cols,ElemT,MemT>(const Matrix<rows,cols,opElemT,opMemT> &obj) { *this = obj; }
+    template<class opMemT>
+    Matrix<rows,cols,MemT>(const Matrix<rows,cols,opMemT> &obj) { *this = obj; }
 
     // Element Access
-    ElemT &operator()(int row, int col = 0) const;
-    template<int rowStart, int rowEnd, int colStart, int colEnd> Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> > Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const;
-    Matrix<rows,cols,ElemT,Reference<ElemT,MemT> > Ref() const;
+    MemT::elem_t &operator()(int row, int col = 0) const;
+    template<int rowStart, int rowEnd, int colStart, int colEnd> Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT::elem_t,MemT> > Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const;
+    Matrix<rows,cols,Reference<MemT::elem_t,MemT> > Ref() const;
 
     // Concatenation
-    template<int operandCols, class opElemT, class opMemT> Matrix<rows,cols + operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj);
-    template<int operandRows, class opElemT, class opMemT> Matrix<rows + operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj);
+    template<int operandCols, class opMemT> Matrix<rows,cols + operandCols,HorzCat<cols,MemT,opMemT> > operator||(const Matrix<rows,operandCols,opMemT> &obj);
+    template<int operandRows, class opMemT> Matrix<rows + operandRows,cols,VertCat<rows,MemT,opMemT> > operator&&(const Matrix<operandRows,cols,opMemT> &obj);
 
     // Assignment
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator=(const Matrix<rows,cols,opElemT,opMemT> &obj);
-    Matrix<rows,cols,ElemT,MemT> &operator=(ElemT arr[rows][cols]);
-    Matrix<rows,cols,ElemT,MemT> &Fill(const ElemT &val);
+    template<class opMemT> Matrix<rows,cols,MemT> &operator=(const Matrix<rows,cols,opMemT> &obj);
+    Matrix<rows,cols,MemT> &operator=(MemT::elem_t arr[rows][cols]);
+    Matrix<rows,cols,MemT> &Fill(const MemT::elem_t &val);
 
     // Addition
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator+(const Matrix<rows,cols,opElemT,opMemT> &obj);
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator+=(const Matrix<rows,cols,opElemT,opMemT> &obj);
+    template<class opMemT> Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > operator+(const Matrix<rows,cols,opMemT> &obj);
+    template<class opMemT> Matrix<rows,cols,MemT> &operator+=(const Matrix<rows,cols,opMemT> &obj);
 
     // Subtraction
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator-(const Matrix<rows,cols,opElemT,opMemT> &obj);
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator-=(const Matrix<rows,cols,opElemT,opMemT> &obj);
+    template<class opMemT> Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > operator-(const Matrix<rows,cols,opMemT> &obj);
+    template<class opMemT> Matrix<rows,cols,MemT> &operator-=(const Matrix<rows,cols,opMemT> &obj);
 
     // Multiplication
-    template <int operandCols, class opElemT, class opMemT> Matrix<rows,operandCols,ElemT,Array<rows,operandCols,ElemT> > operator*(const Matrix<cols,operandCols,opElemT,opMemT> &operand);
-    template<class opElemT, class opMemT> Matrix<rows,cols,ElemT,MemT> &operator*=(const Matrix<rows,cols,opElemT,opMemT> &operand);
+    template <int operandCols, class opMemT> Matrix<rows,operandCols,Array<rows,operandCols,MemT::elem_t> > operator*(const Matrix<cols,operandCols,opMemT> &operand);
+    template<class opMemT> Matrix<rows,cols,MemT> &operator*=(const Matrix<rows,cols,opMemT> &operand);
 
     // Negation
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator-();
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > operator-();
 
     // Transposition
-    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > operator~();
+    Matrix<cols,rows,Trans<MemT::elem_t,MemT> > operator~();
 
     // Scaling
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > operator*(ElemT k);
-    Matrix<rows,cols,ElemT,MemT> &operator*=(ElemT k);
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > operator*(MemT::elem_t k);
+    Matrix<rows,cols,MemT> &operator*=(MemT::elem_t k);
 
     // Returns the inverse of this matrix - only supports square matrices
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Inverse(int *res = NULL);
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > Inverse(int *res = NULL);
     
     // Returns the determinant of this matrix
-    ElemT Det() { return Determinant(*this); }
+    MemT::elem_t Det() { return Determinant(*this); }
 
     int Rows() { return rows; }
     int Cols() { return cols; }
@@ -74,53 +74,53 @@ public:
 
 //////////////////////////////////////////////////////////////// Element Access ////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-ElemT &Matrix<rows,cols,ElemT,MemT>::operator()(int row, int col) const
+template<int rows, int cols, class MemT>
+MemT::elem_t &Matrix<rows,cols,MemT>::operator()(int row, int col) const
 {
     return delegate(row,col);
 }
 
 // this must have template arguments so that it can return a matrix of he right size, right? can they be inferred somehow>
-template<int rows, int cols, class ElemT, class MemT>
+template<int rows, int cols, class MemT>
 template<int rowStart, int rowEnd, int colStart, int colEnd>
-Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const
+Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT::elem_t,MemT> > Matrix<rows,cols,MemT>::Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const
 {
-    Reference<ElemT,MemT> ref(delegate, rowStart, rowEnd);
-    return Matrix<rowEnd-rowStart,colEnd-colStart,ElemT,Reference<ElemT,MemT> >(ref);
+    Reference<MemT> ref(delegate, rowStart, rowEnd);
+    return Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT::elem_t,MemT> >(ref);
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,Reference<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::Ref() const
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Reference<MemT> > Matrix<rows,cols,MemT>::Ref() const
 {
-    Reference<ElemT,MemT> ref(delegate, 0,0);
-    return Matrix<rows,cols,ElemT,Reference<ElemT,MemT> >(ref);
+    Reference<MemT> ref(delegate, 0,0);
+    return Matrix<rows,cols,Reference<MemT> >(ref);
 }
 
 ///////////////////////////////////////////////////////////////// Concatenation ////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-template<int operandCols, class opElemT, class opMemT>
-Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> > Matrix<rows,cols,ElemT,MemT>::operator||(const Matrix<rows,operandCols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<int operandCols, class opMemT>
+Matrix<rows,cols+operandCols,HorzCat<cols,MemT,opMemT> > Matrix<rows,cols,MemT>::operator||(const Matrix<rows,operandCols,opMemT> &obj)
 {
-    HorzCat<cols,ElemT,MemT,opMemT> ref(delegate, obj.delegate);
-    return Matrix<rows,cols+operandCols,ElemT,HorzCat<cols,ElemT,MemT,opMemT> >(ref);
+    HorzCat<cols,MemT,opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows,cols+operandCols,HorzCat<cols,MemT::elem_t,MemT,opMemT> >(ref);
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-template<int operandRows, class opElemT, class opMemT>
-Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> > Matrix<rows,cols,ElemT,MemT>::operator&&(const Matrix<operandRows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<int operandRows, class opMemT>
+Matrix<rows+operandRows,cols,VertCat<rows,MemT,opMemT> > Matrix<rows,cols,MemT>::operator&&(const Matrix<operandRows,cols,opMemT> &obj)
 {
-    VertCat<rows,ElemT,MemT,opMemT> ref(delegate, obj.delegate);
-    return Matrix<rows+operandRows,cols,ElemT,VertCat<rows,ElemT,MemT,opMemT> >(ref);
+    VertCat<rows,MemT,opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows+operandRows,cols,VertCat<rows,MemT,opMemT> >(ref);
 }
 
 
 
 ///////////////////////////////////////////////////////////////// Assignment ///////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-template<class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator=(const Matrix<rows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<class opMemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator=(const Matrix<rows,cols,opMemT> &obj)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -129,8 +129,8 @@ Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator=(const Matr
     return *this;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator=(ElemT arr[rows][cols])
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator=(MemT::elem_t arr[rows][cols])
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -139,8 +139,8 @@ Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator=(ElemT arr[
     return *this;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::Fill(const ElemT &val)
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::Fill(const MemT::elem_t &val)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -151,9 +151,9 @@ Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::Fill(const ElemT &va
 
 ////////////////////////////////////////////////////////////////// Addition ////////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-template<class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::operator+(const Matrix<rows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<class opMemT>
+Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > Matrix<rows,cols,MemT>::operator+(const Matrix<rows,cols,opMemT> &obj)
 {
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret;
     Add(*this,obj,ret);
@@ -161,17 +161,17 @@ Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::op
     return ret;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-template<class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator+=(const Matrix<rows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<class opMemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator+=(const Matrix<rows,cols,opMemT> &obj)
 {
     Add(*this,obj,*this);
 
     return *this;
 }
 
-template<int rows, int cols, class ElemT, class MemT, class opElemT, class opMemT, class retElemT, class retMemT>
-Matrix<rows,cols,retElemT,retMemT> &Add(const Matrix<rows,cols,ElemT,MemT> &A, const Matrix<rows,cols,opElemT,opMemT> &B, Matrix<rows,cols,retElemT,retMemT> &C)
+template<int rows, int cols, class MemT, class opMemT, class retMemT>
+Matrix<rows,cols,retMemT> &Add(const Matrix<rows,cols,MemT> &A, const Matrix<rows,cols,opMemT> &B, Matrix<rows,cols,retMemT> &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -182,27 +182,27 @@ Matrix<rows,cols,retElemT,retMemT> &Add(const Matrix<rows,cols,ElemT,MemT> &A, c
 
 ////////////////////////////////////////////////////////////////// Subtraction /////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-template<class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::operator-(const Matrix<rows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<class opMemT>
+Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > Matrix<rows,cols,MemT>::operator-(const Matrix<rows,cols,opMemT> &obj)
 {
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret;
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > ret;
     Subtract(*this,obj,ret);
 
     return ret;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-template<class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator-=(const Matrix<rows,cols,opElemT,opMemT> &obj)
+template<int rows, int cols, class MemT>
+template<class opMemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator-=(const Matrix<rows,cols,opMemT> &obj)
 {
     Subtract(*this,obj,*this);
 
     return *this;
 }
 
-template<int rows, int cols, class ElemT, class MemT, class opElemT, class opMemT, class retElemT, class retMemT>
-Matrix<rows,cols,retElemT,retMemT> &Subtract(const Matrix<rows,cols,ElemT,MemT> &A, const Matrix<rows,cols,opElemT,opMemT> &B, Matrix<rows,cols,retElemT,retMemT> &C)
+template<int rows, int cols, class MemT, class opMemT, class retMemT>
+Matrix<rows,cols,retMemT> &Subtract(const Matrix<rows,cols,MemT> &A, const Matrix<rows,cols,opMemT> &B, Matrix<rows,cols,retMemT> &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -213,21 +213,21 @@ Matrix<rows,cols,retElemT,retMemT> &Subtract(const Matrix<rows,cols,ElemT,MemT> 
 
 //////////////////////////////////////////////////////////////// Multiplication ////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-template <int operandCols, class opElemT, class opMemT>
-Matrix<rows,operandCols,ElemT,Array<rows,operandCols,ElemT> > Matrix<rows,cols,ElemT,MemT>::operator*(const Matrix<cols,operandCols,opElemT,opMemT> &operand)
+template<int rows, int cols, class MemT>
+template <int operandCols, class opMemT>
+Matrix<rows,operandCols,ElemT,Array<rows,operandCols,MemT::elem_t> > Matrix<rows,cols,MemT>::operator*(const Matrix<cols,operandCols,opMemT> &operand)
 {
-    Matrix<rows,operandCols,ElemT,Array<rows,operandCols,ElemT> > ret;
+    Matrix<rows,operandCols,Array<rows,operandCols,MemT::elem_t> > ret;
     Multiply(*this,operand,ret);
 
     return ret;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-template <class opElemT, class opMemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator*=(const Matrix<rows,cols,opElemT,opMemT> &operand)
+template<int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT::elem_t>::operator*=(const Matrix<rows,cols,opMemT> &operand)
 {
-    Matrix<rows,cols,ElemT,MemT> ret;
+    Matrix<rows,cols,MemT> ret;
     Multiply(*this,operand,ret);
     *this = ret;
 
@@ -235,8 +235,8 @@ Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator*=(const Mat
 }
 
 // Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
-template<int rows, int cols, int operandCols, class ElemT, class MemT, class opElemT, class opMemT, class retElemT, class retMemT>
-Matrix<rows,operandCols,retElemT,retMemT> &Multiply(const Matrix<rows,cols,ElemT,MemT> &A, const Matrix<cols,operandCols,opElemT,opMemT> &B, Matrix<rows,operandCols,retElemT,retMemT> &C)
+template<int rows, int cols, int operandCols, class MemT, class opMemT, class retMemT>
+Matrix<rows,operandCols,retMemT> &Multiply(const Matrix<rows,cols,MemT> &A, const Matrix<cols,operandCols,opMemT> &B, Matrix<rows,operandCols,retMemT> &C)
 {
     int i,j,k;
 
@@ -255,10 +255,10 @@ Matrix<rows,operandCols,retElemT,retMemT> &Multiply(const Matrix<rows,cols,ElemT
 
 /////////////////////////////////////////////////////////////////// Negation ///////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::operator-()
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > Matrix<rows,cols,MemT>::operator-()
 {
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret;
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > ret;
 
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -269,28 +269,28 @@ Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::op
 
 ///////////////////////////////////////////////////////////////// Transposition ////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<cols,rows,ElemT,Trans<ElemT,MemT> > Matrix<rows,cols,ElemT,MemT>::operator~()
+template<int rows, int cols, class MemT>
+Matrix<cols,rows,Trans<MemT> > Matrix<rows,cols,MemT>::operator~()
 {
-    Trans<ElemT,MemT> ref(delegate);
-    Matrix<cols,rows,ElemT,Trans<ElemT,MemT> >tmp(ref);
+    Trans<MemT> ref(delegate);
+    Matrix<cols,rows,Trans<MemT> >tmp(ref);
 
     return tmp;
 }
 
 //////////////////////////////////////////////////////////////////// Scaling ///////////////////////////////////////////////////////////////////
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::operator*(ElemT k)
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > Matrix<rows,cols,MemT>::operator*(MemT::elem_t k)
 {
-    Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret;
+    Matrix<rows,cols,Array<rows,cols,MemT::elem_t> > ret;
     Scale(*this,k,ret);
 
     return ret;
 }
 
-template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator*=(ElemT k)
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator*=(MemT::elem_t k)
 {
     Scale(*this,k,*this);
 
@@ -298,8 +298,8 @@ Matrix<rows,cols,ElemT,MemT> &Matrix<rows,cols,ElemT,MemT>::operator*=(ElemT k)
 }
 
 // Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
-template<int rows, int cols, int operandCols, class ElemT, class MemT, class opElemT, class retElemT, class retMemT>
-Matrix<rows,operandCols,retElemT,retMemT> &Scale(const Matrix<rows,cols,ElemT,MemT> &A, const opElemT &B, Matrix<rows,operandCols,retElemT,retMemT> &C)
+template<int rows, int cols, int operandCols, class MemT, class retMemT>
+Matrix<rows,operandCols,retMemT> &Scale(const Matrix<rows,cols,MemT> &A, const opElemT &B, Matrix<rows,operandCols,retMemT> &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -339,7 +339,7 @@ ElemT Determinant(Matrix<2,2,ElemT,MemT> &A)
 /////////////////////////////////////////////////////////////////// Inversion //////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class ElemT, class MemT>
-Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,ElemT,MemT>::Inverse(int *res)
+Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > Matrix<rows,cols,MemT>::Inverse(int *res)
 {
     Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > ret(*this);
     return Invert(ret, res);
