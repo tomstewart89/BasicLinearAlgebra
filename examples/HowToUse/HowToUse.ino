@@ -11,11 +11,10 @@ void setup()
 {
   Serial.begin(115200);
 
-  // Let's being by declaring a few matrices. Matrix is a template class so you'll have to specfify the dimensions as well
-  // as the underlying datatype as <row,column,type> after Matrix like so:
-  Matrix<3,3,float> A;
+  // Let's being by declaring a few matrices. Matrix is a template class so you'll have to specfify the dimensions as <row,column> after Matrix like so:
+  Matrix<3,3> A;
 
-  // The template parameters have defaults so if you're satisfied with a matrix of type 'float' with only 1 column you can simply write:
+  // The cols parameters has a default of 1 so to declare a vector of length 3 you can simply write:
   Matrix<3> v;
 
   // Just like any other variable, Matrices should be initialised to some value before you use them. To set every element of the Matrix to a certain value you can use the Fill function like so:

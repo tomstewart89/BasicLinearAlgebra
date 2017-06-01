@@ -59,6 +59,8 @@ Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &Multiply(const Matri
     return C;
 }
 
+template<int rows, int cols = 1, class ElemT = float> using ArrayMatrix = Matrix<rows,cols,Array<rows,cols,ElemT> >;
+
 ///////////////////////////////////////////////////////////////// Reference Memory Delegate ///////////////////////////////////////////////////////////////////
 
 template<class MemT> struct Reference
@@ -79,6 +81,7 @@ template<class MemT> struct Reference
 
 template<int rows, int cols, class ElemT = float> using ArrayRef = Reference<Array<rows,cols,ElemT> >;
 template<int rows, int cols, class ParentMemT > using RefMatrix = Matrix<rows,cols,Reference<ParentMemT> >;
+
 
 ///////////////////////////////////////////////////////////////// Identity Memory Delegate ///////////////////////////////////////////////////////////////////
 
