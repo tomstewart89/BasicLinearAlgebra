@@ -22,6 +22,7 @@ public:
     Matrix<rows,cols,MemT>() { }
     Matrix<rows,cols,MemT>(MemT &d) : delegate(d) { }
     Matrix<rows,cols,MemT>(typename MemT::elem_t arr[rows][cols]) { *this = arr; }
+    template<typename ...ARGS> Matrix(ARGS... args) { FillRowMajor(args...); }
 
     template<class opMemT>
     Matrix<rows,cols,MemT>(const Matrix<rows,cols,opMemT> &obj) { *this = obj; }
@@ -39,6 +40,9 @@ public:
     template<class opMemT> Matrix<rows,cols,MemT> &operator=(const Matrix<rows,cols,opMemT> &obj);
     Matrix<rows,cols,MemT> &operator=(typename MemT::elem_t arr[rows][cols]);
     Matrix<rows,cols,MemT> &Fill(const typename MemT::elem_t &val);
+    template<typename ...TAIL> void FillRowMajor(typename MemT::elem_t head, TAIL... tail);
+    void FillRowMajor() { }
+
 
     // Addition
     template<class opMemT> Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator+(const Matrix<rows,cols,opMemT> &obj);
@@ -145,6 +149,15 @@ Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::Fill(const typename MemT::elem_t
             (*this)(i,j) = val;
 
     return *this;
+}
+
+template<int rows, int cols, class MemT>
+template<typename ...TAIL>
+void Matrix<rows,cols,MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... tail)
+{
+    static_assert(rows*cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
+    (*this)((rows*cols - sizeof...(TAIL) - 1) / cols,(rows*cols - sizeof...(TAIL) - 1) % cols) = head;
+    FillRowMajor(tail...);
 }
 
 ////////////////////////////////////////////////////////////////// Addition ////////////////////////////////////////////////////////////////////
