@@ -1,17 +1,18 @@
 #ifndef MEMORY_DELEGATE_H
 #define MEMORY_DELEGATE_H
 
-template<int rows, int cols, class ElemT, class MemT> class Matrix;
+template<int rows, int cols, class MemT> class Matrix;
 
 ///////////////////////////////////////////////////////////////// Array Memory Delegate ///////////////////////////////////////////////////////////////////
 
 template<int rows, int cols = 1, class ElemT = float> struct Array
 {
-    mutable ElemT m[rows * cols];
+    typedef ElemT elem_t;
+    mutable elem_t m[rows * cols];
 
     ElemT &operator()(int row, int col) const
     {
-        static ElemT dummy;
+        static elem_t dummy;
 
         if(row > rows || col > cols)
             return dummy;
@@ -21,7 +22,7 @@ template<int rows, int cols = 1, class ElemT = float> struct Array
 };
 
 template<int rows, int cols, class ElemT, class opElemT, class retElemT>
-Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &Add(const Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > &A, const Matrix<rows,cols,opElemT,Array<rows,cols,opElemT> > &B, Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &C)
+Matrix<rows,cols,Array<rows,cols,retElemT> > &Add(const Matrix<rows,cols,Array<rows,cols,ElemT> > &A, const Matrix<rows,cols,Array<rows,cols,opElemT> > &B, Matrix<rows,cols,Array<rows,cols,retElemT> > &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -31,7 +32,7 @@ Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &Add(const Matrix<rows,col
 }
 
 template<int rows, int cols, class ElemT, class opElemT, class retElemT>
-Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &Subtract(const Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > &A, const Matrix<rows,cols,opElemT,Array<rows,cols,opElemT> > &B, Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &C)
+Matrix<rows,cols,Array<rows,cols,retElemT> > &Subtract(const Matrix<rows,cols,Array<rows,cols,ElemT> > &A, const Matrix<rows,cols,Array<rows,cols,opElemT> > &B, Matrix<rows,cols,Array<rows,cols,retElemT> > &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
@@ -41,7 +42,7 @@ Matrix<rows,cols,retElemT,Array<rows,cols,retElemT> > &Subtract(const Matrix<row
 }
 
 template<int rows, int cols, int operandCols, class ElemT, class opElemT, class retElemT>
-Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &Multiply(const Matrix<rows,cols,ElemT,Array<rows,cols,ElemT> > &A, const Matrix<cols,operandCols,opElemT,Array<cols,operandCols,opElemT> > &B, Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &C)
+Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &Multiply(const Matrix<rows,cols,Array<rows,cols,ElemT> > &A, const Matrix<cols,operandCols,Array<cols,operandCols,opElemT> > &B, Matrix<rows,operandCols,Array<rows,operandCols,retElemT> > &C)
 {
     int i,j,k;
 
@@ -58,32 +59,39 @@ Matrix<rows,operandCols,retElemT,Array<rows,operandCols,retElemT> > &Multiply(co
     return C;
 }
 
+template<int rows, int cols = 1, class ElemT = float> using ArrayMatrix = Matrix<rows,cols,Array<rows,cols,ElemT> >;
+
 ///////////////////////////////////////////////////////////////// Reference Memory Delegate ///////////////////////////////////////////////////////////////////
 
-template<class ElemT, class MemT> struct Reference
+template<class MemT> struct Reference
 {
+    typedef typename MemT::elem_t elem_t;
+
     const MemT &parent;
     int rowOffset, colOffset;
 
-    Reference<ElemT,MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
-    Reference<ElemT,MemT>(const Reference<ElemT,MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
+    Reference<MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) { }
+    Reference<MemT>(const Reference<MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset) { }
 
-    ElemT &operator()(int row, int col) const
+    typename MemT::elem_t &operator()(int row, int col) const
     {
-        return parent(row+rowOffset,col+colOffset);
+        return parent(row+rowOffset, col+colOffset);
     }
 };
 
-template<int rows, int cols, class ElemT = float> using ArrayRef = Reference<ElemT,Array<rows,cols,ElemT> >;
-template<int rows, int cols, class ParentMemT, class ElemT = float> using RefMatrix = Matrix<rows, cols, ElemT, Reference<ElemT,ParentMemT> >;
+template<int rows, int cols, class ElemT = float> using ArrayRef = Reference<Array<rows,cols,ElemT> >;
+template<int rows, int cols, class ParentMemT > using RefMatrix = Matrix<rows,cols,Reference<ParentMemT> >;
+
 
 ///////////////////////////////////////////////////////////////// Identity Memory Delegate ///////////////////////////////////////////////////////////////////
 
 template<class ElemT> struct Iden
 {
-    ElemT &operator()(int row, int col) const
+    typedef ElemT elem_t;
+
+    elem_t &operator()(int row, int col) const
     {
-        static ElemT ret;
+        static elem_t ret;
 
         if(row == col)
             return (ret = 1);
@@ -92,12 +100,14 @@ template<class ElemT> struct Iden
     }
 };
 
-template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows, cols, ElemT, Iden<ElemT> >;
+template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows,cols,Iden<ElemT> >;
 
 ///////////////////////////////////////////////////////////////// Zeros Memory Delegate ///////////////////////////////////////////////////////////////////
 
 template<class ElemT> struct Zero
 {
+    typedef ElemT elem_t;
+
     ElemT &operator()(int row, int col) const
     {
         static ElemT ret;
@@ -106,7 +116,7 @@ template<class ElemT> struct Zero
     }
 };
 
-template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows, cols, ElemT, Zero<ElemT> >;
+template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows,cols,Zero<ElemT> >;
 
 
 ///////////////////////////////////////////////////////////////// Sparse Memory Delegate ///////////////////////////////////////////////////////////////////
@@ -114,6 +124,8 @@ template<int rows, int cols = 1, class ElemT = float> using Zeros = Matrix<rows,
 // This uses a hash table to look up row/col/val items. It uses an open addressing collision strategy so we can avoid using dynamic memory
 template<int cols, int tableSize, class ElemT> struct Sparse
 {
+    typedef ElemT elem_t;
+
     struct HashItem
     {
         mutable int key;
@@ -166,18 +178,19 @@ template<int cols, int tableSize, class ElemT> struct Sparse
     }
 };
 
-template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows, cols, ElemT, Sparse<cols, tableSize, ElemT> >;
+template<int rows, int cols, int tableSize = cols, class ElemT = float> using SparseMatrix = Matrix<rows,cols,Sparse<cols,tableSize,ElemT> >;
 
 //////////////////////////////////////////////////////////// Matrix Minor Memory Delegate ////////////////////////////////////////////////////////////////
 
-template<class ElemT, class MemT> struct Minor
+template<class MemT> struct Minor
 {
+    typedef typename MemT::elem_t elem_t;
     const MemT parent;
     int i, j;
 
-    Minor<ElemT,MemT>(const MemT &obj, int row, int col) : parent(obj), i(row), j(col) { }
+    Minor<MemT>(const MemT &obj, int row, int col) : parent(obj), i(row), j(col) { }
 
-    ElemT &operator()(int row, int col) const
+    elem_t &operator()(int row, int col) const
     {
         if(row >= i) row++;
         if(col >= j) col++;
@@ -188,14 +201,15 @@ template<class ElemT, class MemT> struct Minor
 
 //////////////////////////////////////////////////////////// Transpose Delegate ////////////////////////////////////////////////////////////////
 
-template<class ElemT, class MemT> struct Trans
+template<class MemT> struct Trans
 {
+    typedef typename MemT::elem_t elem_t;
     const MemT parent;
 
-    Trans<ElemT,MemT>(const MemT &obj) : parent(obj) { }
-    Trans<ElemT,MemT>(const Trans<ElemT,MemT> &obj) : parent(obj.parent) { }
+    Trans<MemT>(const MemT &obj) : parent(obj) { }
+    Trans<MemT>(const Trans<MemT> &obj) : parent(obj.parent) { }
 
-    ElemT &operator()(int row, int col) const
+    elem_t &operator()(int row, int col) const
     {
         return parent(col,row);
     }
@@ -203,33 +217,35 @@ template<class ElemT, class MemT> struct Trans
 
 ////////////////////////////////////////////////////////// Concatenation Delegates /////////////////////////////////////////////////////////////
 
-template<int leftCols, class ElemT, class LeftMemT, class RightMemT> struct HorzCat
+template<int leftCols, class LeftMemT, class RightMemT> struct HorzCat
 {
+    typedef typename LeftMemT::elem_t elem_t;
     const LeftMemT left;
     const RightMemT right;
 
-    HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) { }
-    HorzCat<leftCols,ElemT,LeftMemT,RightMemT>(const HorzCat<leftCols, ElemT,LeftMemT,RightMemT> &obj) : left(obj.left), right(obj.right) { }
+    HorzCat<leftCols,LeftMemT,RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) { }
+    HorzCat<leftCols,LeftMemT,RightMemT>(const HorzCat<leftCols,LeftMemT,RightMemT> &obj) : left(obj.left), right(obj.right) { }
 
-    virtual ~HorzCat<leftCols,ElemT,LeftMemT,RightMemT>() { }
+    virtual ~HorzCat<leftCols,LeftMemT,RightMemT>() { }
 
-    ElemT &operator()(int row, int col) const
+    elem_t &operator()(int row, int col) const
     {
         return col < leftCols? left(row,col) : right(row,col-leftCols);
     }
 };
 
-template<int topRows, class ElemT, class TopMemT, class BottomMemT> struct VertCat
+template<int topRows, class TopMemT, class BottomMemT> struct VertCat
 {
+    typedef typename TopMemT::elem_t elem_t;
     const TopMemT top;
     const BottomMemT bottom;
 
-    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) { }
-    VertCat<topRows,ElemT,TopMemT,BottomMemT>(const VertCat<topRows, ElemT,TopMemT,BottomMemT> &obj) : top(obj.top), bottom(obj.bottom) { }
+    VertCat<topRows,TopMemT,BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) { }
+    VertCat<topRows,TopMemT,BottomMemT>(const VertCat<topRows,TopMemT,BottomMemT> &obj) : top(obj.top), bottom(obj.bottom) { }
 
-    virtual ~VertCat<topRows,ElemT,TopMemT,BottomMemT>() { }
+    virtual ~VertCat<topRows,TopMemT,BottomMemT>() { }
 
-    ElemT &operator()(int row, int col) const
+    elem_t &operator()(int row, int col) const
     {
         return row < topRows? top(row,col) : bottom(row-topRows,col);
     }

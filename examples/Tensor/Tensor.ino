@@ -10,23 +10,33 @@ void setup()
 {
   Serial.begin(115200);
 
-  // The default underlying type of the Matrix class is float. If you want to use a different type, say int for example, then just pass it as a third template parameter like so:
-  Matrix<3,3,int> intA;
+  // In addition to the Matrix dimensions, the Matrix template has a third parameter which when not specified just defaults to the type: Array<rows,cols,float>.
+  // This third parameter specifies how the Matrix should store it's elements such that the way that the Matrix serves up it's elements ca be customised
+  // (see the CustomMatrix example for more). The Array type simply means that the Matrix stores it's elements in a big array of size rows x cols.
+
+  // In any case, written in full, a Matrix declaration looks like this:
+  Matrix<3,3,Array<3,3,float> > floatA;
+
+  // The default underlying type of the Array class's array is float. If you want to use a different type, say int for example, then just pass it as a template parameter like so:
+  Matrix<3,3,Array<3,3,int> > intA;
+
+  // I find this to be a bit cumbersome though so I've defined a template alias called ArrayMatrix which can be used like so:
+  ArrayMatrix<3,3,int> intB; // intA and intB are identical at this point
 
   // From here you'll be able to do everything you'd be able to do with a float Matrix, but with int precision and memory useage.
   int array[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
   intA = array;
 
   // You can actually pass any datatype you like to the template and it'll do it's best to make a Matrix out of it.
-  Matrix<3,3,unsigned char> charA;
-  Matrix<3,3,double> doubleA; // etc
+  ArrayMatrix<3,3,unsigned char> charA;
+  ArrayMatrix<3,3,double> doubleA; // etc
 
   // This includes parameters of type Matrix, meaning that you can declare matrices of more than two dimensions. For example:
-  Matrix<4,4,Matrix<4> > cubeA, cubeB; // a 4x4x4 matrix (3rd order tensor)
+  ArrayMatrix<4,4,ArrayMatrix<4> > cubeA, cubeB; // a 4x4x4 Matrix (3rd order tensor)
 
   // And so on:
-  Matrix<2,2,Matrix<2,2> > hyperA; // a 2x2x2x2 dimensional matrix (4th order tensor)
-  Matrix<3,3,Matrix<3,3, Matrix<3,3> > > tensorA; // a 3x3x3x3x3x3 dimensional matrix (6th order tensor)
+  ArrayMatrix<2,2,ArrayMatrix<2,2> > hyperA; // a 2x2x2x2 dimensional Matrix (4th order tensor)
+  ArrayMatrix<3,3,ArrayMatrix<3,3, Matrix<3,3> > > tensorA; // a 3x3x3x3x3x3 dimensional Matrix (6th order tensor)
 
   // You can access the elements of an arbitrary rank tensor with the brackets operator like so:
   cubeA(0,1)(1) = cubeB(2,3)(3) = 56.34;
@@ -37,7 +47,7 @@ void setup()
   cubeA + cubeB;
 
   // As does concatenation
-  Matrix<4,8,Matrix<4> > cubeAleftOfcubeB = cubeA || cubeB;
+  ArrayMatrix<4,8,ArrayMatrix<4> > cubeAleftOfcubeB = cubeA || cubeB;
 
   // You can also do multiplication on square tensors with an even rank
   for(int i = 0; i < 2; i++)
@@ -46,7 +56,7 @@ void setup()
               for(int l = 0; l < 2; l++)
                   hyperA(i,j)(k,l) = i+j+k+l;
 
-  Matrix<2,2,Matrix<2,2> > hyperB = (hyperA * hyperA);
+  ArrayMatrix<2,2,ArrayMatrix<2,2> > hyperB = (hyperA * hyperA);
 
   // Everything can be printed too
   Serial << "Hyper B: " << hyperB;

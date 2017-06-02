@@ -15,6 +15,8 @@ template<int dim, class ElemT> struct Diagonal
     mutable ElemT m[dim];
 
     // The only requirement on this class is that it implement the () operator like so:
+    typedef ElemT elem_t;
+
     ElemT &operator()(int row, int col) const
     {
         static ElemT dummy;
@@ -33,14 +35,14 @@ void setup()
   Serial.begin(115200);
 
   // If you've been through the HowToUse example you'll know that you can allocate a Matrix and explicitly specify it's type like so:
-  Matrix<4,4,float> mat;
+  Matrix<4,4> mat;
 
   // And as before it's a good idea to fill the matrix before we use it
   mat.Fill(1);
 
   // Now let's declare a diagonal matrix. To do that we pass the Diagonal class from above along with whatever template parameters
   // as a template parameter to Matrix, like so:
-  Matrix<4, 4, float, Diagonal<4, float> > diag;
+  Matrix<4, 4, Diagonal<4, float> > diag;
 
   // If we fill diag we'll get a matrix with all 1's along the diagonal, the identity matrix.
   diag.Fill(1);
