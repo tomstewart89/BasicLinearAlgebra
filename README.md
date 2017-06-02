@@ -25,11 +25,11 @@ As well as some more advanced operations like Transposition, Concatenation and I
 
 By default, matrices are full of floats. If that doesn't suit your application, then you can specify what kind of datatype you'd like your matrix to be made of by passing it in to the class's parameters just after the dimensions like so:
 ```
-Matrix<3,2,int> D;
+Matrix<3,2,Array<3,2,int> > D;
 ```
 Not only that, the datatype needn't be just a POD (float, bool, int etc) but it can be any class or struct you define too. So if you'd like to do matrix math with your own custom class then you can, so long as it implements the operators for addition, subtraction etc. For example, if you wanted, you could write a class to hold an imaginary number and then you could make a matrix out of it like so:
 ```
-Matrix<2,2,ImaginaryNumber> Im;
+Matrix<2,2,Array<2,2,ImaginaryNumber> > Im;
 ```
 This turned out to have intersting implications when you specify the element type as another matrix. For more on that, have a look at the [Tensor](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/Tensor/Tensor.ino) example.
 
