@@ -26,6 +26,10 @@ public:
 template<int rows, int cols = 1, class MemT = Array<rows,cols,float> > class Matrix
 {
 public:
+    typedef MemT mem_t;
+    const static int Rows = rows;
+    const static int Cols = cols;
+
     MemT delegate;
 
     // Constructors
@@ -54,7 +58,6 @@ public:
     Inserter<Matrix<rows,cols,MemT> > operator<<(const typename MemT::elem_t k);
     void FillRowMajor() { }
 
-
     // Addition
     template<class opMemT> Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator+(const Matrix<rows,cols,opMemT> &obj);
     template<class opMemT> Matrix<rows,cols,MemT> &operator+=(const Matrix<rows,cols,opMemT> &obj);
@@ -73,18 +76,22 @@ public:
     // Transposition
     Matrix<cols,rows,Trans<MemT> > operator~();
 
-    // Scaling
-    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator*(typename MemT::elem_t k);
-    Matrix<rows,cols,MemT> &operator*=(typename MemT::elem_t k);
+    // Elementwise Operations
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator+(const typename MemT::elem_t k);
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator-(const typename MemT::elem_t k);
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator*(const typename MemT::elem_t k);
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator/(const typename MemT::elem_t k);
+
+    Matrix<rows,cols,MemT> &operator+=(const typename MemT::elem_t k);
+    Matrix<rows,cols,MemT> &operator-=(const typename MemT::elem_t k);
+    Matrix<rows,cols,MemT> &operator*=(const typename MemT::elem_t k);
+    Matrix<rows,cols,MemT> &operator/=(const typename MemT::elem_t k);
 
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Inverse(int *res = NULL);
     
     // Returns the determinant of this matrix
     typename MemT::elem_t Det() { return Determinant(*this); }
-
-    int Rows() { return rows; }
-    int Cols() { return cols; }
 };
 
 //////////////////////////////////////////////////////////////// Element Access ////////////////////////////////////////////////////////////////
@@ -300,32 +307,116 @@ Matrix<cols,rows,Trans<MemT> > Matrix<rows,cols,MemT>::operator~()
     return tmp;
 }
 
-//////////////////////////////////////////////////////////////////// Scaling ///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////// Elementwise Operations ////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class MemT>
-Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator*(typename MemT::elem_t k)
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator+(const typename MemT::elem_t k)
 {
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret;
-    Scale(*this,k,ret);
+    ElementwiseAdd(*this,k,ret);
 
     return ret;
 }
 
 template<int rows, int cols, class MemT>
-Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator*=(typename MemT::elem_t k)
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator+=(const typename MemT::elem_t k)
 {
-    Scale(*this,k,*this);
+    ElementwiseAdd(*this,k,*this);
+
+    return *this;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator-(const typename MemT::elem_t k)
+{
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret;
+    ElementwiseSubtract(*this,k,ret);
+
+    return ret;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator-=(const typename MemT::elem_t k)
+{
+    ElementwiseSubtract(*this,k,*this);
+
+    return *this;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator*(const typename MemT::elem_t k)
+{
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret;
+    ElementwiseMultiply(*this,k,ret);
+
+    return ret;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator*=(const typename MemT::elem_t k)
+{
+    ElementwiseMultiply(*this,k,*this);
+
+    return *this;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator/(const typename MemT::elem_t k)
+{
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret;
+    ElementwiseDivide(*this,k,ret);
+
+    return ret;
+}
+
+template<int rows, int cols, class MemT>
+Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator/=(const typename MemT::elem_t k)
+{
+    ElementwiseDivide(*this,k,*this);
 
     return *this;
 }
 
 // Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
-template<int rows, int cols, int operandCols, class MemT, class retMemT>
-Matrix<rows,operandCols,retMemT> &Scale(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,operandCols,retMemT> &C)
+template<int rows, int cols, class MemT, class retMemT>
+Matrix<rows,cols,retMemT> &ElementwiseAdd(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
+{
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) + B;
+
+    return C;
+}
+
+// Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
+template<int rows, int cols, class MemT, class retMemT>
+Matrix<rows,cols,retMemT> &ElementwiseSubtract(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
+{
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) - B;
+
+    return C;
+}
+
+// Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
+template<int rows, int cols, class MemT, class retMemT>
+Matrix<rows,cols,retMemT> &ElementwiseMultiply(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
 {
     for(int i = 0; i < rows; i++)
         for(int j = 0; j < cols; j++)
             C(i,j) = A(i,j) * B;
+
+    return C;
+}
+
+// Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
+template<int rows, int cols, class MemT, class retMemT>
+Matrix<rows,cols,retMemT> &ElementwiseDivide(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
+{
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) / B;
 
     return C;
 }
