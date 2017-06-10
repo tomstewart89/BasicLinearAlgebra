@@ -10,8 +10,18 @@
 
 ///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
-// Represents a Slice of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
+// Represents a Slice of rows or columns used in the () operator to select a submatrix
 template<int start, int end> struct Slice { };
+
+template<class MatrixT> class Inserter
+{
+    MatrixT &parent;
+    int index;
+public:
+    Inserter(const MatrixT &_parent) : parent(_parent), index(0) { }
+
+    Inserter<MatrixT> &operator,(const typename MatrixT::MemT::elem_t val);
+}
 
 template<int rows, int cols = 1, class MemT = Array<rows,cols,float> > class Matrix
 {
@@ -41,6 +51,7 @@ public:
     Matrix<rows,cols,MemT> &operator=(typename MemT::elem_t arr[rows][cols]);
     Matrix<rows,cols,MemT> &Fill(const typename MemT::elem_t &val);
     template<typename ...TAIL> void FillRowMajor(typename MemT::elem_t head, TAIL... tail);
+    Inserter<Matrix<rows,cols,MemT> > operator<<(const typename MemT::elem_t k);
     void FillRowMajor() { }
 
 
