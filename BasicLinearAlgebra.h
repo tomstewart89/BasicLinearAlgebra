@@ -10,8 +10,35 @@
 
 ///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
-// Represents a Slice of rows or columns used in the () operator to select a submatrix - I'll replace this with an iterator eventually
+// Represents a Slice of rows or columns used in the () operator to select a submatrix
 template<int start, int end> struct Slice { };
+
+template<class MatrixT> class Inserter
+{
+    const MatrixT &parent;
+    int index;
+
+    void Insert(const typename MatrixT::mem_t::elem_t &val)
+    {
+        if(index < MatrixT::Rows * MatrixT::Cols)
+        {
+            parent(index / MatrixT::Cols, index % MatrixT::Cols) = val;
+            ++index;
+        } // else silently ignore the extra initialisers (todo: assert here)
+    }
+
+public:
+    Inserter(const MatrixT &_parent, const typename MatrixT::mem_t::elem_t &val) : parent(_parent), index(0)
+    {
+        Insert(val);
+    }
+
+    Inserter<MatrixT> &operator,(const typename MatrixT::mem_t::elem_t &val)
+    {
+        Insert(val);
+        return *this;
+    }
+};
 
 template<int rows, int cols = 1, class MemT = Array<rows,cols,float> > class Matrix
 {
@@ -43,6 +70,7 @@ public:
     // Assignment
     template<class opMemT> Matrix<rows,cols,MemT> &operator=(const Matrix<rows,cols,opMemT> &obj);
     Matrix<rows,cols,MemT> &operator=(typename MemT::elem_t arr[rows][cols]);
+    Inserter<Matrix<rows,cols,MemT> > operator<<(const typename MemT::elem_t &val);
     Matrix<rows,cols,MemT> &Fill(const typename MemT::elem_t &val);
     template<typename ...TAIL> void FillRowMajor(typename MemT::elem_t head, TAIL... tail);
     void FillRowMajor() { }
@@ -147,6 +175,13 @@ Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator=(typename MemT::elem_t 
 
     return *this;
 }
+
+template<int rows, int cols, class MemT>
+Inserter<Matrix<rows,cols,MemT> > Matrix<rows,cols,MemT>::operator<<(const typename MemT::elem_t &val)
+{
+    return Inserter<Matrix<rows,cols,MemT> >(*this,val);
+}
+
 
 template<int rows, int cols, class MemT>
 Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::Fill(const typename MemT::elem_t &val)
