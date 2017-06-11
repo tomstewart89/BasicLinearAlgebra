@@ -5,7 +5,7 @@ Is a library for representing matrices and doing matrix math on arduino. It prov
 ## How it Works
 
 ### The Basics
-This library defines a class Matrix which you can use to represent two dimensional matrices of arbitrary dimensions. 
+This library defines a class Matrix which you can use to represent two dimensional matrices of arbitrary dimensions.
 
 For example, you can declare a 3x2 matrix like so:
 ```
@@ -25,21 +25,21 @@ As well as some more advanced operations like Transposition, Concatenation and I
 
 By default, matrices are full of floats. If that doesn't suit your application, then you can specify what kind of datatype you'd like your matrix to be made of by passing it in to the class's parameters just after the dimensions like so:
 ```
-Matrix<3,2,Array<3,2,int> > D;
+Matrix<3,2,int> D;
 ```
 Not only that, the datatype needn't be just a POD (float, bool, int etc) but it can be any class or struct you define too. So if you'd like to do matrix math with your own custom class then you can, so long as it implements the operators for addition, subtraction etc. For example, if you wanted, you could write a class to hold an imaginary number and then you could make a matrix out of it like so:
 ```
-Matrix<2,2,Array<2,2,ImaginaryNumber> > Im;
+Matrix<2,2,ImaginaryNumber> Im;
 ```
 This turned out to have intersting implications when you specify the element type as another matrix. For more on that, have a look at the [Tensor](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/Tensor/Tensor.ino) example.
 
 ### Changing the Storage Policy
 
-On a loosely related note, by default, matrices store their elements in an C-style array which is kept inside the class. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array. 
+On a loosely related note, by default, matrices store their elements in an C-style array which is kept inside the class. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array.
 
 At times, it's handy to be able to instruct the matrix to do something else when asked to retrieve an element at a particular index. For example if you know that your matrix is very sparse (only a few elements are non-zero) then you can save yourself some memory and just store the non-zero elements and return zero when asked for anything else.
 
-If you like, you can override the way in which the elements for the matrix are stored by passing something that I've called a memory delegate into the Matrix class. For example, we can define a 2000x3000 matrix with a sparse storage policy like so:  
+If you like, you can override the way in which the elements for the matrix are stored by passing something that I've called a memory delegate into the Matrix class. For example, we can define a 2000x3000 matrix with a sparse storage policy like so:
 ```
 Matrix<2000,3000, float, Sparse<3000,100,float> > sparseMatrix;
 ```
@@ -51,7 +51,7 @@ You can implement the memory delegate in whatever you like so long as it returns
 
 One particularly useful part of being able to override the way matrices access their elements is that it lets us define reference matrices. Reference matrices don't actually own any memory themselves, instead they return the elements of another matrix when we access them. To create a reference matrix you can use the Submatrix method of the matrix class like so:
 ```
-auto ref = A.Submatrix(Slice<1,3>(),Slice<0,2>()));
+auto ref = A.Submatrix(Range<2>(1),Range<2>(0)));
 ```
 Here, ref is a 2x2 matrix which returns the elements in the lower 2 rows of the 3x2 matrix A defined above. I've let the compiler infer the type of ref using the 'auto' keyword but if we were to write it out ourselves it'd be:
 ```
