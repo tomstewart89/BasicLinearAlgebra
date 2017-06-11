@@ -2,8 +2,8 @@
 
 /*
  * This example sketch should show you everything you need to know in order to work with the Matrix library. It's a faily long explantion
- * but try to read through it carefully. Remember that everything is built around templates so there's no heap memory useage and the compatibility
- * of matrices used in all operations is checked at compile time. For that reason though, if you try to multiply matrices of the wrong dimensions etc
+ * but try to read through it carefully. Remember that everything is built around templates so the compatibility of matrices used in all
+ * operations can be checked at compile time. For that reason though, if you try to multiply matrices of the wrong dimensions etc
  * you'll be met with some very cryptic compile errors so be careful!
  */
 
@@ -24,13 +24,15 @@ void setup()
   v(2,0) = 5.3;
   v(1) = 43.67; // you can also just write v(2) = 5.3; since v has only one column
 
-  // Or you can set the entire matrix at once using a c-array of the same dimensions and type, like so:
-  float arrayA[3][3] = {{3.25,5.67,8.67},{4.55,7.23,9.00},{2.35,5.73,10.56}};
-  A = arrayA;
+  // Or you can set the entire matrix at once using eigen-style comma initialisation:
+  A << 3.25, 5.67, 8.67,
+       4.55, 7.23, 9.00,
+       2.35, 5.73, 10.56;
 
-  // You can also do this when you create the matrix, like this:
-  float arrayB[3][3] = {{13.54,3.66,2.95},{3.22,7.54,5.12},{8.98,9.99,1.56}};
-  Matrix<3,3> B(arrayB);
+  // You can also set the entire array on construction like so:
+  Matrix<3,3> B = {6.54, 3.66, 2.95,
+                   3.22, 7.54, 5.12,
+                   8.98, 9.99, 1.56};
 
   // Now you can do some matrix math! The Matrix class supports addition and subtraction between matrices of the same size:
   Matrix<3,3> C = A + B;
