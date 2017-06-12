@@ -100,7 +100,7 @@ template<class ElemT> struct Iden
     }
 };
 
-template<int rows, int cols, class ElemT = float> using Identity = Matrix<rows,cols,Iden<ElemT> >;
+template<int rows, int cols = rows, class ElemT = float> using Identity = Matrix<rows,cols,Iden<ElemT> >;
 
 ///////////////////////////////////////////////////////////////// Zeros Memory Delegate ///////////////////////////////////////////////////////////////////
 
