@@ -58,6 +58,10 @@ public:
     template<class opMemT>
     Matrix<rows,cols,MemT>(const Matrix<rows,cols,opMemT> &obj) { *this = obj; }
 
+    // Dimension Access
+    int GetRowCount();
+    int GetColCount();
+
     // Element Access
     typename MemT::elem_t &operator()(int row, int col = 0) const;
     template<int rowStart, int rowEnd, int colStart, int colEnd> Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT> > Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const;
@@ -106,7 +110,7 @@ public:
 
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Inverse(int *res = NULL);
-    
+
     // Returns the determinant of this matrix
     typename MemT::elem_t Det() { return Determinant(*this); }
 };
@@ -200,6 +204,20 @@ void Matrix<rows,cols,MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... ta
     static_assert(rows*cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
     (*this)((rows*cols - sizeof...(TAIL) - 1) / cols,(rows*cols - sizeof...(TAIL) - 1) % cols) = head;
     FillRowMajor(tail...);
+}
+
+//////////////////////////////////////////////////////////////// Dimension Access ////////////////////////////////////////////////////////////////
+
+template<int rows, int cols, class MemT>
+int Matrix<rows,cols,MemT>::GetRowCount()
+{
+    return rows;
+}
+
+template<int rows, int cols, class MemT>
+int Matrix<rows,cols,MemT>::GetColCount()
+{
+    return cols;
 }
 
 ////////////////////////////////////////////////////////////////// Addition ////////////////////////////////////////////////////////////////////

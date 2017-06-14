@@ -7,7 +7,7 @@
  * you'll be met with some very cryptic compile errors so be careful!
  */
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
@@ -34,6 +34,10 @@ void setup()
                    3.22, 7.54, 5.12,
                    8.98, 9.99, 1.56};
 
+  // Ask the matrix how many rows and columns it has:
+  v.GetColCount();
+  v.GetRowCount();
+
   // Now you can do some matrix math! The Matrix class supports addition and subtraction between matrices of the same size:
   Matrix<3,3> C = A + B;
 
@@ -41,7 +45,7 @@ void setup()
   // will tell you if you've made a mistake. Try uncommenting the next line to see what I mean
   // A + v;
 
-  // Next, it may not seem obvious, but that A + B operation actually returns a temporary matrix which is used to set C. 
+  // Next, it may not seem obvious, but that A + B operation actually returns a temporary matrix which is used to set C.
   // To avoid creating that extra matrix and the associated memory useage you can use the Add functions to store the result directly into C, like so:
   Add(A,B,C);
 
@@ -52,7 +56,7 @@ void setup()
   // Or like so:
   B += A;
 
-  // As well as addition and subtraction, we can also do matrix multiplication. Note that again, the matrices, including 
+  // As well as addition and subtraction, we can also do matrix multiplication. Note that again, the matrices, including
   // the one in which the result will stored must have the appropriate dimensions. The compiler will let you know if they aren't
   Matrix<3,1> D = A * v;
 
@@ -68,16 +72,16 @@ void setup()
   // And vertically
   Matrix<6,3> AonTopOfB = A && B;
 
-  // Note that both transposition and concatenation both take copies of the underlying matrices. If you're using large matrices and 
+  // Note that both transposition and concatenation both take copies of the underlying matrices. If you're using large matrices and
   // doing concatenations often you might want to take a reference to the operand matrices. Oerating on references doesn't change the
   // underlying memory so it takes O(1) time to make concatenations and transposes out of them.
 
   auto refAonTopOfB = A.Ref() && B.Ref(); // auto saves us having to write out the full datatype, which gets a bit convoluted when references are involved
-  
+
   // An inverse of a matrix can also be calculated for square matrices via the inverse function:
   Matrix<3,3> C_inv = C.Inverse();
 
-  // If the matrix is singular, the inversion won't work. In those cases Invert will still return a matrix but not a valid inverse. 
+  // If the matrix is singular, the inversion won't work. In those cases Invert will still return a matrix but not a valid inverse.
   // To check whether that has happened you can pass in pointer like so:
   int res;
   C_inv = C.Inverse(&res); // after this call res will be 0 if the inversion was successful and non-zero otherwise.
