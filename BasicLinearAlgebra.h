@@ -8,6 +8,8 @@
 #include "Arduino.h"
 #include "MemoryDelegate.hpp"
 
+namespace BLA {
+
 ///////////////////////////////////////////////////////////////// Matrix ///////////////////////////////////////////////////////////////////
 
 // Represents a Slice of rows or columns used in the () operator to select a submatrix
@@ -622,5 +624,6 @@ Print &operator<<(Print &strm, const Matrix<rows,cols,MemT> &obj)
     return strm;
 }
 
+} // namespace BLA
 
 #endif // BLA_H

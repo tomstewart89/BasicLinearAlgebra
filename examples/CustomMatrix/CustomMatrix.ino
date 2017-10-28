@@ -30,19 +30,22 @@ template<int dim, class ElemT> struct Diagonal
     }
 };
 
+// All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like so:
+using namespace BLA;
+
 void setup()
 {
   Serial.begin(115200);
 
   // If you've been through the HowToUse example you'll know that you can allocate a Matrix and explicitly specify it's type like so:
-  Matrix<4,4> mat;
+  BLA::Matrix<4,4> mat;
 
   // And as before it's a good idea to fill the matrix before we use it
   mat.Fill(1);
 
   // Now let's declare a diagonal matrix. To do that we pass the Diagonal class from above along with whatever template parameters
   // as a template parameter to Matrix, like so:
-  Matrix<4, 4, Diagonal<4, float> > diag;
+  BLA::Matrix<4, 4, Diagonal<4, float> > diag;
 
   // If we fill diag we'll get a matrix with all 1's along the diagonal, the identity matrix.
   diag.Fill(1);
@@ -53,7 +56,7 @@ void setup()
   // Diagonal matrices have the handy property of scaling either the rows (premultiplication) or columns (postmultiplication) of a matrix
 
   // So if we modify the diagonal
-  for(int i = 0; i < diag.Rows(); i++)
+  for(int i = 0; i < diag.GetRowCount(); i++)
       diag.delegate(i,i) = i + 1;
 
   // And multiply again, we'll see that the rows have been scaled

@@ -5,12 +5,15 @@
  * appropriate dimensions.
  */
 
+// All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like so:
+using namespace BLA;
+
 void setup()
 {
   Serial.begin(115200);
 
   // If you've been through the HowToUse example you'll know that you can allocate a Matrix like so:
-  Matrix<8,8> bigMatrix;
+  BLA::Matrix<8,8> bigMatrix;
 
   // And as before it's a good idea to fill the matrix before we use it
   bigMatrix.Fill(0);

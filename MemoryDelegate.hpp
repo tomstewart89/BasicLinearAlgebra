@@ -1,6 +1,8 @@
 #ifndef MEMORY_DELEGATE_H
 #define MEMORY_DELEGATE_H
 
+namespace BLA {
+
 template<int rows, int cols, class MemT> class Matrix;
 
 ///////////////////////////////////////////////////////////////// Array Memory Delegate ///////////////////////////////////////////////////////////////////
@@ -250,5 +252,7 @@ template<int topRows, class TopMemT, class BottomMemT> struct VertCat
         return row < topRows? top(row,col) : bottom(row-topRows,col);
     }
 };
+
+} // namespace BLA
 
 #endif // MEMORY_DELEGATE_H

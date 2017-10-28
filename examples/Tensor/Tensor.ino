@@ -6,6 +6,9 @@
  * way of showing the flexbility and extensibility of the Matrix library
  */
 
+// All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like so:
+using namespace BLA;
+
 void setup() 
 {
   Serial.begin(115200);
@@ -15,10 +18,10 @@ void setup()
   // (see the CustomMatrix example for more). The Array type simply means that the Matrix stores it's elements in a big array of size rows x cols.
 
   // In any case, written in full, a Matrix declaration looks like this:
-  Matrix<3,3,Array<3,3,float> > floatA;
+  BLA::Matrix<3,3,Array<3,3,float> > floatA;
 
   // The default underlying type of the Array class's array is float. If you want to use a different type, say int for example, then just pass it as a template parameter like so:
-  Matrix<3,3,Array<3,3,int> > intA;
+  BLA::Matrix<3,3,Array<3,3,int> > intA;
 
   // I find this to be a bit cumbersome though so I've defined a template alias called ArrayMatrix which can be used like so:
   ArrayMatrix<3,3,int> intB; // intA and intB are identical at this point
