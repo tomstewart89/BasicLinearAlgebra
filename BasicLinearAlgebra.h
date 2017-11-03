@@ -110,6 +110,13 @@ public:
     Matrix<rows,cols,MemT> &operator*=(const typename MemT::elem_t k);
     Matrix<rows,cols,MemT> &operator/=(const typename MemT::elem_t k);
 
+    // Casts a 1x1 Matrices into its elem_t
+    operator typename MemT::elem_t() const
+    {
+        static_assert(rows == 1 && cols == 1, "cannot cast matrix of size greater than 1 into its element type");
+        return (*this)(0,0);
+    }
+
     // Returns the inverse of this matrix - only supports square matrices
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Inverse(int *res = NULL);
 
