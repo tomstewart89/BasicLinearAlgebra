@@ -137,7 +137,7 @@ template<int rows, int cols, class MemT>
 template<int rowStart, int rowEnd, int colStart, int colEnd>
 Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT> > Matrix<rows,cols,MemT>::Submatrix(Slice<rowStart,rowEnd>, Slice<colStart,colEnd>) const
 {
-    Reference<MemT> ref(delegate, rowStart, rowEnd);
+    Reference<MemT> ref(delegate, rowStart, colStart);
     return Matrix<rowEnd-rowStart,colEnd-colStart,Reference<MemT> >(ref);
 }
 
@@ -461,6 +461,17 @@ Matrix<rows,cols,retMemT> &ElementwiseMultiply(const Matrix<rows,cols,MemT> &A, 
     return C;
 }
 
+// Multiplies corresponding elements of two matrices  and stores result in third matrix C
+template<int rows, int cols, class MemT, class opMemT, class retMemT>
+Matrix<rows,cols,retMemT> &ElementwiseMultiply(const Matrix<rows,cols,MemT> &A, const Matrix<rows,cols,opMemT> &B, Matrix<rows,cols,retMemT> &C)
+{
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < cols; j++)
+            C(i,j) = A(i,j) * B(i,j);
+	
+    return C;
+}
+    
 // Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
 template<int rows, int cols, class MemT, class retMemT>
 Matrix<rows,cols,retMemT> &ElementwiseDivide(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
