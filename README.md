@@ -35,7 +35,7 @@ This turned out to have intersting implications when you specify the element typ
 
 ### Changing the Storage Policy
 
-On a loosely related note, by default, matrices store their elements in an C-style array which is kept inside the class. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array. 
+On a loosely related note, by default, matrices store their elements in an C-style array which is kept inside the object. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array. 
 
 At times, it's handy to be able to instruct the matrix to do something else when asked to retrieve an element at a particular index. For example if you know that your matrix is very sparse (only a few elements are non-zero) then you can save yourself some memory and just store the non-zero elements and return zero when asked for anything else.
 
@@ -45,7 +45,7 @@ Matrix<2000,3000, float, Sparse<3000,100,float> > sparseMatrix;
 ```
 In this case the ```Sparse<3000,100,float>``` type is the memory delegate which provides storage for 100 elements which are assumed to be embedded in a matrix having 3000 columns. You can find the implementation for this class in MemoryDelegate.hpp file, but long story short, it's a hashmap.
 
-You can implement the memory delegate in whatever you like so long as it returns some piece of memory when passed a row/column index. For more on how to implement a memory delegate, have a look at the  [CustomMatrix](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/CustomMatrix/CustomMatrix.ino) example.
+You can implement the memory delegate in whatever way you like so long as it returns some piece of memory when passed a row/column index. For more on how to implement a memory delegate, have a look at the  [CustomMatrix](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/CustomMatrix/CustomMatrix.ino) example.
 
 ### Reference Matrices
 
