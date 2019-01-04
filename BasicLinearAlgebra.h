@@ -61,8 +61,8 @@ public:
     Matrix<rows,cols,MemT>(const Matrix<rows,cols,opMemT> &obj) { *this = obj; }
 
     // Dimension Access
-    int GetRowCount();
-    int GetColCount();
+    int GetRowCount() const;
+    int GetColCount() const;
 
     // Element Access
     typename MemT::elem_t &operator()(int row, int col = 0) const;
@@ -94,7 +94,7 @@ public:
     template<class opMemT> Matrix<rows,cols,MemT> &operator*=(const Matrix<rows,cols,opMemT> &operand);
 
     // Negation
-    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator-();
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > operator-() const;
 
     // Transposition
     Matrix<cols,rows,Trans<MemT> > operator~() const;
@@ -111,10 +111,10 @@ public:
     Matrix<rows,cols,MemT> &operator/=(const typename MemT::elem_t k);
 
     // Returns the inverse of this matrix - only supports square matrices
-    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Inverse(int *res = NULL);
+    Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Inverse(int *res = NULL) const;
 
     // Returns the determinant of this matrix
-    typename MemT::elem_t Det() { return Determinant(*this); }
+    typename MemT::elem_t Det() const { return Determinant(*this); }
 };
 
 //////////////////////////////////////////////////////////////// Element Access ////////////////////////////////////////////////////////////////
@@ -211,13 +211,13 @@ void Matrix<rows,cols,MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... ta
 //////////////////////////////////////////////////////////////// Dimension Access ////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class MemT>
-int Matrix<rows,cols,MemT>::GetRowCount()
+int Matrix<rows,cols,MemT>::GetRowCount() const
 {
     return rows;
 }
 
 template<int rows, int cols, class MemT>
-int Matrix<rows,cols,MemT>::GetColCount()
+int Matrix<rows,cols,MemT>::GetColCount() const
 {
     return cols;
 }
@@ -329,7 +329,7 @@ Matrix<rows,operandCols,retMemT> &Multiply(const Matrix<rows,cols,MemT> &A, cons
 /////////////////////////////////////////////////////////////////// Negation ///////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class MemT>
-Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator-()
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::operator-() const
 {
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret;
 
@@ -507,7 +507,7 @@ typename MemT::elem_t Determinant(Matrix<2,2,MemT> &A)
 /////////////////////////////////////////////////////////////////// Inversion //////////////////////////////////////////////////////////////////
 
 template<int rows, int cols, class MemT>
-Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::Inverse(int *res)
+Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > Matrix<rows,cols,MemT>::Inverse(int *res) const
 {
     Matrix<rows,cols,Array<rows,cols,typename MemT::elem_t> > ret(*this);
     return Invert(ret, res);
