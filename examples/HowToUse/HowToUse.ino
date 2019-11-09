@@ -52,12 +52,7 @@ void setup()
   // will tell you if you've made a mistake. Try uncommenting the next line to see what I mean
   // A + v;
 
-  // Next, it may not seem obvious, but that A + B operation actually returns a temporary matrix which is used to set C.
-  // To avoid creating that extra matrix and the associated memory useage you can use the Add functions to store the result directly into C, like so:
-  Add(A,B,C);
-
-  // Of course since those operations modify the 'C' parameter as they execute, you shouldn't write Add(C,B,C) for example.
-  // Instead, you can use the Matrix class's unary operators, like so:
+  // You can use the Matrix class's unary operators, like so:
   C -= B;
 
   // Or like so:
@@ -66,9 +61,6 @@ void setup()
   // As well as addition and subtraction, we can also do matrix multiplication. Note that again, the matrices, including
   // the one in which the result will stored must have the appropriate dimensions. The compiler will let you know if they aren't
   BLA::Matrix<3,1> D = A * v;
-
-  // Also, like addition / subtraction that operation will create an extra temporary matrix. As before, you can get around that by using Multiply, like so:
-  Multiply(A,v,D);
 
   // As well as algebra, Matrix supports a few other matrix related operations including transposition:
   BLA::Matrix<1,3> D_T = ~D;
@@ -80,7 +72,7 @@ void setup()
   BLA::Matrix<6,3> AonTopOfB = A && B;
 
   // Note that both transposition and concatenation both take copies of the underlying matrices. If you're using large matrices and
-  // doing concatenations often you might want to take a reference to the operand matrices. Oerating on references doesn't change the
+  // doing concatenations often you might want to take a reference to the operand matrices. Operating on references doesn't change the
   // underlying memory so it takes O(1) time to make concatenations and transposes out of them.
 
   auto refAonTopOfB = A.Ref() && B.Ref(); // auto saves us having to write out the full datatype, which gets a bit convoluted when references are involved

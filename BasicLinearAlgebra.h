@@ -1,12 +1,11 @@
-#ifndef BLA_H
-#define BLA_H
+#pragma once
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
 #include "Arduino.h"
-#include "MemoryDelegate.hpp"
+#include "MemoryDelegate.h"
 
 namespace BLA {
 
@@ -311,15 +310,13 @@ Matrix<rows,cols,MemT> &Matrix<rows,cols,MemT>::operator*=(const Matrix<rows,col
 template<int rows, int cols, int operandCols, class MemT, class opMemT, class retMemT>
 Matrix<rows,operandCols,retMemT> &Multiply(const Matrix<rows,cols,MemT> &A, const Matrix<cols,operandCols,opMemT> &B, Matrix<rows,operandCols,retMemT> &C)
 {
-    int i,j,k;
-
-    for(i = 0; i < rows; i++)
-        for(j = 0; j < operandCols; j++)
+    for(int i = 0; i < rows; i++)
+        for(int j = 0; j < operandCols; j++)
         {
             if(cols > 0)
                 C.delegate(i,j) = A.delegate(i,0) * B.delegate(0,j);
 
-            for(k = 1; k < cols; k++)
+            for(int k = 1; k < cols; k++)
                 C.delegate(i,j) += A.delegate(i,k) * B.delegate(k,j);
         }
 
@@ -464,7 +461,7 @@ Matrix<rows,cols,retMemT> &ElementwiseMultiply(const Matrix<rows,cols,MemT> &A, 
 	
     return C;
 }
-    
+
 // Multiplies two matrices and stores the result in a third matrix C, this is slightly faster than using the operators
 template<int rows, int cols, class MemT, class retMemT>
 Matrix<rows,cols,retMemT> &ElementwiseDivide(const Matrix<rows,cols,MemT> &A, const typename MemT::elem_t &B, Matrix<rows,cols,retMemT> &C)
@@ -636,5 +633,3 @@ Print &operator<<(Print &strm, const Matrix<rows,cols,MemT> &obj)
 }
 
 } // namespace BLA
-
-#endif // BLA_H
