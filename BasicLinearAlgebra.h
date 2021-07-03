@@ -425,7 +425,7 @@ namespace BLA
     template <int dim, class MemT>
     typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
     {
-        typename MemT::elem_t det;
+        typename MemT::elem_t det = 0;
 
         // Add the determinants of all the minors
         for (int i = 0; i < dim; i++)
