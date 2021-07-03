@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "Arduino.h"
-#include "MemoryDelegate.h"
+#include "ElementStorage.h"
 
 namespace BLA
 {
