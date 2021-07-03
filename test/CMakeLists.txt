@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(my_project)
+project(bla_tests)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -15,14 +15,13 @@ enable_testing()
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
-add_executable(
-  test_arithmetic
-  test_arithmetic.cpp
-)
-target_link_libraries(
-  test_arithmetic
-  gtest_main
-)
+add_executable(test_arithmetic test_arithmetic.cpp)
+target_link_libraries(test_arithmetic gtest_main)
+
+add_executable(test_linear_algebra test_linear_algebra.cpp)
+target_link_libraries(test_linear_algebra gtest_main)
 
 include(GoogleTest)
+
 gtest_discover_tests(test_arithmetic)
+gtest_discover_tests(test_linear_algebra)

@@ -68,6 +68,30 @@ TEST(Arithmetic, AdditionSubtraction)
     }
 }
 
+TEST(Arithmetic, ElementwiseOperations)
+{
+    Matrix<3, 3> A = {
+        3.25, 5.67, 8.67,
+        4.55, 7.23, 9.00,
+        2.35, 5.73, 10.56};
+
+    auto C = A + 2.5;
+    auto D = A - 3.7;
+    auto E = A * 1.2;
+    auto F = A / 6.7;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_FLOAT_EQ(C(i, j), A(i, j) + 2.5);
+            EXPECT_FLOAT_EQ(D(i, j), A(i, j) - 3.7);
+            EXPECT_FLOAT_EQ(E(i, j), A(i, j) * 1.2);
+            EXPECT_FLOAT_EQ(F(i, j), A(i, j) / 6.7);
+        }
+    }
+}
+
 TEST(Arithmetic, Multiplication)
 {
     Matrix<3, 3> A = {
