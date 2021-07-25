@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "Arduino.h"
-#include "MemoryDelegate.h"
+#include "ElementStorage.h"
 
 namespace BLA
 {
@@ -457,88 +457,6 @@ namespace BLA
         return Invert(ret, res);
     }
 
-    // Matrix Inversion Routine - modified from code written by Charlie Matlack: http://playground.arduino.cc/Code/MatrixMath
-    // This function inverts a matrix based on the Gauss Jordan method. Specifically, it uses partial pivoting to improve numeric stability.
-    // The algorithm is drawn from those presented in NUMERICAL RECIPES: The Art of Scientific Computing.
-    template <int dim, class MemT>
-    Matrix<dim, dim, MemT> &Invert(Matrix<dim, dim, MemT> &A, int *res = NULL)
-    {
-        int pivrow, pivrows[dim]; // keeps track of current pivot row and row swaps
-        int i, j, k;
-        typename MemT::elem_t tmp; // used for finding max value and making column swaps
-
-        for (k = 0; k < dim; k++)
-        {
-            // find pivot row, the row with biggest entry in current column
-            tmp = 0;
-            for (i = k; i < dim; i++)
-            {
-                if (fabs(A(i, k)) >= tmp)
-                {
-                    tmp = fabs(A(i, k));
-                    pivrow = i;
-                }
-            }
-
-            // check for singular matrix
-            if (A(pivrow, k) == 0.0f)
-                if (res)
-                    *res = 1;
-
-            // Execute pivot (row swap) if needed
-            if (pivrow != k)
-            {
-                // swap row k with pivrow
-                for (j = 0; j < dim; j++)
-                {
-                    tmp = A(k, j);
-                    A(k, j) = A(pivrow, j);
-                    A(pivrow, j) = tmp;
-                }
-            }
-            pivrows[k] = pivrow; // record row swap (even if no swap happened)
-
-            tmp = 1.0f / A(k, k); // invert pivot element
-            A(k, k) = 1.0f;       // This element of input matrix becomes result matrix
-
-            // Perform row reduction (divide every element by pivot)
-            for (j = 0; j < dim; j++)
-                A(k, j) = A(k, j) * tmp;
-
-            // Now eliminate all other entries in this column
-            for (i = 0; i < dim; i++)
-            {
-                if (i != k)
-                {
-                    tmp = A(i, k);
-                    A(i, k) = 0.0f; // The other place where in matrix becomes result mat
-
-                    for (j = 0; j < dim; j++)
-                        A(i, j) = A(i, j) - A(k, j) * tmp;
-                }
-            }
-        }
-
-        // Done, now need to undo pivot row swaps by doing column swaps in reverse order
-        for (k = dim - 1; k >= 0; k--)
-        {
-            if (pivrows[k] != k)
-            {
-                for (i = 0; i < dim; i++)
-                {
-                    tmp = A(i, k);
-                    A(i, k) = A(i, pivrows[k]);
-                    A(i, pivrows[k]) = tmp;
-                }
-            }
-        }
-
-        if (res)
-            *res = 0;
-
-        return A;
-    }
-
     ////////////////////////////////////////////////////////////////// Insertion ///////////////////////////////////////////////////////////////////
 
     inline Print &operator<<(Print &strm, const int obj)
@@ -584,3 +502,5 @@ namespace BLA
     }
 
 } // namespace BLA
+
+#include "NotSoBasicLinearAlgebra.h"

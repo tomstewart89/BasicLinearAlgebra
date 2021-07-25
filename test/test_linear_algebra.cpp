@@ -3,21 +3,87 @@
 
 using namespace BLA;
 
-// TEST(LinearAlgebra, Inversion)
-// {
-//     Matrix<3, 3> A{0.18246341, 0.94775365, 0.65449397, 0.25632926, 0.29677899, 0.95827993, 0.75542384, 0.40581397, 0.23745302};
-//     Matrix<3, 3> A_inv_numpy{-4.58985214, 2.69814355, 4.14465124, 2.67688548, -0.44356033, -3.19670431, 0.14779867, -0.77569282, 5.92154198};
+TEST(LinearAlgebra, LUDecomposition)
+{
+    Matrix<3, 3> A{2, 5, 8, 0, 8, 6, 6, 7, 5};
 
-//     auto A_inv = Invert(A);
+    auto LU = A;
+    ArrayMatrix<3, 1, int> P;
 
-//     for (int i = 0; i < 3; ++i)
-//     {
-//         for (int j = 0; j < 3; ++j)
-//         {
-//             EXPECT_FLOAT_EQ(A_inv_numpy(i, j), A_inv(i, j));
-//         }
-//     }
-// }
+    LUDecompose(LU, P);
+    Matrix<3, 3> L, U;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            // Fill in the diagonal
+            if (i == j)
+            {
+                L(i, j) = 1.0;
+                U(i, j) = LU(i, j);
+            }
+            // Upper triangle
+            else if (i < j)
+            {
+                L(i, j) = 0.0;
+                U(i, j) = LU(i, j);
+            }
+            // Lower triangle
+            else
+            {
+                L(i, j) = LU(i, j);
+                U(i, j) = 0.0;
+            }
+        }
+    }
+
+    auto A_reconstructed = L * U;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            EXPECT_FLOAT_EQ(A_reconstructed(P(i), j), A(i, j));
+        }
+    }
+}
+
+TEST(LinearAlgebra, LUSolution)
+{
+    Matrix<3, 3> A{2, 5, 8, 0, 8, 6, 6, 7, 5};
+    Matrix<3, 1> b{10, 11, 12};
+    Matrix<3, 1> x;
+    Matrix<3, 1> x_expected = {0.41826923, 0.97115385, 0.53846154};
+
+    ArrayMatrix<3, 1, int> P;
+
+    LUDecompose(A, P);
+
+    LUSolve(A, P, b, x);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_FLOAT_EQ(x_expected(i), x(i));
+    }
+}
+
+TEST(LinearAlgebra, Inversion)
+{
+    Matrix<2, 2> A{1, 2, 3, 4};
+    Matrix<2, 2> A_inv_numpy{-2, 1, 1.5, -0.5};
+
+    auto A_inv = A;
+    Invert(A_inv);
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_FLOAT_EQ(A_inv_numpy(i, j), A_inv(i, j));
+        }
+    }
+}
 
 TEST(Arithmetic, Determinant)
 {
