@@ -3,7 +3,6 @@
 
 namespace BLA
 {
-
     template <int rows, int cols, class MemT>
     class Matrix;
 
@@ -25,44 +24,6 @@ namespace BLA
                 return m[row * cols + col];
         }
     };
-
-    template <int rows, int cols, class ElemT, class opElemT, class retElemT>
-    Matrix<rows, cols, Array<rows, cols, retElemT>> &Add(const Matrix<rows, cols, Array<rows, cols, ElemT>> &A, const Matrix<rows, cols, Array<rows, cols, opElemT>> &B, Matrix<rows, cols, Array<rows, cols, retElemT>> &C)
-    {
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                C.delegate.m[i * cols + j] = A.delegate.m[i * cols + j] + B.delegate.m[i * cols + j];
-
-        return C;
-    }
-
-    template <int rows, int cols, class ElemT, class opElemT, class retElemT>
-    Matrix<rows, cols, Array<rows, cols, retElemT>> &Subtract(const Matrix<rows, cols, Array<rows, cols, ElemT>> &A, const Matrix<rows, cols, Array<rows, cols, opElemT>> &B, Matrix<rows, cols, Array<rows, cols, retElemT>> &C)
-    {
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                C.delegate.m[i * cols + j] = A.delegate.m[i * cols + j] - B.delegate.m[i * cols + j];
-
-        return C;
-    }
-
-    template <int rows, int cols, int operandCols, class ElemT, class opElemT, class retElemT>
-    Matrix<rows, operandCols, Array<rows, operandCols, retElemT>> &Multiply(const Matrix<rows, cols, Array<rows, cols, ElemT>> &A, const Matrix<cols, operandCols, Array<cols, operandCols, opElemT>> &B, Matrix<rows, operandCols, Array<rows, operandCols, retElemT>> &C)
-    {
-        int i, j, k;
-
-        for (i = 0; i < rows; i++)
-            for (j = 0; j < operandCols; j++)
-            {
-                if (cols > 0)
-                    C.delegate.m[i * operandCols + j] = A.delegate.m[i * cols] * B.delegate.m[j];
-
-                for (k = 1; k < cols; k++)
-                    C.delegate.m[i * operandCols + j] += A.delegate.m[i * cols + k] * B.delegate.m[k * operandCols + j];
-            }
-
-        return C;
-    }
 
     template <int rows, int cols = 1, class ElemT = float>
     using ArrayMatrix = Matrix<rows, cols, Array<rows, cols, ElemT>>;
@@ -88,6 +49,7 @@ namespace BLA
 
     template <int rows, int cols, class ElemT = float>
     using ArrayRef = Reference<Array<rows, cols, ElemT>>;
+
     template <int rows, int cols, class ParentMemT>
     using RefMatrix = Matrix<rows, cols, Reference<ParentMemT>>;
 
@@ -98,14 +60,9 @@ namespace BLA
     {
         typedef ElemT elem_t;
 
-        elem_t &operator()(int row, int col) const
+        elem_t operator()(int row, int col) const
         {
-            static elem_t ret;
-
-            if (row == col)
-                return (ret = 1);
-            else
-                return (ret = 0);
+            return row == col;
         }
     };
 
@@ -119,16 +76,33 @@ namespace BLA
     {
         typedef ElemT elem_t;
 
-        ElemT &operator()(int row, int col) const
+        ElemT operator()(int row, int col) const
         {
-            static ElemT ret;
-
-            return (ret = 0);
+            return 0;
         }
     };
 
     template <int rows, int cols = 1, class ElemT = float>
     using Zeros = Matrix<rows, cols, Zero<ElemT>>;
+
+    ///////////////////////////////////////////////////////////////// Permutation Storage ///////////////////////////////////////////////////////////////////
+
+    template <int dim, class ElemT>
+    struct Permutation
+    {
+        typedef ElemT elem_t;
+
+        int idx[dim];
+
+        const ElemT operator()(int row, int col) const
+        {
+            return idx[row] == col;
+        }
+    };
+
+    template <int dim, class ElemT = float>
+    using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
+
 
     ///////////////////////////////////////////////////////////////// Sparse Storage ///////////////////////////////////////////////////////////////////
 
@@ -215,7 +189,7 @@ namespace BLA
         }
     };
 
-    //////////////////////////////////////////////////////////// Transpose Delegate ////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////// Transpose Storage ////////////////////////////////////////////////////////////////
 
     template <class MemT>
     struct Trans
@@ -232,7 +206,7 @@ namespace BLA
         }
     };
 
-    ////////////////////////////////////////////////////////// Concatenation Delegates /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////// Concatenation Storages /////////////////////////////////////////////////////////////
 
     template <int leftCols, class LeftMemT, class RightMemT>
     struct HorzCat
@@ -269,6 +243,7 @@ namespace BLA
             return row < topRows ? top(row, col) : bottom(row - topRows, col);
         }
     };
+
 
 } // namespace BLA
 
