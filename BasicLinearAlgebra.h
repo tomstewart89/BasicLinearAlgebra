@@ -70,7 +70,8 @@ namespace BLA
         int GetColCount() const;
 
         // Element Access
-        typename MemT::elem_t &operator()(int row, int col = 0) const;
+        typename MemT::elem_t &operator()(int row, int col = 0);
+        const typename MemT::elem_t operator()(int row, int col = 0) const;
         template <int rowStart, int rowEnd, int colStart, int colEnd>
         Matrix<rowEnd - rowStart, colEnd - colStart, Reference<MemT>> Submatrix(Slice<rowStart, rowEnd>, Slice<colStart, colEnd>) const;
         Matrix<rows, cols, Reference<MemT>> Ref() const;
@@ -136,10 +137,17 @@ namespace BLA
     //////////////////////////////////////////////////////////////// Element Access ////////////////////////////////////////////////////////////////
 
     template <int rows, int cols, class MemT>
-    typename MemT::elem_t &Matrix<rows, cols, MemT>::operator()(int row, int col) const
+    typename MemT::elem_t& Matrix<rows, cols, MemT>::operator()(int row, int col)
     {
         return delegate(row, col);
     }
+
+    template <int rows, int cols, class MemT>
+    const typename MemT::elem_t Matrix<rows, cols, MemT>::operator()(int row, int col) const
+    {
+        return delegate(row, col);
+    }
+
 
     // this must have template arguments so that it can return a matrix of he right size, right? can they be inferred somehow>
     template <int rows, int cols, class MemT>
@@ -295,7 +303,7 @@ namespace BLA
     template <int operandCols, class opMemT>
     Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator*(const Matrix<cols, operandCols, opMemT> &operand) const
     {
-        Matrix<rows, cols, MemT> ret;
+        Matrix<rows, cols> ret;
 
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < operandCols; j++)
