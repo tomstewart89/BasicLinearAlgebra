@@ -72,8 +72,16 @@ namespace BLA
         // Element Access
         typename MemT::elem_t &operator()(int row, int col = 0);
         const typename MemT::elem_t operator()(int row, int col = 0) const;
+
         template <int rowStart, int rowEnd, int colStart, int colEnd>
         Matrix<rowEnd - rowStart, colEnd - colStart, Reference<MemT>> Submatrix(Slice<rowStart, rowEnd>, Slice<colStart, colEnd>) const;
+
+        template <int subRows, int subCols>
+        Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left) const;
+
+        Matrix<1, cols, Reference<MemT>> Row(int i) const;
+        Matrix<rows, 1, Reference<MemT>> Column(int j) const;
+
         Matrix<rows, cols, Reference<MemT>> Ref() const;
 
         // Concatenation
@@ -148,8 +156,6 @@ namespace BLA
         return delegate(row, col);
     }
 
-
-    // this must have template arguments so that it can return a matrix of he right size, right? can they be inferred somehow>
     template <int rows, int cols, class MemT>
     template <int rowStart, int rowEnd, int colStart, int colEnd>
     Matrix<rowEnd - rowStart, colEnd - colStart, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(Slice<rowStart, rowEnd>, Slice<colStart, colEnd>) const
@@ -159,11 +165,34 @@ namespace BLA
     }
 
     template <int rows, int cols, class MemT>
+    template <int subRows, int subCols>
+    Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left) const
+    {
+        Reference<MemT> ref(delegate, top, left);
+        return Matrix<subRows, subCols, Reference<MemT>>(ref);
+    }
+
+    template <int rows, int cols, class MemT>
+    Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i) const
+    {
+        Reference<MemT> ref(delegate, i, 0);
+        return Matrix<1, cols, Reference<MemT>>(ref);
+    }
+
+    template <int rows, int cols, class MemT>
+    Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
+    {
+        Reference<MemT> ref(delegate, 0, j);
+        return Matrix<rows, 1, Reference<MemT>>(ref);
+    }
+
+    template <int rows, int cols, class MemT>
     Matrix<rows, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Ref() const
     {
         Reference<MemT> ref(delegate, 0, 0);
         return Matrix<rows, cols, Reference<MemT>>(ref);
     }
+
 
     ///////////////////////////////////////////////////////////////// Concatenation ////////////////////////////////////////////////////////////////
 
@@ -428,33 +457,6 @@ namespace BLA
         return ret;
     }
 
-    /////////////////////////////////////////////////////////////////// Determinant //////////////////////////////////////////////////////////////////
-
-    template <int dim, class MemT>
-    typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
-    {
-        typename MemT::elem_t det = 0;
-
-        // Add the determinants of all the minors
-        for (int i = 0; i < dim; i++)
-        {
-            Minor<MemT> del(A.delegate, i, 0);
-            Matrix<dim - 1, dim - 1, Minor<MemT>> m(del);
-
-            if (i % 2)
-                det -= Determinant(m) * A(i, 0);
-            else
-                det += Determinant(m) * A(i, 0);
-        }
-
-        return det;
-    }
-
-    template <class MemT>
-    typename MemT::elem_t Determinant(Matrix<2, 2, MemT> &A)
-    {
-        return A(0, 0) * A(1, 1) - A(1, 0) * A(0, 1);
-    }
 
     /////////////////////////////////////////////////////////////////// Inversion //////////////////////////////////////////////////////////////////
 

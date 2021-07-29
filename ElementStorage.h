@@ -16,12 +16,7 @@ namespace BLA
 
         ElemT &operator()(int row, int col) const
         {
-            static elem_t dummy;
-
-            if (row > rows || col > cols)
-                return dummy;
-            else
-                return m[row * cols + col];
+            return m[row * cols + col];
         }
     };
 
