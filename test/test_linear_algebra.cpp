@@ -41,11 +41,11 @@ TEST(LinearAlgebra, LUSolution) {
   Matrix<3, 1> x;
   Matrix<3, 1> x_expected = {0.41826923, 0.97115385, 0.53846154};
 
-  ArrayMatrix<3, 1, int> P;
+  PermutationMatrix<3, 1, int> P;
 
   LUDecompose(A, P);
 
-  LUSolve(A, P, b, x);
+  auto x = LUSolve(A, P, b);
 
   for (int i = 0; i < 3; ++i) {
     EXPECT_FLOAT_EQ(x_expected(i), x(i));

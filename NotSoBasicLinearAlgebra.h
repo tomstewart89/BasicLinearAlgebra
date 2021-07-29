@@ -1,6 +1,9 @@
 #pragma once
 
+#include "ElementStorage.h"
+
 namespace BLA {
+
 template <typename T> inline void swap(T &a, T &b) {
   T tmp = a;
   a = b;
@@ -102,9 +105,10 @@ bool LUDecompose(Matrix<dim, dim> &A, PermutationMatrix<dim> &P) {
 }
 
 template <int dim>
-void LUSolve(const Matrix<dim, dim> &LU, const PermutationMatrix<dim> &P,
-             const Matrix<dim> &b, Matrix<dim> &x) {
-  Matrix<dim> tmp;
+Matrix<dim> LUSolve(const Matrix<dim, dim> &LU, const PermutationMatrix<dim> &P,
+             const Matrix<dim> &b) {
+
+  Matrix<dim> x, tmp;
   auto &idx = P.delegate.idx;
 
   // Forward substitution to solve L * y = b
@@ -133,6 +137,8 @@ void LUSolve(const Matrix<dim, dim> &LU, const PermutationMatrix<dim> &P,
   for (int i = 0; i < dim; ++i) {
     x(i) = tmp(idx[i]);
   }
+
+  return x;
 }
 
 template <int dim> bool Invert(Matrix<dim, dim> &A) {
@@ -143,22 +149,43 @@ template <int dim> bool Invert(Matrix<dim, dim> &A) {
     return false;
   }
 
-  Matrix<dim> b;
-  b.Fill(0);
+  Matrix<dim> b = Zeros<dim>();
 
   for (int j = 0; j < dim; ++j) {
-    Matrix<dim> x;
 
     b(j) = 1.0;
-    LUSolve(LU, P, b, x);
+    A.Column(j) = LUSolve(LU, P, b);
     b(j) = 0.0;
-
-    for (int i = 0; i < dim; ++i) {
-      A(i, j) = x(i);
-    }
   }
 
   return true;
 }
+
+template <int dim, class MemT>
+typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
+{
+    typename MemT::elem_t det = 0;
+
+    // Add the determinants of all the minors
+    for (int i = 0; i < dim; i++)
+    {
+        Minor<MemT> del(A.delegate, i, 0);
+        Matrix<dim - 1, dim - 1, Minor<MemT>> m(del);
+
+        if (i % 2)
+            det -= Determinant(m) * A(i, 0);
+        else
+            det += Determinant(m) * A(i, 0);
+    }
+
+    return det;
+}
+
+template <class MemT>
+typename MemT::elem_t Determinant(Matrix<2, 2, MemT> &A)
+{
+    return A(0, 0) * A(1, 1) - A(1, 0) * A(0, 1);
+}
+
 
 } // namespace BLA
