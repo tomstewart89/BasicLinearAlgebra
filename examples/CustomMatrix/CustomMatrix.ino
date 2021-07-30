@@ -13,20 +13,19 @@
 template<int dim, class ElemT> struct Diagonal
 {
     mutable ElemT m[dim];
+    mutable ElemT offDiagonal;
 
     // The only requirement on this class is that it implement the () operator like so:
     typedef ElemT elem_t;
 
     ElemT &operator()(int row, int col) const
     {
-        static ElemT dummy;
-
         // If it's on the diagonal and it's not larger than the matrix dimensions then return the element
-        if(row == col && row < dim)
+        if(row == col)
             return m[row];
         else
             // Otherwise return a zero
-            return (dummy = 0);
+            return (offDiagonal = 0);
     }
 };
 
@@ -56,7 +55,7 @@ void setup()
   // Diagonal matrices have the handy property of scaling either the rows (premultiplication) or columns (postmultiplication) of a matrix
 
   // So if we modify the diagonal
-  for(int i = 0; i < diag.GetRowCount(); i++)
+  for(int i = 0; i < diag.Rows; i++)
       diag.delegate(i,i) = i + 1;
 
   // And multiply again, we'll see that the rows have been scaled

@@ -32,9 +32,9 @@ void setup()
   v(1) = 43.67; // you can also just write v(2) = 5.3; since v has only one column
 
   // Or you can set the entire matrix at once using eigen-style comma initialisation:
-  A << 3.25, 5.67, 8.67,
+  A.FillRowMajor( 3.25, 5.67, 8.67,
        4.55, 7.23, 9.00,
-       2.35, 5.73, 10.56;
+       2.35, 5.73, 10.56);
 
   // You can also set the entire array on construction like so:
   BLA::Matrix<3,3> B = {6.54, 3.66, 2.95,
@@ -42,8 +42,8 @@ void setup()
                    8.98, 9.99, 1.56};
 
   // Ask the matrix how many rows and columns it has:
-  v.GetColCount();
-  v.GetRowCount();
+  v.Cols;
+  v.Rows;
 
   // Now you can do some matrix math! The Matrix class supports addition and subtraction between matrices of the same size:
   BLA::Matrix<3,3> C = A + B;
@@ -77,16 +77,11 @@ void setup()
 
   auto refAonTopOfB = A.Ref() && B.Ref(); // auto saves us having to write out the full datatype, which gets a bit convoluted when references are involved
 
-  // An inverse of a matrix can also be calculated for square matrices via the inverse function:
-  BLA::Matrix<3,3> C_inv = C.Inverse();
+  // An inverse of a matrix can also be calculated for square matrices via the Invert function:
+  BLA::Matrix<3,3> C_inv = C;
+  bool is_nonsingular = Invert(C_inv);
 
-  // If the matrix is singular, the inversion won't work. In those cases Invert will still return a matrix but not a valid inverse.
-  // To check whether that has happened you can pass in pointer like so:
-  int res;
-  C_inv = C.Inverse(&res); // after this call res will be 0 if the inversion was successful and non-zero otherwise.
-
-  // If you want to invert a matrix and set the result to the matrix itself, you can use the Invert function.
-  Invert(C);
+  // If the matrix is singular, the inversion won't work. In those cases Invert will return false
 
   // If you want to print out the value of any element in the array you can do that like so:
   Serial << "v(1): " << v(1) << '\n';
@@ -95,7 +90,7 @@ void setup()
   Serial << "B: " << B << '\n';
 
   // You can even write some quite complex compound statements very succinctly. For example:
-  Serial << "identity matrix: " << AleftOfB * AonTopOfB - (A * A + B * B) + C * C.Inverse() << '\n';
+  Serial << "identity matrix: " << AleftOfB * AonTopOfB - (A * A + B * B) + C * C_inv << '\n';
 
   // Or as a more real life example, here's how you might calculate an updated state estimate for a third order state space model:
   BLA::Matrix<3> x; BLA::Matrix<2> u; BLA::Matrix<3,2> G; BLA::Matrix<3,3> F; float dt;

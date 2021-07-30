@@ -31,7 +31,7 @@ void setup()
   // The template parameter (the one in the <>) indicates how many elements to select while the other indicates the offset between the parent matrix and the reference.
 
   // So for example, to create a 4x4 reference to bigMatrix starting at element (4,2) the declaration would be as follows:
-  RefMatrix<4,4,Array<8,8>> bigMatrixRef(bigMatrix.Submatrix(Slice<4,8>(),Slice<2,6>()));
+  RefMatrix<4,4,Array<8,8>> bigMatrixRef(bigMatrix.Submatrix<4,4>(4,2));
 
   // If we set the (0,0) element of bigMatrixRef, we're effectively setting the (4,2) element of bigMatrix. So let's do that
   bigMatrixRef(0,0) = 45.67434;
@@ -41,10 +41,10 @@ void setup()
 
   // The submatrix function actually returns a RefMatrix so if you like you can just use it directly. For example you can set a section of bigMatrix using an array like so:
   float arr[4][4] = {{23.44,43.23,12.45,6.23},{93.94,27.23,1.44,101.23},{1.23,3.21,4.56,8.76},{12.34,34.56,76.54,21.09}};
-  bigMatrix.Submatrix(Slice<4,8>(),Slice<4,8>()) = arr;
+  bigMatrix.Submatrix<4,4>(4,4) = arr;
 
   // For all intents and purposes you can treat reference matrices as just regular matrices.
-  RefMatrix<2,4,Array<8,8>> anotherRef = bigMatrix.Submatrix(Slice<2,4>(),Slice<1,5>()); // this creates a 2x4 reference matrix starting at element (2,1) of bigMatrix
+  RefMatrix<2,4,Array<8,8>> anotherRef = bigMatrix.Submatrix<2,4>(2,1); // this creates a 2x4 reference matrix starting at element (2,1) of bigMatrix
 
   // You can fill them
   anotherRef.Fill(1.1111);
@@ -53,13 +53,13 @@ void setup()
   anotherRef * bigMatrixRef;
 
   // Invert them
-  Invert(bigMatrixRef);
+  // Invert(bigMatrixRef);
 
   // Print them
   Serial << "bigMatrixRef: " << bigMatrixRef << "\n";
 
   // You can even make a reference to a reference matrix, do arithmetic with that and then print the result
-  Serial  << "result of convoluted operation: " << (anotherRef += bigMatrixRef.Submatrix(Slice<0,2>(),Slice<0,4>())) << "\n";
+  Serial  << "result of convoluted operation: " << (anotherRef += bigMatrixRef.Submatrix<2,4>(0,0)) << "\n";
 
   // The only thing that you can't (shouldn't) really do is operate on two matrix references whose underlying memory overlap,
   // particularly when doing matrix multiplication.

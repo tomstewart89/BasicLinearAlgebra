@@ -1,9 +1,9 @@
 #include <BasicLinearAlgebra.h>
 
 /*
- * This example sketch shows how the template parameter can be nested to form high dimensional Matrices called 'Tensors'.
- * I should point out that I'm not really advocating using arduinos for Tensor computation, this is just an interesting
- * way of showing the flexbility and extensibility of the Matrix library
+ * This example sketch shows how the template parameter can be nested to form multi-dimensional matrices. In general, this library isn't 
+ * designed to support matrices of dimensions higher than 2, but it turns out that by defining the element type of a matrix as another matrix then
+ * something resembling multi-dimensional matrices are possible. I thought was pretty neat and worth making into an example.
  */
 
 // All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like so:
