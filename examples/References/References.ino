@@ -50,7 +50,7 @@ void setup()
   anotherRef.Fill(1.1111);
 
   // Do arithmetic with them
-  anotherRef *bigMatrixRef;
+  // auto res = anotherRef * bigMatrixRef; @TODO: this
 
   // Invert them
   // Invert(bigMatrixRef);
@@ -65,7 +65,7 @@ void setup()
   // particularly when doing matrix multiplication.
 
   // Lastly, let's look at what became of bigMatrix after all of this, you might be able to make out the values of bigMatrixRef and anotherRef in their respective areas of bigMatrix.
-  Serial << "bigMatrix: " << bigMatrix << "\n";
+  Serial << "bigMatrix: " << bigMatrix;
 }
 
 void loop() {}

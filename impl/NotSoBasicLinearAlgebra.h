@@ -16,8 +16,8 @@ namespace BLA
         return a > b ? a : b;
     }
 
-    template <int dim>
-    bool LUDecompose(Matrix<dim, dim> &A, PermutationMatrix<dim> &P)
+    template <int dim, class MemT>
+    bool LUDecompose(Matrix<dim, dim, MemT> &A, PermutationMatrix<dim> &P)
     {
         auto &idx = P.delegate.idx;
 
@@ -122,12 +122,12 @@ namespace BLA
         return true;
     }
 
-    template <int dim>
-    Matrix<dim> LUSolve(const Matrix<dim, dim> &LU,
+    template <int dim, class MemT1, class MemT2>
+    Matrix<dim> LUSolve(const Matrix<dim, dim, MemT1> &LU,
                         const PermutationMatrix<dim> &P,
-                        const Matrix<dim> &b)
+                        const Matrix<dim, 1, MemT2> &b)
     {
-        Matrix<dim> x, tmp;
+        Matrix<dim, 1, MemT2> x, tmp;
         auto &idx = P.delegate.idx;
 
         // Forward substitution to solve L * y = b
@@ -165,8 +165,8 @@ namespace BLA
         return x;
     }
 
-    template <int dim>
-    bool Invert(Matrix<dim, dim> &A)
+    template <int dim, class MemT>
+    bool Invert(Matrix<dim, dim, MemT> &A)
     {
         Matrix<dim, dim> LU = A;
         PermutationMatrix<dim> P;
