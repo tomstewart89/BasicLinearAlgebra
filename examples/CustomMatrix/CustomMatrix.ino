@@ -10,7 +10,8 @@
  * matrix might have. In this example we'll look at a diagonal matrix - a matrix whose elements are zero except for those along it's diagonal (row == column) 
  */
 
-template<int dim, class ElemT> struct Diagonal
+template <int dim, class ElemT>
+struct Diagonal
 {
     mutable ElemT m[dim];
     mutable ElemT offDiagonal;
@@ -21,7 +22,7 @@ template<int dim, class ElemT> struct Diagonal
     ElemT &operator()(int row, int col) const
     {
         // If it's on the diagonal and it's not larger than the matrix dimensions then return the element
-        if(row == col)
+        if (row == col)
             return m[row];
         else
             // Otherwise return a zero
@@ -34,36 +35,36 @@ using namespace BLA;
 
 void setup()
 {
-  Serial.begin(115200);
+    Serial.begin(115200);
 
-  // If you've been through the HowToUse example you'll know that you can allocate a Matrix and explicitly specify it's type like so:
-  BLA::Matrix<4,4> mat;
+    // If you've been through the HowToUse example you'll know that you can allocate a Matrix and explicitly specify it's type like so:
+    BLA::Matrix<4, 4> mat;
 
-  // And as before it's a good idea to fill the matrix before we use it
-  mat.Fill(1);
+    // And as before it's a good idea to fill the matrix before we use it
+    mat.Fill(1);
 
-  // Now let's declare a diagonal matrix. To do that we pass the Diagonal class from above along with whatever template parameters
-  // as a template parameter to Matrix, like so:
-  BLA::Matrix<4, 4, Diagonal<4, float> > diag;
+    // Now let's declare a diagonal matrix. To do that we pass the Diagonal class from above along with whatever template parameters
+    // as a template parameter to Matrix, like so:
+    BLA::Matrix<4, 4, Diagonal<4, float>> diag;
 
-  // If we fill diag we'll get a matrix with all 1's along the diagonal, the identity matrix.
-  diag.Fill(1);
+    // If we fill diag we'll get a matrix with all 1's along the diagonal, the identity matrix.
+    diag.Fill(1);
 
-  // So multiplying it with mat will do nothing:
-  Serial << "still ones: " << diag * mat << "\n";
+    // So multiplying it with mat will do nothing:
+    Serial << "still ones: " << diag * mat << "\n";
 
-  // Diagonal matrices have the handy property of scaling either the rows (premultiplication) or columns (postmultiplication) of a matrix
+    // Diagonal matrices have the handy property of scaling either the rows (premultiplication) or columns (postmultiplication) of a matrix
 
-  // So if we modify the diagonal
-  for(int i = 0; i < diag.Rows; i++)
-      diag.delegate(i,i) = i + 1;
+    // So if we modify the diagonal
+    for (int i = 0; i < diag.Rows; i++)
+        diag.delegate(i, i) = i + 1;
 
-  // And multiply again, we'll see that the rows have been scaled
-  Serial << "scaled rows: " << diag * mat;
+    // And multiply again, we'll see that the rows have been scaled
+    Serial << "scaled rows: " << diag * mat;
 
-  // Point being, if you define a class which serves up something when called upon by the () operator, you can embed it in a matrix and
-  // define any kind of behaviour you like. Hopefully that'll let this library support lots more applications while catering to the
-  // arduino's limited amount of memory.
+    // Point being, if you define a class which serves up something when called upon by the () operator, you can embed it in a matrix and
+    // define any kind of behaviour you like. Hopefully that'll let this library support lots more applications while catering to the
+    // arduino's limited amount of memory.
 }
 
-void loop() { }
+void loop() {}

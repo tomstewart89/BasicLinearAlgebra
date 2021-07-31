@@ -1,130 +1,74 @@
 #include <gtest/gtest.h>
 
-#include "../BasicLinearAlgebra.h"
+#include <BasicLinearAlgebra.h>
 
 using namespace BLA;
 
-TEST(Arithmetic, EigenStyleInitialisation)
+// namespace References
+// {
+// #include "../examples/References/References.ino"
+// }
+
+// TEST(Examples, References)
+// {
+//     References::setup();
+
+//     EXPECT_STREQ(Serial.buf.str().c_str(), "still ones: [[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00]]\n"
+//                                            "scaled rows: [[1.00,1.00,1.00,1.00],[2.00,2.00,2.00,2.00],[3.00,3.00,3.00,3.00],[4.00,4.00,4.00,4.00]]");
+// }
+
+namespace SolveLinearEquations
 {
-    Matrix<2, 2> A;
-    float arr[4] = { 3.25, 5.67, 8.67, 4.55 };
-
-    A << arr[0], arr[1], arr[2], arr[3];
-
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            EXPECT_FLOAT_EQ(A(i, j), arr[i * 2 + j]);
-        }
-    }
+#include "../examples/SolveLinearEquations/SolveLinearEquations.ino"
 }
 
-TEST(Arithmetic, BraceInitialisation)
+TEST(Examples, SolveLinearEquations)
 {
-    Matrix<2, 2> B = { 0.0, 45.34, 32.98, 1456.1222 };
+    SolveLinearEquations::setup();
 
-    EXPECT_FLOAT_EQ(B(0, 0), 0);
-    EXPECT_FLOAT_EQ(B(0, 1), 45.34);
-    EXPECT_FLOAT_EQ(B(1, 0), 32.98);
-    EXPECT_FLOAT_EQ(B(1, 1), 1456.1222);
+    EXPECT_STREQ(Serial.buf.str().c_str(), "");
 }
 
-TEST(Arithmetic, Fill)
+namespace Tensor
 {
-    Matrix<2, 2> A;
-    A.Fill(0.0f);
-
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            EXPECT_FLOAT_EQ(A(i, j), 0);
-        }
-    }
+#include "../examples/Tensor/Tensor.ino"
 }
 
-TEST(Arithmetic, AdditionSubtraction)
+TEST(Examples, Tensor)
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
+    Tensor::setup();
 
-    Matrix<3, 3> B = { 6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56 };
-
-    auto C = A + B;
-    auto D = A - B;
-
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            EXPECT_FLOAT_EQ(C(i, j), A(i, j) + B(i, j));
-            EXPECT_FLOAT_EQ(D(i, j), A(i, j) - B(i, j));
-        }
-    }
+    EXPECT_STREQ(Serial.buf.str().c_str(), "Hyper B: [[[[6.00,10.00],[10.00,18.00]],[[10.00,14.00],[18.00,26.00]]],[[[10.00,18.00],[14.00,26.00]],[[18.00,26.00],[26.00,38.00]]]]");
 }
 
-TEST(Arithmetic, ElementwiseOperations)
+namespace CustomMatrix
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
-
-    auto C = A + 2.5;
-    auto D = A - 3.7;
-    auto E = A * 1.2;
-    auto F = A / 6.7;
-
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            EXPECT_FLOAT_EQ(C(i, j), A(i, j) + 2.5);
-            EXPECT_FLOAT_EQ(D(i, j), A(i, j) - 3.7);
-            EXPECT_FLOAT_EQ(E(i, j), A(i, j) * 1.2);
-            EXPECT_FLOAT_EQ(F(i, j), A(i, j) / 6.7);
-        }
-    }
+#include "../examples/CustomMatrix/CustomMatrix.ino"
 }
 
-TEST(Arithmetic, Multiplication)
+TEST(Examples, CustomMatrix)
 {
-    Matrix<3, 3> A = { 3., 5., 8., 4., 7., 9., 2., 5.0, 10. };
+    CustomMatrix::setup();
 
-    Matrix<3, 3> B = { 6., 3., 2., 3., 7., 5., 8., 9., 1. };
-
-    auto C = A * B;
-
-    EXPECT_FLOAT_EQ(C(0, 0), 97.);
-    EXPECT_FLOAT_EQ(C(0, 1), 116.);
-    EXPECT_FLOAT_EQ(C(0, 2), 39.);
-    EXPECT_FLOAT_EQ(C(1, 0), 117.);
-    EXPECT_FLOAT_EQ(C(1, 1), 142.);
-    EXPECT_FLOAT_EQ(C(1, 2), 52.);
-    EXPECT_FLOAT_EQ(C(2, 0), 107);
-    EXPECT_FLOAT_EQ(C(2, 1), 131.);
-    EXPECT_FLOAT_EQ(C(2, 2), 39.);
+    EXPECT_STREQ(Serial.buf.str().c_str(), "still ones: [[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00],[1.00,1.00,1.00,1.00]]\n"
+                                           "scaled rows: [[1.00,1.00,1.00,1.00],[2.00,2.00,2.00,2.00],[3.00,3.00,3.00,3.00],[4.00,4.00,4.00,4.00]]");
 }
 
-TEST(Arithmetic, Concatenation)
+namespace HowToUse
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
-
-    Matrix<3, 3> B = { 6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56 };
-
-    Matrix<3, 6> AleftOfB = A || B;
-    Matrix<6, 3> AonTopOfB = A && B;
-
-    for (int i = 0; i < 3; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            EXPECT_FLOAT_EQ(AleftOfB(i, j), A(i, j));
-            EXPECT_FLOAT_EQ(AleftOfB(i, j + 3), B(i, j));
-            EXPECT_FLOAT_EQ(AonTopOfB(i, j), A(i, j));
-            EXPECT_FLOAT_EQ(AonTopOfB(i + 3, j), B(i, j));
-        }
-    }
+#include "../examples/HowToUse/HowToUse.ino"
 }
 
-int main(int argc, char** argv)
+TEST(Examples, HowToUse)
+{
+    HowToUse::setup();
+
+    EXPECT_STREQ(Serial.buf.str().c_str(), "v(1): 43.67\n"
+                                           "B: [[9.79,9.33,11.62],[7.77,14.77,14.12],[11.33,15.72,12.12]]\n"
+                                           "identity matrix: [[1.00,-0.00,-0.00],[0.00,1.00,-0.00],[0.00,0.00,1.00]]");
+}
+
+int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
