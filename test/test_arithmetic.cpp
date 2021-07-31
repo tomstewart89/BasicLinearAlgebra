@@ -4,25 +4,9 @@
 
 using namespace BLA;
 
-TEST(Arithmetic, EigenStyleInitialisation)
-{
-    Matrix<2, 2> A;
-    float arr[4] = { 3.25, 5.67, 8.67, 4.55 };
-
-    A << arr[0], arr[1], arr[2], arr[3];
-
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            EXPECT_FLOAT_EQ(A(i, j), arr[i * 2 + j]);
-        }
-    }
-}
-
 TEST(Arithmetic, BraceInitialisation)
 {
-    Matrix<2, 2> B = { 0.0, 45.34, 32.98, 1456.1222 };
+    Matrix<2, 2> B = {0.0, 45.34, 32.98, 1456.1222};
 
     EXPECT_FLOAT_EQ(B(0, 0), 0);
     EXPECT_FLOAT_EQ(B(0, 1), 45.34);
@@ -46,9 +30,9 @@ TEST(Arithmetic, Fill)
 
 TEST(Arithmetic, AdditionSubtraction)
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
+    Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
 
-    Matrix<3, 3> B = { 6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56 };
+    Matrix<3, 3> B = {6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56};
 
     auto C = A + B;
     auto D = A - B;
@@ -65,7 +49,7 @@ TEST(Arithmetic, AdditionSubtraction)
 
 TEST(Arithmetic, ElementwiseOperations)
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
+    Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
 
     auto C = A + 2.5;
     auto D = A - 3.7;
@@ -86,9 +70,9 @@ TEST(Arithmetic, ElementwiseOperations)
 
 TEST(Arithmetic, Multiplication)
 {
-    Matrix<3, 3> A = { 3., 5., 8., 4., 7., 9., 2., 5.0, 10. };
+    Matrix<3, 3> A = {3., 5., 8., 4., 7., 9., 2., 5.0, 10.};
 
-    Matrix<3, 3> B = { 6., 3., 2., 3., 7., 5., 8., 9., 1. };
+    Matrix<3, 3> B = {6., 3., 2., 3., 7., 5., 8., 9., 1.};
 
     auto C = A * B;
 
@@ -105,9 +89,9 @@ TEST(Arithmetic, Multiplication)
 
 TEST(Arithmetic, Concatenation)
 {
-    Matrix<3, 3> A = { 3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56 };
+    Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
 
-    Matrix<3, 3> B = { 6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56 };
+    Matrix<3, 3> B = {6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56};
 
     Matrix<3, 6> AleftOfB = A || B;
     Matrix<6, 3> AonTopOfB = A && B;
@@ -124,7 +108,7 @@ TEST(Arithmetic, Concatenation)
     }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

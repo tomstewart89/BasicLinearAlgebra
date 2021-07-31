@@ -1,15 +1,21 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 struct Print
 {
+    std::stringstream buf;
+
     template <typename T>
-    void print(const T& obj)
+    void print(const T &obj)
     {
-        std::cout << obj;
+        buf << obj;
     }
     void begin(int)
     {
+        buf << std::fixed << std::showpoint << std::setprecision(2);
+        buf.str("");
     }
 } Serial;
