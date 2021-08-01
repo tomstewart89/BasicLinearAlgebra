@@ -50,10 +50,11 @@ void setup()
   anotherRef.Fill(1.1111);
 
   // Do arithmetic with them
-  // auto res = anotherRef * bigMatrixRef; @TODO: this
+  // auto res = anotherRef * bigMatrixRef;
+  // @TODO : this
 
   // Invert them
-  // Invert(bigMatrixRef);
+  Invert(bigMatrixRef);
 
   // Print them
   Serial << "bigMatrixRef: " << bigMatrixRef << "\n";
