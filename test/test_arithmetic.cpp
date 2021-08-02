@@ -37,12 +37,23 @@ TEST(Arithmetic, AdditionSubtraction)
     auto C = A + B;
     auto D = A - B;
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-        for (int j = 0; j < 2; ++j)
+        for (int j = 0; j < 3; ++j)
         {
             EXPECT_FLOAT_EQ(C(i, j), A(i, j) + B(i, j));
             EXPECT_FLOAT_EQ(D(i, j), A(i, j) - B(i, j));
+        }
+    }
+
+    C -= B;
+    D += B;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            EXPECT_FLOAT_EQ(C(i, j), D(i, j));
         }
     }
 }
@@ -85,6 +96,16 @@ TEST(Arithmetic, Multiplication)
     EXPECT_FLOAT_EQ(C(2, 0), 107);
     EXPECT_FLOAT_EQ(C(2, 1), 131.);
     EXPECT_FLOAT_EQ(C(2, 2), 39.);
+
+    A *= B;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            EXPECT_FLOAT_EQ(A(i, j), C(i, j));
+        }
+    }
 }
 
 TEST(Arithmetic, Concatenation)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 
@@ -13,9 +12,11 @@ struct Print
     {
         buf << obj;
     }
+
     void begin(int)
     {
         buf << std::fixed << std::showpoint << std::setprecision(2);
         buf.str("");
     }
+
 } Serial;

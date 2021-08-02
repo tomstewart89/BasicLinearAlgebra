@@ -194,7 +194,7 @@ namespace BLA
     Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>>
     Matrix<rows, cols, MemT>::operator*(const Matrix<cols, operandCols, opMemT> &operand) const
     {
-        Matrix<rows, operandCols, opMemT> ret;
+        Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> ret;
 
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < operandCols; j++)
@@ -214,10 +214,8 @@ namespace BLA
     Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::
     operator*=(const Matrix<rows, cols, opMemT> &operand)
     {
-        Matrix<rows, cols, MemT> ret;
-        Multiply(*this, operand, ret);
-        *this = *this * ret;
-
+        Matrix<rows, cols, MemT> tmp(*this);
+        *this = tmp * operand;
         return *this;
     }
 
