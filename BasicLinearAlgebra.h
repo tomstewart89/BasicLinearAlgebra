@@ -27,8 +27,8 @@ namespace BLA
     template <class opMemT>
     Matrix<rows, cols, MemT>(const Matrix<rows, cols, opMemT> &obj);
 
-    template <typename... ARGS>
-    Matrix(ARGS... args);
+    template <typename... TAIL>
+    Matrix(typename MemT::elem_t head, TAIL... args);
 
     // Assignment
     template <class opMemT>
@@ -129,11 +129,17 @@ namespace BLA
   template <int rows, int cols = 1, class ElemT = float>
   using Zeros = Matrix<rows, cols, Zero<ElemT>>;
 
+  template <int rows, int cols, int tableSize = cols, class ElemT = float>
+  using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
+
   template <int dim, class ElemT = float>
   using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
 
-  template <int rows, int cols, int tableSize = cols, class ElemT = float>
-  using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
+  template <int dim, class MemT>
+  using LowerTrianglarDiagonalOnesMatrix = Matrix<dim, dim, LowerTriangleOnesDiagonal<MemT>>;
+
+  template <int dim, class MemT>
+  using UpperTrianglarMatrix = Matrix<dim, dim, UpperTriangle<MemT>>;
 
 } // namespace BLA
 
