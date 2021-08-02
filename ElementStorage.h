@@ -60,19 +60,6 @@ namespace BLA
         }
     };
 
-    template <int dim, class ElemT>
-    struct Permutation
-    {
-        typedef ElemT elem_t;
-
-        int idx[dim];
-
-        ElemT operator()(int row, int col) const
-        {
-            return idx[row] == col;
-        }
-    };
-
     // This uses a hash table to look up row/col/val items. It uses an open
     // addressing collision strategy so we can avoid using dynamic memory
     template <int cols, int tableSize, class ElemT>
@@ -225,6 +212,71 @@ namespace BLA
         elem_t &operator()(int row, int col) const
         {
             return row < topRows ? top(row, col) : bottom(row - topRows, col);
+        }
+    };
+
+    template <int dim, class ElemT>
+    struct Permutation
+    {
+        typedef ElemT elem_t;
+
+        int idx[dim];
+
+        ElemT operator()(int row, int col) const
+        {
+            return idx[row] == col;
+        }
+    };
+
+    template <class MemT>
+    struct LowerTriangleOnesDiagonal
+    {
+        typedef typename MemT::elem_t elem_t;
+
+        const MemT &parent;
+
+        LowerTriangleOnesDiagonal<MemT>(const MemT &obj) : parent(obj)
+        {
+        }
+
+        elem_t operator()(int row, int col) const
+        {
+            if (row > col)
+            {
+                return parent(row, col);
+            }
+            else if (row == col)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    };
+
+    template <class MemT>
+    struct UpperTriangle
+    {
+        typedef typename MemT::elem_t elem_t;
+
+        const MemT &parent;
+
+        UpperTriangle<MemT>(const MemT &obj) : parent(obj)
+        {
+        }
+
+        elem_t operator()(int row, int col) const
+        {
+            if (row < col)
+            {
+                return parent(row, col);
+            }
+            else
+            {
+                return 0;
+            }
         }
     };
 

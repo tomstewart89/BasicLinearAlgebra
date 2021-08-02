@@ -135,11 +135,11 @@ namespace BLA
   template <int dim, class ElemT = float>
   using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
 
-  template <int dim, class MemT>
-  using LowerTrianglarDiagonalOnesMatrix = Matrix<dim, dim, LowerTriangleOnesDiagonal<MemT>>;
+  template <int rows, int cols, class MemT>
+  using LowerTriangularDiagonalOnesMatrix = Matrix<rows, cols, LowerTriangleOnesDiagonal<MemT>>;
 
-  template <int dim, class MemT>
-  using UpperTrianglarMatrix = Matrix<dim, dim, UpperTriangle<MemT>>;
+  template <int rows, int cols, class MemT>
+  using UpperTriangularMatrix = Matrix<rows, cols, UpperTriangle<MemT>>;
 
 } // namespace BLA
 
