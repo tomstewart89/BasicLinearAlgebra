@@ -20,10 +20,10 @@ namespace BLA
     }
 
     template <int rows, int cols, class MemT>
-    template <typename... ARGS>
-    Matrix<rows, cols, MemT>::Matrix(ARGS... args)
+    template <typename... TAIL>
+    Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t head, TAIL... args)
     {
-        FillRowMajor(args...);
+        FillRowMajor(head, args...);
     }
 
     template <int rows, int cols, class MemT>
