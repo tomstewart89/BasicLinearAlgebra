@@ -8,355 +8,338 @@
 
 namespace BLA
 {
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT>::Matrix(MemT &d) : delegate(d)
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT>::Matrix(MemT &d) : delegate(d)
+{
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t arr[rows][cols])
+{
+    *this = arr;
+}
+
+template <int rows, int cols, class MemT>
+template <typename... TAIL>
+Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t head, TAIL... args)
+{
+    FillRowMajor(head, args...);
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, MemT>::Matrix(const Matrix<rows, cols, opMemT> &obj)
+{
+    *this = obj;
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator=(const Matrix<rows, cols, opMemT> &obj)
+{
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++) (*this)(i, j) = obj(i, j);
+
+    return *this;
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator=(typename MemT::elem_t arr[rows][cols])
+{
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++) (*this)(i, j) = arr[i][j];
+
+    return *this;
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::Fill(const typename MemT::elem_t &val)
+{
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++) (*this)(i, j) = val;
+
+    return *this;
+}
+
+template <int rows, int cols, class MemT>
+template <typename... TAIL>
+void Matrix<rows, cols, MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... tail)
+{
+    static_assert(rows * cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
+    (*this)((rows * cols - sizeof...(TAIL) - 1) / cols, (rows * cols - sizeof...(TAIL) - 1) % cols) = head;
+    FillRowMajor(tail...);
+}
+
+template <int rows, int cols, class MemT>
+void Matrix<rows, cols, MemT>::FillRowMajor()
+{
+}
+
+template <int rows, int cols, class MemT>
+typename MemT::elem_t &Matrix<rows, cols, MemT>::operator()(int row, int col)
+{
+    return delegate(row, col);
+}
+
+template <int rows, int cols, class MemT>
+typename MemT::elem_t Matrix<rows, cols, MemT>::operator()(int row, int col) const
+{
+    return delegate(row, col);
+}
+
+template <int rows, int cols, class MemT>
+template <int subRows, int subCols>
+Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left) const
+{
+    Reference<MemT> ref(delegate, top, left);
+    return Matrix<subRows, subCols, Reference<MemT>>(ref);
+}
+
+template <int rows, int cols, class MemT>
+Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i) const
+{
+    return Submatrix<1, cols>(i, 0);
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
+{
+    return Submatrix<rows, 1>(0, j);
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Ref() const
+{
+    Reference<MemT> ref(delegate, 0, 0);
+    return Matrix<rows, cols, Reference<MemT>>(ref);
+}
+
+template <int rows, int cols, class MemT>
+template <int operandCols, class opMemT>
+Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> Matrix<rows, cols, MemT>::operator||(
+    const Matrix<rows, operandCols, opMemT> &obj) const
+{
+    HorzCat<cols, MemT, opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>>(ref);
+}
+
+template <int rows, int cols, class MemT>
+template <int operandRows, class opMemT>
+Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> Matrix<rows, cols, MemT>::operator&&(
+    const Matrix<operandRows, cols, opMemT> &obj) const
+{
+    VertCat<rows, MemT, opMemT> ref(delegate, obj.delegate);
+    return Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>>(ref);
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator+(
+    const Matrix<rows, cols, opMemT> &obj) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret += obj;
+    return ret;
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator+=(const Matrix<rows, cols, opMemT> &obj)
+{
+    for (int i = 0; i < rows; i++)
     {
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t arr[rows][cols])
-    {
-        *this = arr;
-    }
-
-    template <int rows, int cols, class MemT>
-    template <typename... TAIL>
-    Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t head, TAIL... args)
-    {
-        FillRowMajor(head, args...);
-    }
-
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, MemT>::Matrix(const Matrix<rows, cols, opMemT> &obj)
-    {
-        *this = obj;
-    }
-
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator=(const Matrix<rows, cols, opMemT> &obj)
-    {
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                (*this)(i, j) = obj(i, j);
-
-        return *this;
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator=(typename MemT::elem_t arr[rows][cols])
-    {
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                (*this)(i, j) = arr[i][j];
-
-        return *this;
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::Fill(const typename MemT::elem_t &val)
-    {
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                (*this)(i, j) = val;
-
-        return *this;
-    }
-
-    template <int rows, int cols, class MemT>
-    template <typename... TAIL>
-    void Matrix<rows, cols, MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... tail)
-    {
-        static_assert(rows * cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
-        (*this)((rows * cols - sizeof...(TAIL) - 1) / cols,
-                (rows * cols - sizeof...(TAIL) - 1) % cols) = head;
-        FillRowMajor(tail...);
-    }
-
-    template <int rows, int cols, class MemT>
-    void Matrix<rows, cols, MemT>::FillRowMajor()
-    {
-    }
-
-    template <int rows, int cols, class MemT>
-    typename MemT::elem_t &Matrix<rows, cols, MemT>::operator()(int row, int col)
-    {
-        return delegate(row, col);
-    }
-
-    template <int rows, int cols, class MemT>
-    typename MemT::elem_t Matrix<rows, cols, MemT>::operator()(int row, int col) const
-    {
-        return delegate(row, col);
-    }
-
-    template <int rows, int cols, class MemT>
-    template <int subRows, int subCols>
-    Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top,
-                                                                                  int left) const
-    {
-        Reference<MemT> ref(delegate, top, left);
-        return Matrix<subRows, subCols, Reference<MemT>>(ref);
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i) const
-    {
-        return Submatrix<1, cols>(i, 0);
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
-    {
-        return Submatrix<rows, 1>(0, j);
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Ref() const
-    {
-        Reference<MemT> ref(delegate, 0, 0);
-        return Matrix<rows, cols, Reference<MemT>>(ref);
-    }
-
-    template <int rows, int cols, class MemT>
-    template <int operandCols, class opMemT>
-    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> Matrix<rows, cols, MemT>::
-    operator||(const Matrix<rows, operandCols, opMemT> &obj) const
-    {
-        HorzCat<cols, MemT, opMemT> ref(delegate, obj.delegate);
-        return Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>>(ref);
-    }
-
-    template <int rows, int cols, class MemT>
-    template <int operandRows, class opMemT>
-    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> Matrix<rows, cols, MemT>::
-    operator&&(const Matrix<operandRows, cols, opMemT> &obj) const
-    {
-        VertCat<rows, MemT, opMemT> ref(delegate, obj.delegate);
-        return Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>>(ref);
-    }
-
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator+(const Matrix<rows, cols, opMemT> &obj) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret += obj;
-        return ret;
-    }
-
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::
-    operator+=(const Matrix<rows, cols, opMemT> &obj)
-    {
-        for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
         {
-            for (int j = 0; j < cols; j++)
-            {
-                delegate(i, j) += obj.delegate(i, j);
-            }
+            delegate(i, j) += obj.delegate(i, j);
+        }
+    }
+
+    return *this;
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator-(
+    const Matrix<rows, cols, opMemT> &obj) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret -= obj;
+    return ret;
+}
+
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator-=(const Matrix<rows, cols, opMemT> &obj)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            delegate(i, j) -= obj.delegate(i, j);
+        }
+    }
+
+    return *this;
+}
+
+template <int rows, int cols, class MemT>
+template <int operandCols, class opMemT>
+Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator*(
+    const Matrix<cols, operandCols, opMemT> &operand) const
+{
+    Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> ret;
+
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < operandCols; j++)
+        {
+            if (cols > 0) ret.delegate(i, j) = delegate(i, 0) * operand.delegate(0, j);
+
+            for (int k = 1; k < cols; k++) ret.delegate(i, j) += delegate(i, k) * operand.delegate(k, j);
         }
 
-        return *this;
-    }
+    return ret;
+}
 
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator-(const Matrix<rows, cols, opMemT> &obj) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret -= obj;
-        return ret;
-    }
+template <int rows, int cols, class MemT>
+template <class opMemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator*=(const Matrix<rows, cols, opMemT> &operand)
+{
+    Matrix<rows, cols, MemT> tmp(*this);
+    *this = tmp * operand;
+    return *this;
+}
 
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::
-    operator-=(const Matrix<rows, cols, opMemT> &obj)
-    {
-        for (int i = 0; i < rows; i++)
-        {
-            for (int j = 0; j < cols; j++)
-            {
-                delegate(i, j) -= obj.delegate(i, j);
-            }
-        }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator-() const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret;
 
-        return *this;
-    }
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++) ret(i, j) = -(*this)(i, j);
 
-    template <int rows, int cols, class MemT>
-    template <int operandCols, class opMemT>
-    Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>>
-    Matrix<rows, cols, MemT>::operator*(const Matrix<cols, operandCols, opMemT> &operand) const
-    {
-        Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> ret;
+    return ret;
+}
 
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < operandCols; j++)
-            {
-                if (cols > 0)
-                    ret.delegate(i, j) = delegate(i, 0) * operand.delegate(0, j);
+template <int rows, int cols, class MemT>
+Matrix<cols, rows, Trans<MemT>> Matrix<rows, cols, MemT>::operator~() const
+{
+    Trans<MemT> ref(delegate);
+    Matrix<cols, rows, Trans<MemT>> tmp(ref);
 
-                for (int k = 1; k < cols; k++)
-                    ret.delegate(i, j) += delegate(i, k) * operand.delegate(k, j);
-            }
+    return tmp;
+}
 
-        return ret;
-    }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator+=(const typename MemT::elem_t k)
+{
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j) delegate(i, j) += k;
 
-    template <int rows, int cols, class MemT>
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::
-    operator*=(const Matrix<rows, cols, opMemT> &operand)
-    {
-        Matrix<rows, cols, MemT> tmp(*this);
-        *this = tmp * operand;
-        return *this;
-    }
+    return *this;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator-() const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret;
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator-=(const typename MemT::elem_t k)
+{
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j) delegate(i, j) -= k;
 
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                ret(i, j) = -(*this)(i, j);
+    return *this;
+}
 
-        return ret;
-    }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator*=(const typename MemT::elem_t k)
+{
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j) delegate(i, j) *= k;
 
-    template <int rows, int cols, class MemT>
-    Matrix<cols, rows, Trans<MemT>> Matrix<rows, cols, MemT>::operator~() const
-    {
-        Trans<MemT> ref(delegate);
-        Matrix<cols, rows, Trans<MemT>> tmp(ref);
+    return *this;
+}
 
-        return tmp;
-    }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator/=(const typename MemT::elem_t k)
+{
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j) delegate(i, j) /= k;
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator+=(const typename MemT::elem_t k)
-    {
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < cols; ++j)
-                delegate(i, j) += k;
+    return *this;
+}
 
-        return *this;
-    }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator+(
+    const typename MemT::elem_t k) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret += k;
+    return ret;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator-=(const typename MemT::elem_t k)
-    {
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < cols; ++j)
-                delegate(i, j) -= k;
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator-(
+    const typename MemT::elem_t k) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret -= k;
+    return ret;
+}
 
-        return *this;
-    }
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator*(
+    const typename MemT::elem_t k) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret *= k;
+    return ret;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator*=(const typename MemT::elem_t k)
-    {
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < cols; ++j)
-                delegate(i, j) *= k;
+template <int rows, int cols, class MemT>
+Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::operator/(
+    const typename MemT::elem_t k) const
+{
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
+    ret /= k;
+    return ret;
+}
 
-        return *this;
-    }
+inline Print &operator<<(Print &strm, const int obj)
+{
+    strm.print(obj);
+    return strm;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator/=(const typename MemT::elem_t k)
-    {
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < cols; ++j)
-                delegate(i, j) /= k;
+inline Print &operator<<(Print &strm, const float obj)
+{
+    strm.print(obj);
+    return strm;
+}
 
-        return *this;
-    }
+inline Print &operator<<(Print &strm, const char *obj)
+{
+    strm.print(obj);
+    return strm;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator+(const typename MemT::elem_t k) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret += k;
-        return ret;
-    }
+inline Print &operator<<(Print &strm, const char obj)
+{
+    strm.print(obj);
+    return strm;
+}
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator-(const typename MemT::elem_t k) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret -= k;
-        return ret;
-    }
+// Stream inserter operator for printing to strings or the serial port
+template <int rows, int cols, class MemT>
+Print &operator<<(Print &strm, const Matrix<rows, cols, MemT> &obj)
+{
+    strm << '[';
 
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator*(const typename MemT::elem_t k) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret *= k;
-        return ret;
-    }
-
-    template <int rows, int cols, class MemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, MemT>::
-    operator/(const typename MemT::elem_t k) const
-    {
-        Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> ret(*this);
-        ret /= k;
-        return ret;
-    }
-
-    inline Print &operator<<(Print &strm, const int obj)
-    {
-        strm.print(obj);
-        return strm;
-    }
-
-    inline Print &operator<<(Print &strm, const float obj)
-    {
-        strm.print(obj);
-        return strm;
-    }
-
-    inline Print &operator<<(Print &strm, const char *obj)
-    {
-        strm.print(obj);
-        return strm;
-    }
-
-    inline Print &operator<<(Print &strm, const char obj)
-    {
-        strm.print(obj);
-        return strm;
-    }
-
-    // Stream inserter operator for printing to strings or the serial port
-    template <int rows, int cols, class MemT>
-    Print &operator<<(Print &strm, const Matrix<rows, cols, MemT> &obj)
+    for (int i = 0; i < rows; i++)
     {
         strm << '[';
 
-        for (int i = 0; i < rows; i++)
-        {
-            strm << '[';
+        for (int j = 0; j < cols; j++) strm << obj(i, j) << ((j == cols - 1) ? ']' : ',');
 
-            for (int j = 0; j < cols; j++)
-                strm << obj(i, j) << ((j == cols - 1) ? ']' : ',');
-
-            strm << (i == rows - 1 ? ']' : ',');
-        }
-        return strm;
+        strm << (i == rows - 1 ? ']' : ',');
     }
+    return strm;
+}
 
-} // namespace BLA
+}  // namespace BLA
