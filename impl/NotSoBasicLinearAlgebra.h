@@ -17,9 +17,23 @@ namespace BLA
     }
 
     template <int dim, class MemT>
-    bool LUDecompose(Matrix<dim, dim, MemT> &A, PermutationMatrix<dim> &P)
+    struct LUDecomposition
     {
-        auto &idx = P.delegate.idx;
+        bool singular;
+        Permutation<dim, typename MemT::elem_t> permutation;
+        LowerTriangleOnesDiagonal<MemT> lower;
+        UpperTriangle<MemT> upper;
+
+        LUDecomposition(Matrix<dim, dim, MemT> &A) : lower(A.delegate), upper(A.delegate)
+        {
+        }
+    };
+
+    template <int dim, class MemT>
+    LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
+    {
+        LUDecomposition<dim, MemT> decomp(A);
+        auto &idx = decomp.permutation.idx;
 
         for (int i = 0; i < dim; ++i)
         {
@@ -41,7 +55,8 @@ namespace BLA
             // No nonzero largest element.
             if (largest_elem == 0.0)
             {
-                return false;
+                decomp.singular = true;
+                return decomp;
             }
 
             row_scale[i] = 1.0 / largest_elem;
@@ -119,16 +134,18 @@ namespace BLA
             }
         }
 
-        return true;
+        decomp.singular = false;
+        return decomp;
     }
 
     template <int dim, class MemT1, class MemT2>
-    Matrix<dim> LUSolve(const Matrix<dim, dim, MemT1> &LU,
-                        const PermutationMatrix<dim> &P,
+    Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp,
                         const Matrix<dim, 1, MemT2> &b)
     {
         Matrix<dim, 1, MemT2> x, tmp;
-        auto &idx = P.delegate.idx;
+
+        auto &idx = decomp.permutation.idx;
+        auto &LU = decomp.lower.parent;
 
         // Forward substitution to solve L * y = b
         for (int i = 0; i < dim; ++i)
@@ -168,10 +185,11 @@ namespace BLA
     template <int dim, class MemT>
     bool Invert(Matrix<dim, dim, MemT> &A)
     {
-        Matrix<dim, dim> LU = A;
-        PermutationMatrix<dim> P;
+        Matrix<dim, dim> A_copy = A;
 
-        if (!LUDecompose(LU, P))
+        auto decomp = LUDecompose(A_copy);
+
+        if (decomp.singular)
         {
             return false;
         }
@@ -181,7 +199,7 @@ namespace BLA
         for (int j = 0; j < dim; ++j)
         {
             b(j) = 1.0;
-            A.Column(j) = LUSolve(LU, P, b);
+            A.Column(j) = LUSolve(decomp, b);
             b(j) = 0.0;
         }
 

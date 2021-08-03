@@ -9,25 +9,13 @@ TEST(LinearAlgebra, LUDecomposition)
                            7.77, 14.77, 14.12,
                            11.33, 15.72, 12.12};
 
-    PermutationMatrix<3> P;
-    auto LU = A;
+    auto A_orig = A;
 
-    LUDecompose(LU, P);
+    auto decomp = LUDecompose(A);
 
-    Matrix<3, 3> L, U;
-    L = U = Zeros<3, 3, float>();
-
-    for (int i = 0; i < 3; ++i)
-    {
-        L(i, i) = 1.0;
-        U(i, i) = LU(i, i);
-
-        for (int j = i + 1; j < 3; ++j)
-        {
-            U(i, j) = LU(i, j);
-            L(j, i) = LU(j, i);
-        }
-    }
+    PermutationMatrix<3> P(decomp.permutation);
+    LowerTriangularDiagonalOnesMatrix<3, 3, Array<3, 3, float>> L(decomp.lower);
+    UpperTriangularMatrix<3, 3, Array<3, 3, float>> U(decomp.upper);
 
     auto A_reconstructed = P * L * U;
 
@@ -35,7 +23,7 @@ TEST(LinearAlgebra, LUDecomposition)
     {
         for (int j = 0; j < 3; ++j)
         {
-            EXPECT_FLOAT_EQ(A_reconstructed(i, j), A(i, j));
+            EXPECT_FLOAT_EQ(A_reconstructed(i, j), A_orig(i, j));
         }
     }
 }
@@ -46,11 +34,9 @@ TEST(LinearAlgebra, LUSolution)
     Matrix<3, 1> b{10, 11, 12};
     Matrix<3, 1> x_expected = {0.41826923, 0.97115385, 0.53846154};
 
-    PermutationMatrix<3> P;
+    auto decomp = LUDecompose(A);
 
-    LUDecompose(A, P);
-
-    auto x = LUSolve(A, P, b);
+    auto x = LUSolve(decomp, b);
 
     for (int i = 0; i < 3; ++i)
     {

@@ -269,7 +269,7 @@ namespace BLA
 
         elem_t operator()(int row, int col) const
         {
-            if (row < col)
+            if (row <= col)
             {
                 return parent(row, col);
             }
