@@ -8,10 +8,10 @@
 
 namespace BLA
 {
-  template <int rows, int cols = 1, class MemT = Array<rows, cols, float>>
-  class Matrix
-  {
-  public:
+template <int rows, int cols = 1, class MemT = Array<rows, cols, float>>
+class Matrix
+{
+   public:
     typedef MemT mem_t;
     const static int Rows = rows;
     const static int Cols = cols;
@@ -45,7 +45,7 @@ namespace BLA
     // Element Access
     typename MemT::elem_t &operator()(int row, int col = 0);
 
-    typename MemT::elem_t operator()(int row, int col = 0) const; // why is this not being resolved when I have a delegate that doesn't return a reference type?
+    typename MemT::elem_t operator()(int row, int col = 0) const;
 
     template <int subRows, int subCols>
     Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left) const;
@@ -58,33 +58,31 @@ namespace BLA
 
     // Concatenation
     template <int operandCols, class opMemT>
-    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>>
-    operator||(const Matrix<rows, operandCols, opMemT> &obj) const;
+    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> operator||(
+        const Matrix<rows, operandCols, opMemT> &obj) const;
 
     template <int operandRows, class opMemT>
-    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>>
-    operator&&(const Matrix<operandRows, cols, opMemT> &obj) const;
+    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> operator&&(
+        const Matrix<operandRows, cols, opMemT> &obj) const;
 
     // Addition
     template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator+(const Matrix<rows, cols, opMemT> &obj) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator+(const Matrix<rows, cols, opMemT> &obj) const;
 
     template <class opMemT>
     Matrix<rows, cols, MemT> &operator+=(const Matrix<rows, cols, opMemT> &obj);
 
     // Subtraction
     template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator-(const Matrix<rows, cols, opMemT> &obj) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-(const Matrix<rows, cols, opMemT> &obj) const;
 
     template <class opMemT>
     Matrix<rows, cols, MemT> &operator-=(const Matrix<rows, cols, opMemT> &obj);
 
     // Multiplication
     template <int operandCols, class opMemT>
-    Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>>
-    operator*(const Matrix<cols, operandCols, opMemT> &operand) const;
+    Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> operator*(
+        const Matrix<cols, operandCols, opMemT> &operand) const;
 
     template <class opMemT>
     Matrix<rows, cols, MemT> &operator*=(const Matrix<rows, cols, opMemT> &operand);
@@ -96,52 +94,48 @@ namespace BLA
     Matrix<cols, rows, Trans<MemT>> operator~() const;
 
     // Elementwise Operations
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator+(const typename MemT::elem_t k) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator+(const typename MemT::elem_t k) const;
 
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator-(const typename MemT::elem_t k) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-(const typename MemT::elem_t k) const;
 
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator*(const typename MemT::elem_t k) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator*(const typename MemT::elem_t k) const;
 
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>>
-    operator/(const typename MemT::elem_t k) const;
+    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator/(const typename MemT::elem_t k) const;
 
     Matrix<rows, cols, MemT> &operator+=(const typename MemT::elem_t k);
     Matrix<rows, cols, MemT> &operator-=(const typename MemT::elem_t k);
     Matrix<rows, cols, MemT> &operator*=(const typename MemT::elem_t k);
     Matrix<rows, cols, MemT> &operator/=(const typename MemT::elem_t k);
-  };
+};
 
-  template <int rows, int cols = 1, class ElemT = float>
-  using ArrayMatrix = Matrix<rows, cols, Array<rows, cols, ElemT>>;
+template <int rows, int cols = 1, class ElemT = float>
+using ArrayMatrix = Matrix<rows, cols, Array<rows, cols, ElemT>>;
 
-  template <int rows, int cols, class ElemT = float>
-  using ArrayRef = Reference<Array<rows, cols, ElemT>>;
+template <int rows, int cols, class ElemT = float>
+using ArrayRef = Reference<Array<rows, cols, ElemT>>;
 
-  template <int rows, int cols, class ParentMemT>
-  using RefMatrix = Matrix<rows, cols, Reference<ParentMemT>>;
+template <int rows, int cols, class ParentMemT>
+using RefMatrix = Matrix<rows, cols, Reference<ParentMemT>>;
 
-  template <int rows, int cols = rows, class ElemT = float>
-  using Identity = Matrix<rows, cols, Eye<ElemT>>;
+template <int rows, int cols = rows, class ElemT = float>
+using Identity = Matrix<rows, cols, Eye<ElemT>>;
 
-  template <int rows, int cols = 1, class ElemT = float>
-  using Zeros = Matrix<rows, cols, Zero<ElemT>>;
+template <int rows, int cols = 1, class ElemT = float>
+using Zeros = Matrix<rows, cols, Zero<ElemT>>;
 
-  template <int rows, int cols, int tableSize = cols, class ElemT = float>
-  using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
+template <int rows, int cols, int tableSize = cols, class ElemT = float>
+using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
 
-  template <int dim, class ElemT = float>
-  using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
+template <int dim, class ElemT = float>
+using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
 
-  template <int rows, int cols, class MemT>
-  using LowerTriangularDiagonalOnesMatrix = Matrix<rows, cols, LowerTriangleOnesDiagonal<MemT>>;
+template <int rows, int cols, class MemT>
+using LowerTriangularDiagonalOnesMatrix = Matrix<rows, cols, LowerTriangleOnesDiagonal<MemT>>;
 
-  template <int rows, int cols, class MemT>
-  using UpperTriangularMatrix = Matrix<rows, cols, UpperTriangle<MemT>>;
+template <int rows, int cols, class MemT>
+using UpperTriangularMatrix = Matrix<rows, cols, UpperTriangle<MemT>>;
 
-} // namespace BLA
+}  // namespace BLA
 
 #include "impl/BasicLinearAlgebra.h"
 #include "impl/NotSoBasicLinearAlgebra.h"

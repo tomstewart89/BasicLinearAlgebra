@@ -1,23 +1,18 @@
-#include "../BasicLinearAlgebra.h"
 #include <gtest/gtest.h>
+
+#include "../BasicLinearAlgebra.h"
 
 using namespace BLA;
 
 TEST(LinearAlgebra, LUDecomposition)
 {
-    BLA::Matrix<3, 3> A = {9.79, 9.33, 11.62,
-                           7.77, 14.77, 14.12,
-                           11.33, 15.72, 12.12};
+    BLA::Matrix<3, 3> A = {9.79, 9.33, 11.62, 7.77, 14.77, 14.12, 11.33, 15.72, 12.12};
 
     auto A_orig = A;
 
     auto decomp = LUDecompose(A);
 
-    PermutationMatrix<3> P(decomp.permutation);
-    LowerTriangularDiagonalOnesMatrix<3, 3, Array<3, 3, float>> L(decomp.lower);
-    UpperTriangularMatrix<3, 3, Array<3, 3, float>> U(decomp.upper);
-
-    auto A_reconstructed = P * L * U;
+    auto A_reconstructed = decomp.P() * decomp.L() * decomp.U();
 
     for (int i = 0; i < 3; ++i)
     {
@@ -46,9 +41,7 @@ TEST(LinearAlgebra, LUSolution)
 
 TEST(LinearAlgebra, Inversion)
 {
-    BLA::Matrix<3, 3> A = {9.79, 9.33, 11.62,
-                           7.77, 14.77, 14.12,
-                           11.33, 15.72, 12.12};
+    BLA::Matrix<3, 3> A = {9.79, 9.33, 11.62, 7.77, 14.77, 14.12, 11.33, 15.72, 12.12};
 
     auto A_inv = A;
     Invert(A_inv);
@@ -73,9 +66,8 @@ TEST(LinearAlgebra, Inversion)
 
 TEST(Arithmetic, Determinant)
 {
-    Matrix<3, 3> B = {0.13397823, 0.21299481, 0.34636886,
-                      0.75536007, 0.98363649, 0.59470267,
-                      0.71449196, 0.08585212, 0.55099433};
+    Matrix<3, 3> B = {0.13397823, 0.21299481, 0.34636886, 0.75536007, 0.98363649,
+                      0.59470267, 0.71449196, 0.08585212, 0.55099433};
 
     float det_numpy = -0.15333813;
 
