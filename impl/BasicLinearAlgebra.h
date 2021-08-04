@@ -9,7 +9,7 @@
 namespace BLA
 {
 template <int rows, int cols, class MemT>
-Matrix<rows, cols, MemT>::Matrix(MemT &d) : delegate(d)
+Matrix<rows, cols, MemT>::Matrix(MemT &d) : storage(d)
 {
 }
 
@@ -78,20 +78,20 @@ void Matrix<rows, cols, MemT>::FillRowMajor()
 template <int rows, int cols, class MemT>
 typename MemT::elem_t &Matrix<rows, cols, MemT>::operator()(int row, int col)
 {
-    return delegate(row, col);
+    return storage(row, col);
 }
 
 template <int rows, int cols, class MemT>
 typename MemT::elem_t Matrix<rows, cols, MemT>::operator()(int row, int col) const
 {
-    return delegate(row, col);
+    return storage(row, col);
 }
 
 template <int rows, int cols, class MemT>
 template <int subRows, int subCols>
 Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left) const
 {
-    Reference<MemT> ref(delegate, top, left);
+    Reference<MemT> ref(storage, top, left);
     return Matrix<subRows, subCols, Reference<MemT>>(ref);
 }
 
@@ -110,7 +110,7 @@ Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
 template <int rows, int cols, class MemT>
 Matrix<rows, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Ref() const
 {
-    Reference<MemT> ref(delegate, 0, 0);
+    Reference<MemT> ref(storage, 0, 0);
     return Matrix<rows, cols, Reference<MemT>>(ref);
 }
 
@@ -119,7 +119,7 @@ template <int operandCols, class opMemT>
 Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> Matrix<rows, cols, MemT>::operator||(
     const Matrix<rows, operandCols, opMemT> &obj) const
 {
-    HorzCat<cols, MemT, opMemT> ref(delegate, obj.delegate);
+    HorzCat<cols, MemT, opMemT> ref(storage, obj.storage);
     return Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>>(ref);
 }
 
@@ -128,7 +128,7 @@ template <int operandRows, class opMemT>
 Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> Matrix<rows, cols, MemT>::operator&&(
     const Matrix<operandRows, cols, opMemT> &obj) const
 {
-    VertCat<rows, MemT, opMemT> ref(delegate, obj.delegate);
+    VertCat<rows, MemT, opMemT> ref(storage, obj.storage);
     return Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>>(ref);
 }
 
@@ -150,7 +150,7 @@ Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator+=(const Matrix<rows
     {
         for (int j = 0; j < cols; j++)
         {
-            delegate(i, j) += obj.delegate(i, j);
+            storage(i, j) += obj.storage(i, j);
         }
     }
 
@@ -175,7 +175,7 @@ Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator-=(const Matrix<rows
     {
         for (int j = 0; j < cols; j++)
         {
-            delegate(i, j) -= obj.delegate(i, j);
+            storage(i, j) -= obj.storage(i, j);
         }
     }
 
@@ -192,9 +192,9 @@ Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> Matri
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < operandCols; j++)
         {
-            if (cols > 0) ret.delegate(i, j) = delegate(i, 0) * operand.delegate(0, j);
+            if (cols > 0) ret.storage(i, j) = storage(i, 0) * operand.storage(0, j);
 
-            for (int k = 1; k < cols; k++) ret.delegate(i, j) += delegate(i, k) * operand.delegate(k, j);
+            for (int k = 1; k < cols; k++) ret.storage(i, j) += storage(i, k) * operand.storage(k, j);
         }
 
     return ret;
@@ -223,7 +223,7 @@ Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, 
 template <int rows, int cols, class MemT>
 Matrix<cols, rows, Trans<MemT>> Matrix<rows, cols, MemT>::operator~() const
 {
-    Trans<MemT> ref(delegate);
+    Trans<MemT> ref(storage);
     Matrix<cols, rows, Trans<MemT>> tmp(ref);
 
     return tmp;
@@ -233,7 +233,7 @@ template <int rows, int cols, class MemT>
 Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator+=(const typename MemT::elem_t k)
 {
     for (int i = 0; i < rows; ++i)
-        for (int j = 0; j < cols; ++j) delegate(i, j) += k;
+        for (int j = 0; j < cols; ++j) storage(i, j) += k;
 
     return *this;
 }
@@ -242,7 +242,7 @@ template <int rows, int cols, class MemT>
 Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator-=(const typename MemT::elem_t k)
 {
     for (int i = 0; i < rows; ++i)
-        for (int j = 0; j < cols; ++j) delegate(i, j) -= k;
+        for (int j = 0; j < cols; ++j) storage(i, j) -= k;
 
     return *this;
 }
@@ -251,7 +251,7 @@ template <int rows, int cols, class MemT>
 Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator*=(const typename MemT::elem_t k)
 {
     for (int i = 0; i < rows; ++i)
-        for (int j = 0; j < cols; ++j) delegate(i, j) *= k;
+        for (int j = 0; j < cols; ++j) storage(i, j) *= k;
 
     return *this;
 }
@@ -260,7 +260,7 @@ template <int rows, int cols, class MemT>
 Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::operator/=(const typename MemT::elem_t k)
 {
     for (int i = 0; i < rows; ++i)
-        for (int j = 0; j < cols; ++j) delegate(i, j) /= k;
+        for (int j = 0; j < cols; ++j) storage(i, j) /= k;
 
     return *this;
 }

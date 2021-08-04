@@ -24,7 +24,7 @@ struct LUDecomposition
     LowerTriangleOnesDiagonal<MemT> lower;
     UpperTriangle<MemT> upper;
 
-    LUDecomposition(Matrix<dim, dim, MemT> &A) : lower(A.delegate), upper(A.delegate) {}
+    LUDecomposition(Matrix<dim, dim, MemT> &A) : lower(A.storage), upper(A.storage) {}
 
     PermutationMatrix<dim, typename MemT::elem_t> P()
     {
@@ -223,7 +223,7 @@ typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
     // Add the determinants of all the minors
     for (int i = 0; i < dim; i++)
     {
-        Minor<MemT> del(A.delegate, i, 0);
+        Minor<MemT> del(A.storage, i, 0);
         Matrix<dim - 1, dim - 1, Minor<MemT>> m(del);
 
         if (i % 2)

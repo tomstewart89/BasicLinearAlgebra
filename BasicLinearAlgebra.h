@@ -16,7 +16,7 @@ class Matrix
     const static int Rows = rows;
     const static int Cols = cols;
 
-    MemT delegate;
+    MemT storage;
 
     // Constructors
     Matrix<rows, cols, MemT>() = default;

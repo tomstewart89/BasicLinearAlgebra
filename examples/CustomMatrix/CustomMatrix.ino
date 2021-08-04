@@ -62,7 +62,7 @@ void setup()
     // (postmultiplication) of a matrix
 
     // So if we modify the diagonal
-    for (int i = 0; i < diag.Rows; i++) diag.delegate(i, i) = i + 1;
+    for (int i = 0; i < diag.Rows; i++) diag.storage(i, i) = i + 1;
 
     // And multiply again, we'll see that the rows have been scaled
     Serial << "scaled rows: " << diag * mat;
