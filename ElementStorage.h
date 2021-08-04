@@ -1,5 +1,4 @@
-#ifndef MEMORY_DELEGATE_H
-#define MEMORY_DELEGATE_H
+#pragma once
 
 namespace BLA
 {
@@ -229,5 +228,3 @@ struct UpperTriangle
 };
 
 }  // namespace BLA
-
-#endif  // MEMORY_DELEGATE_H

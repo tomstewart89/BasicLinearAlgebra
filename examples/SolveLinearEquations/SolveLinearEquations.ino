@@ -40,7 +40,7 @@ void setup()
 
     Serial << "x (via LU decomposition): " << x_lusolve << "\n";
 
-    // We can also recompute x for a new b vector without to repeat the decomposition:
+    // We can also recompute x for a new b vector without having to repeat the decomposition:
     Matrix<6> another_b = {23, 19, 86, 3, 23, 90};
     x_lusolve = LUSolve(decomp, another_b);
 
