@@ -6,17 +6,20 @@ using namespace BLA;
 
 TEST(LinearAlgebra, LUDecomposition)
 {
-    BLA::Matrix<3, 3> A = {9.79, 9.33, 11.62, 7.77, 14.77, 14.12, 11.33, 15.72, 12.12};
+    Matrix<7, 7> A = {16, 78, 50, 84, 70, 63, 2, 32, 33, 61, 40, 17, 96, 98, 50, 80, 78, 27, 86, 49, 57, 10, 42, 96, 44,
+                      87, 60, 67, 16, 59, 53, 8, 64, 97, 41, 90, 56, 22, 48, 32, 12, 4,  45, 78, 43, 11, 7,  8,  12};
 
     auto A_orig = A;
 
     auto decomp = LUDecompose(A);
 
+    EXPECT_FALSE(decomp.singular);
+
     auto A_reconstructed = decomp.P() * decomp.L() * decomp.U();
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < A.Rows; ++i)
     {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < A.Cols; ++j)
         {
             EXPECT_FLOAT_EQ(A_reconstructed(i, j), A_orig(i, j));
         }
@@ -33,7 +36,7 @@ TEST(LinearAlgebra, LUSolution)
 
     auto x = LUSolve(decomp, b);
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < x_expected.Rows; ++i)
     {
         EXPECT_FLOAT_EQ(x_expected(i), x(i));
     }
@@ -48,9 +51,9 @@ TEST(LinearAlgebra, Inversion)
 
     auto I = A_inv * A;
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < A.Rows; ++i)
     {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < A.Cols; ++j)
         {
             if (i == j)
             {
