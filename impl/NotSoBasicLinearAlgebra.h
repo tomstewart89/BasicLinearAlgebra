@@ -3,11 +3,17 @@
 namespace BLA
 {
 template <typename T>
-inline void __swap(T &a, T &b)
+inline void _swap(T &a, T &b)
 {
     T tmp = a;
     a = b;
     b = tmp;
+}
+
+template <typename T>
+inline const T &_max(const T &a, const T &b)
+{
+    return a > b ? a : b;
 }
 
 template <int dim, class MemT>
@@ -41,17 +47,19 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
     {
         idx[i] = i;
     }
+
     // row_scale stores the implicit scaling of each row
-    float row_scale[dim];
+    typename MemT::elem_t row_scale[dim];
 
     for (int i = 0; i < dim; ++i)
     {
         // Loop over rows to get the implicit scaling information.
-        float largest_elem = 0.0;
+        typename MemT::elem_t largest_elem = 0.0;
 
         for (int j = 0; j <= dim; ++j)
         {
-            largest_elem = max(fabs(A(i, j)), largest_elem);
+            typename MemT::elem_t this_elem = fabs(A(i, j));
+            largest_elem = _max(this_elem, largest_elem);
         }
 
         // No nonzero largest element.
@@ -70,7 +78,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         // Calculate beta ij
         for (int i = 0; i < j; ++i)
         {
-            float sum = 0.0;
+            typename MemT::elem_t sum = 0.0;
 
             for (int k = 0; k < i; ++k)
             {
@@ -83,7 +91,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         // Calcuate alpha ij (before division by the pivot)
         for (int i = j; i < dim; ++i)
         {
-            float sum = 0.0;
+            typename MemT::elem_t sum = 0.0;
 
             for (int k = 0; k < j; ++k)
             {
@@ -94,12 +102,12 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         }
 
         // Search for largest pivot element
-        float largest_elem = 0.0;
+        typename MemT::elem_t largest_elem = 0.0;
         int argmax = j;
 
         for (int i = j; i < dim; i++)
         {
-            float this_elem = row_scale[i] * fabs(A(i, j));
+            typename MemT::elem_t this_elem = row_scale[i] * fabs(A(i, j));
 
             if (this_elem >= largest_elem)
             {
@@ -112,10 +120,10 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         {
             for (int k = 0; k < dim; ++k)
             {
-                __swap(A(argmax, k), A(j, k));
+                _swap(A(argmax, k), A(j, k));
             }
 
-            __swap(idx[j], idx[argmax]);
+            _swap(idx[j], idx[argmax]);
             row_scale[argmax] = row_scale[j];
         }
 
@@ -127,7 +135,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         if (j != dim)
         {
             // Now, finally, divide by the pivot element.
-            float pivot_inv = 1.0 / A(j, j);
+            typename MemT::elem_t pivot_inv = 1.0 / A(j, j);
 
             for (int i = j + 1; i < dim; ++i)
             {
@@ -151,7 +159,7 @@ Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim,
     // Forward substitution to solve L * y = b
     for (int i = 0; i < dim; ++i)
     {
-        float sum = 0.0;
+        typename MemT2::elem_t sum = 0.0;
 
         for (int j = 0; j < i; ++j)
         {
@@ -164,7 +172,7 @@ Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim,
     // Backward substitution to solve U * x = y
     for (int i = dim - 1; i >= 0; --i)
     {
-        float sum = 0.0;
+        typename MemT2::elem_t sum = 0.0;
 
         for (int j = i + 1; j < dim; ++j)
         {

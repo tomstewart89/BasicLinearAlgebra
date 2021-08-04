@@ -177,7 +177,7 @@ struct Permutation
 
     int idx[dim];
 
-    ElemT operator()(int row, int col) const { return idx[row] == col; }
+    ElemT operator()(int row, int col) const { return idx[col] == row; }
 };
 
 template <class MemT>
