@@ -28,9 +28,9 @@ void setup()
     auto decomp = LUDecompose(A_decomp);
 
     // You can take a look at these matrices if you like:
-    Serial << "P: " << decomp.P() << "\n";
-    Serial << "L: " << decomp.L() << "\n";
-    Serial << "U: " << decomp.U() << "\n";
+    decomp.P();  // P essentially rearranges the rows of the matrix that results when we multiply L by U
+    decomp.L();  // Will have ones along its diagonal and zeros above it
+    decomp.U();  // Will have zeros below its diagonal
 
     // And if we multiply them all together we'll recover the original A matrix:
     Serial << "reconstructed A: " << decomp.P() * decomp.L() * decomp.U() << "\n";
