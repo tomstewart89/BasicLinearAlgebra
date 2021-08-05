@@ -245,4 +245,31 @@ typename MemT::elem_t Determinant(Matrix<2, 2, MemT> &A)
     return A(0, 0) * A(1, 1) - A(1, 0) * A(0, 1);
 }
 
+template <int rows, int cols, class MemT>
+typename MemT::elem_t Norm(const Matrix<rows, cols, MemT> &A)
+{
+    typename MemT::elem_t sum_sq = 0.0;
+
+    for (int i = 0; i < rows; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            sum_sq += A(i, j) * A(i, j);
+        }
+    }
+    return sqrt(sum_sq);
+}
+
+template <int rows, int cols, class MemT>
+typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
+{
+    typename MemT::elem_t sum_diag = 0.0;
+
+    for (int i = 0; i < rows; ++i)
+    {
+        sum_diag += A(i, i);
+    }
+    return sum_diag;
+}
+
 }  // namespace BLA
