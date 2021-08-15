@@ -89,35 +89,28 @@ typename MemT::elem_t Matrix<rows, cols, MemT>::operator()(int row, int col) con
 
 template <int rows, int cols, class MemT>
 template <int subRows, int subCols>
-Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left) const
+Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left)
 {
     Reference<MemT> ref(storage, top, left);
     return Matrix<subRows, subCols, Reference<MemT>>(ref);
 }
 
 template <int rows, int cols, class MemT>
-Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i) const
+Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i)
 {
     return Submatrix<1, cols>(i, 0);
 }
 
 template <int rows, int cols, class MemT>
-Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
+Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j)
 {
     return Submatrix<rows, 1>(0, j);
 }
 
 template <int rows, int cols, class MemT>
-Matrix<rows, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Ref() const
-{
-    Reference<MemT> ref(storage, 0, 0);
-    return Matrix<rows, cols, Reference<MemT>>(ref);
-}
-
-template <int rows, int cols, class MemT>
 template <int operandCols, class opMemT>
 Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> Matrix<rows, cols, MemT>::operator||(
-    const Matrix<rows, operandCols, opMemT> &obj) const
+    Matrix<rows, operandCols, opMemT> &obj)
 {
     HorzCat<cols, MemT, opMemT> ref(storage, obj.storage);
     return Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>>(ref);
@@ -126,7 +119,7 @@ Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> Matrix<rows, cols,
 template <int rows, int cols, class MemT>
 template <int operandRows, class opMemT>
 Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> Matrix<rows, cols, MemT>::operator&&(
-    const Matrix<operandRows, cols, opMemT> &obj) const
+    Matrix<operandRows, cols, opMemT> &obj)
 {
     VertCat<rows, MemT, opMemT> ref(storage, obj.storage);
     return Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>>(ref);
@@ -221,7 +214,7 @@ Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, 
 }
 
 template <int rows, int cols, class MemT>
-Matrix<cols, rows, Trans<MemT>> Matrix<rows, cols, MemT>::operator~() const
+Matrix<cols, rows, Trans<MemT>> Matrix<rows, cols, MemT>::operator~()
 {
     Trans<MemT> ref(storage);
     Matrix<cols, rows, Trans<MemT>> tmp(ref);
