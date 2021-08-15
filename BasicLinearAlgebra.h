@@ -48,22 +48,18 @@ class Matrix
     typename MemT::elem_t operator()(int row, int col = 0) const;
 
     template <int subRows, int subCols>
-    Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left) const;
+    Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left);
 
-    Matrix<1, cols, Reference<MemT>> Row(int i) const;
+    Matrix<1, cols, Reference<MemT>> Row(int i);
 
-    Matrix<rows, 1, Reference<MemT>> Column(int j) const;
-
-    Matrix<rows, cols, Reference<MemT>> Ref() const;
+    Matrix<rows, 1, Reference<MemT>> Column(int j);
 
     // Concatenation
     template <int operandCols, class opMemT>
-    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> operator||(
-        const Matrix<rows, operandCols, opMemT> &obj) const;
+    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> operator||(Matrix<rows, operandCols, opMemT> &obj);
 
     template <int operandRows, class opMemT>
-    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> operator&&(
-        const Matrix<operandRows, cols, opMemT> &obj) const;
+    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> operator&&(Matrix<operandRows, cols, opMemT> &obj);
 
     // Addition
     template <class opMemT>
@@ -91,7 +87,7 @@ class Matrix
     Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-() const;
 
     // Transposition
-    Matrix<cols, rows, Trans<MemT>> operator~() const;
+    Matrix<cols, rows, Trans<MemT>> operator~();
 
     // Elementwise Operations
     Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator+(const typename MemT::elem_t k) const;

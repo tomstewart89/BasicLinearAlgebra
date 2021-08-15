@@ -72,14 +72,6 @@ void setup()
     // And vertically
     BLA::Matrix<6, 3> AonTopOfB = A && B;
 
-    // Note that both transposition and concatenation both take copies of the underlying matrices. If you're using large
-    // matrices and doing concatenations often you might want to take a reference to the operand matrices. Operating on
-    // references doesn't change the underlying memory so it takes O(1) time to make concatenations and transposes out
-    // of them.
-
-    auto refAonTopOfB = A.Ref() && B.Ref();  // auto saves us having to write out the full datatype, which gets a bit
-                                             // convoluted when references are involved
-
     // An inverse of a matrix can also be calculated for square matrices via the Invert function:
     BLA::Matrix<3, 3> C_inv = C;
     bool is_nonsingular = Invert(C_inv);
