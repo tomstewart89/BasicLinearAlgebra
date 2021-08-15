@@ -20,6 +20,7 @@ template <int dim, class MemT>
 struct LUDecomposition
 {
     bool singular;
+    typename MemT::elem_t parity;
     Permutation<dim, typename MemT::elem_t> permutation;
     LowerTriangleOnesDiagonal<MemT> lower;
     UpperTriangle<MemT> upper;
@@ -42,6 +43,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
 {
     LUDecomposition<dim, MemT> decomp(A);
     auto &idx = decomp.permutation.idx;
+    decomp.parity = 1.0;
 
     for (int i = 0; i < dim; ++i)
     {
@@ -122,6 +124,8 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
             {
                 _swap(A(argmax, k), A(j, k));
             }
+
+            decomp.parity = -decomp.parity;
 
             _swap(idx[j], idx[argmax]);
             row_scale[argmax] = row_scale[j];
@@ -218,31 +222,18 @@ bool Invert(Matrix<dim, dim, MemT> &A)
 template <int dim, class MemT>
 typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
 {
-    typename MemT::elem_t det = 0;
+    Matrix<dim, dim> A_copy = A;
 
-    // Add the determinants of all the minors
-    for (int i = 0; i < dim; i++)
+    auto decomp = LUDecompose(A_copy);
+
+    typename MemT::elem_t det = decomp.parity;
+
+    for (int i = 0; i < dim; ++i)
     {
-        Minor<MemT> del(A.storage, i, 0);
-        Matrix<dim - 1, dim - 1, Minor<MemT>> m(del);
-
-        if (i % 2)
-        {
-            det -= Determinant(m) * A(i, 0);
-        }
-        else
-        {
-            det += Determinant(m) * A(i, 0);
-        }
+        det *= decomp.upper(i, i);
     }
 
     return det;
-}
-
-template <class MemT>
-typename MemT::elem_t Determinant(Matrix<2, 2, MemT> &A)
-{
-    return A(0, 0) * A(1, 1) - A(1, 0) * A(0, 1);
 }
 
 template <int rows, int cols, class MemT>
