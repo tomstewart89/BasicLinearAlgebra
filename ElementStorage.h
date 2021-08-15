@@ -21,11 +21,25 @@ struct Reference
     int rowOffset, colOffset;
 
     Reference<MemT>(MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) {}
-    Reference<MemT>(const Reference<MemT> &obj) : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset)
+
+    elem_t &operator()(int row, int col) { return parent(row + rowOffset, col + colOffset); }
+    elem_t operator()(int row, int col) const { return parent(row + rowOffset, col + colOffset); }
+};
+
+template <class MemT>
+struct ConstReference
+{
+    typedef typename MemT::elem_t elem_t;
+
+    const MemT &parent;
+    int rowOffset, colOffset;
+
+    ConstReference<MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) {}
+    ConstReference<MemT>(const ConstReference<MemT> &obj)
+        : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset)
     {
     }
 
-    elem_t &operator()(int row, int col) { return parent(row + rowOffset, col + colOffset); }
     elem_t operator()(int row, int col) const { return parent(row + rowOffset, col + colOffset); }
 };
 

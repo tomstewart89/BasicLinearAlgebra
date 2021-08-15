@@ -96,13 +96,33 @@ Matrix<subRows, subCols, Reference<MemT>> Matrix<rows, cols, MemT>::Submatrix(in
 }
 
 template <int rows, int cols, class MemT>
+template <int subRows, int subCols>
+Matrix<subRows, subCols, ConstReference<MemT>> Matrix<rows, cols, MemT>::Submatrix(int top, int left) const
+{
+    ConstReference<MemT> ref(storage, top, left);
+    return Matrix<subRows, subCols, ConstReference<MemT>>(ref);
+}
+
+template <int rows, int cols, class MemT>
 Matrix<1, cols, Reference<MemT>> Matrix<rows, cols, MemT>::Row(int i)
 {
     return Submatrix<1, cols>(i, 0);
 }
 
 template <int rows, int cols, class MemT>
+Matrix<1, cols, ConstReference<MemT>> Matrix<rows, cols, MemT>::Row(int i) const
+{
+    return Submatrix<1, cols>(i, 0);
+}
+
+template <int rows, int cols, class MemT>
 Matrix<rows, 1, Reference<MemT>> Matrix<rows, cols, MemT>::Column(int j)
+{
+    return Submatrix<rows, 1>(0, j);
+}
+
+template <int rows, int cols, class MemT>
+Matrix<rows, 1, ConstReference<MemT>> Matrix<rows, cols, MemT>::Column(int j) const
 {
     return Submatrix<rows, 1>(0, j);
 }

@@ -97,6 +97,14 @@ TEST(Arithmetic, Multiplication)
     EXPECT_FLOAT_EQ(C(2, 1), 131.);
     EXPECT_FLOAT_EQ(C(2, 2), 39.);
 
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            EXPECT_FLOAT_EQ(C(i, j), (A.Row(i) * B.Column(j))(0, 0));
+        }
+    }
+
     A *= B;
 
     for (int i = 0; i < 3; ++i)
@@ -127,6 +135,34 @@ TEST(Arithmetic, Concatenation)
             EXPECT_FLOAT_EQ(AonTopOfB(i + 3, j), B(i, j));
         }
     }
+}
+
+TEST(Arithmetic, OuterProduct)
+{
+    Matrix<3> v = {1.0, 2.0, 3.0};
+
+    Matrix<3, 3> A = v * ~v;
+
+    for (int i = 0; i < A.Rows; ++i)
+    {
+        for (int j = 0; j < A.Cols; ++j)
+        {
+            EXPECT_FLOAT_EQ(A(i, j), v(i) * v(j));
+        }
+    }
+}
+
+TEST(Arithmetic, Reference)
+{
+    const Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
+    Matrix<3, 3> B = {2.25, 6.77, 9.67, 14.55, 0.23, 3.21, 5.67, 6.75, 11.56};
+
+    const auto A_ref = A.Submatrix<2, 2>(0, 1);
+    auto B_ref = B.Submatrix<2, 2>(0, 1);
+
+    B_ref(0, 0) = A(0, 0) * A_ref(0, 0);
+
+    EXPECT_FLOAT_EQ(B(0, 1), A(0, 0) * A(0, 1));
 }
 
 int main(int argc, char **argv)
