@@ -50,9 +50,14 @@ class Matrix
     template <int subRows, int subCols>
     Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left);
 
+    template <int subRows, int subCols>
+    Matrix<subRows, subCols, ConstReference<MemT>> Submatrix(int top, int left) const;
+
     Matrix<1, cols, Reference<MemT>> Row(int i);
+    Matrix<1, cols, ConstReference<MemT>> Row(int i) const;
 
     Matrix<rows, 1, Reference<MemT>> Column(int j);
+    Matrix<rows, 1, ConstReference<MemT>> Column(int j) const;
 
     // Concatenation
     template <int operandCols, class opMemT>
