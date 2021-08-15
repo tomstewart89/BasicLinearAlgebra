@@ -109,12 +109,11 @@ template <class MemT>
 struct Trans
 {
     typedef typename MemT::elem_t elem_t;
-    MemT &parent;
+    const MemT &parent;
 
-    Trans<MemT>(MemT &obj) : parent(obj) {}
+    Trans<MemT>(const MemT &obj) : parent(obj) {}
     Trans<MemT>(Trans<MemT> &obj) : parent(obj.parent) {}
 
-    elem_t &operator()(int row, int col) { return parent(col, row); }
     elem_t operator()(int row, int col) const { return parent(col, row); }
 };
 
@@ -122,12 +121,11 @@ template <int leftCols, class LeftMemT, class RightMemT>
 struct HorzCat
 {
     typedef typename LeftMemT::elem_t elem_t;
-    LeftMemT &left;
-    RightMemT &right;
+    const LeftMemT &left;
+    const RightMemT &right;
 
-    HorzCat<leftCols, LeftMemT, RightMemT>(LeftMemT &l, RightMemT &r) : left(l), right(r) {}
+    HorzCat<leftCols, LeftMemT, RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) {}
 
-    elem_t &operator()(int row, int col) { return col < leftCols ? left(row, col) : right(row, col - leftCols); }
     elem_t operator()(int row, int col) const { return col < leftCols ? left(row, col) : right(row, col - leftCols); }
 };
 
@@ -135,12 +133,11 @@ template <int topRows, class TopMemT, class BottomMemT>
 struct VertCat
 {
     typedef typename TopMemT::elem_t elem_t;
-    TopMemT &top;
-    BottomMemT &bottom;
+    const TopMemT &top;
+    const BottomMemT &bottom;
 
-    VertCat<topRows, TopMemT, BottomMemT>(TopMemT &t, BottomMemT &b) : top(t), bottom(b) {}
+    VertCat<topRows, TopMemT, BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) {}
 
-    elem_t &operator()(int row, int col) { return row < topRows ? top(row, col) : bottom(row - topRows, col); }
     elem_t operator()(int row, int col) const { return row < topRows ? top(row, col) : bottom(row - topRows, col); }
 };
 
@@ -151,7 +148,7 @@ struct Permutation
 
     int idx[dim];
 
-    ElemT operator()(int row, int col) const { return idx[col] == row; }
+    elem_t operator()(int row, int col) const { return idx[col] == row; }
 };
 
 template <class MemT>
