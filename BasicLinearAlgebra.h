@@ -62,11 +62,11 @@ class Matrix
     // Concatenation
     template <int operandCols, class opMemT>
     Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> operator||(
-        Matrix<rows, operandCols, opMemT> &obj) const;
+        const Matrix<rows, operandCols, opMemT> &obj) const;
 
     template <int operandRows, class opMemT>
     Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> operator&&(
-        Matrix<operandRows, cols, opMemT> &obj) const;
+        const Matrix<operandRows, cols, opMemT> &obj) const;
 
     // Addition
     template <class opMemT>
