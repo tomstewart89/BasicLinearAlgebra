@@ -163,6 +163,16 @@ TEST(Arithmetic, Reference)
     B_ref(0, 0) = A(0, 0) * A_ref(0, 0);
 
     EXPECT_FLOAT_EQ(B(0, 1), A(0, 0) * A(0, 1));
+
+    B.Submatrix<3, 3>(0, 0) = A;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            EXPECT_FLOAT_EQ(B(i, j), A(i, j));
+        }
+    }
 }
 
 int main(int argc, char **argv)

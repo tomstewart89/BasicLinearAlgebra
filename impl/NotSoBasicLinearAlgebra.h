@@ -196,7 +196,7 @@ Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim,
 }
 
 template <int dim, class MemT>
-bool Invert(Matrix<dim, dim, MemT> &A)
+bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
 {
     Matrix<dim, dim> A_copy = A;
 
@@ -212,11 +212,25 @@ bool Invert(Matrix<dim, dim, MemT> &A)
     for (int j = 0; j < dim; ++j)
     {
         b(j) = 1.0;
-        A.Column(j) = LUSolve(decomp, b);
+        out.Column(j) = LUSolve(decomp, b);
         b(j) = 0.0;
     }
 
     return true;
+}
+
+template <int dim, class MemT>
+bool Invert(Matrix<dim, dim, MemT> &A)
+{
+    return Invert(A, A);
+}
+
+template <int dim, class MemT>
+Matrix<dim, dim, MemT> Inverse(const Matrix<dim, dim, MemT> &A)
+{
+    Matrix<dim, dim> out;
+    Invert(A, out);
+    return out;
 }
 
 template <int dim, class MemT>
