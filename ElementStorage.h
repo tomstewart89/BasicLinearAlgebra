@@ -223,13 +223,12 @@ struct PermutationMatrix : public MatrixBase<PermutationMatrix<Dim, DType>, Dim,
 };
 
 template <class ParentType>
-struct LowerTriangularDiagonalOnesMatrix
-    : public MatrixBase<LowerTriangularDiagonalOnesMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
-                        typename ParentType::DType>
+struct LowerUnitriangularMatrix : public MatrixBase<LowerUnitriangularMatrix<ParentType>, ParentType::Rows,
+                                                    ParentType::Cols, typename ParentType::DType>
 {
     const ParentType &parent;
 
-    LowerTriangularDiagonalOnesMatrix(const ParentType &obj) : parent(obj) {}
+    LowerUnitriangularMatrix(const ParentType &obj) : parent(obj) {}
 
     typename ParentType::DType operator()(int row, int col) const
     {
@@ -240,6 +239,27 @@ struct LowerTriangularDiagonalOnesMatrix
         else if (row == col)
         {
             return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+};
+
+template <class ParentType>
+struct LowerTriangularMatrix : public MatrixBase<LowerTriangularMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
+                                                 typename ParentType::DType>
+{
+    const ParentType &parent;
+
+    LowerTriangularMatrix(const ParentType &obj) : parent(obj) {}
+
+    typename ParentType::DType operator()(int row, int col) const
+    {
+        if (row >= col)
+        {
+            return parent(row, col);
         }
         else
         {
