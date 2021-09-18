@@ -20,3 +20,5 @@ struct Print
     }
 
 } Serial;
+
+using std::max;

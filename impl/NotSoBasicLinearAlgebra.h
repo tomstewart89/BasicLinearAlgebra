@@ -3,17 +3,11 @@
 namespace BLA
 {
 template <typename T>
-inline void _swap(T &a, T &b)
+inline void bla_swap(T &a, T &b)
 {
     T tmp = a;
     a = b;
     b = tmp;
-}
-
-template <typename T>
-inline const T &_max(const T &a, const T &b)
-{
-    return a > b ? a : b;
 }
 
 template <int dim, class MemT>
@@ -61,7 +55,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         for (int j = 0; j <= dim; ++j)
         {
             typename MemT::elem_t this_elem = fabs(A(i, j));
-            largest_elem = _max(this_elem, largest_elem);
+            largest_elem = max(this_elem, largest_elem);
         }
 
         // No nonzero largest element.
@@ -122,12 +116,12 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         {
             for (int k = 0; k < dim; ++k)
             {
-                _swap(A(argmax, k), A(j, k));
+                bla_swap(A(argmax, k), A(j, k));
             }
 
             decomp.parity = -decomp.parity;
 
-            _swap(idx[j], idx[argmax]);
+            bla_swap(idx[j], idx[argmax]);
             row_scale[argmax] = row_scale[j];
         }
 
