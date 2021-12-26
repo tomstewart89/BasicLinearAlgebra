@@ -147,9 +147,10 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
 }
 
 template <int dim, class MemT1, class MemT2>
-Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim, 1, MemT2> &b)
+ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, MemT1> &decomp,
+                                                    const Matrix<dim, 1, MemT2> &b)
 {
-    Matrix<dim, 1, MemT2> x, tmp;
+    ArrayMatrix<dim, 1, typename MemT2::elem_t> x, tmp;
 
     auto &idx = decomp.permutation.idx;
     auto &LU = decomp.lower.parent;
@@ -192,7 +193,7 @@ Matrix<dim> LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim,
 template <int dim, class MemT>
 bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
 {
-    Matrix<dim, dim> A_copy = A;
+    ArrayMatrix<dim, dim, typename MemT::elem_t> A_copy = A;
 
     auto decomp = LUDecompose(A_copy);
 
@@ -201,7 +202,7 @@ bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
         return false;
     }
 
-    Matrix<dim> b = Zeros<dim>();
+    ArrayMatrix<dim, 1, typename MemT::elem_t> b = Zeros<dim>();
 
     for (int j = 0; j < dim; ++j)
     {
@@ -222,7 +223,7 @@ bool Invert(Matrix<dim, dim, MemT> &A)
 template <int dim, class MemT>
 Matrix<dim, dim, MemT> Inverse(const Matrix<dim, dim, MemT> &A)
 {
-    Matrix<dim, dim> out;
+    ArrayMatrix<dim, dim, typename MemT::elem_t> out;
     Invert(A, out);
     return out;
 }
