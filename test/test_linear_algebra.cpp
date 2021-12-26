@@ -67,6 +67,18 @@ TEST(LinearAlgebra, Inversion)
     }
 }
 
+TEST(LinearAlgebra, DoublePrecisionInverse)
+{
+    ArrayMatrix<6, 6, double> A = {1. / 48.,  0,          0,         0, 0, 0, 0, 1. / 48.,  0,        0,       0, 0, 0,
+                                   -1. / 48., 1. / 48.,   0,         0, 0, 0, 0, 0,         1. / 24., 0,       0, 0, 0,
+                                   0,         -1. / 28.8, 1. / 28.8, 0, 0, 0, 0, -1. / 12., 1. / 24., 1. / 24.};
+
+    auto A_inv = Inverse(A * 1.8);
+
+    EXPECT_DOUBLE_EQ(A_inv(0, 0), 80.0 / 3.0);
+    EXPECT_DOUBLE_EQ(A_inv(5, 5), 40.0 / 3.0);
+}
+
 TEST(Arithmetic, Determinant)
 {
     Matrix<6, 6> B = {0.05508292, 0.82393504, 0.34938018, 0.63818054, 0.18291131, 0.1986636,  0.56799604, 0.81077491,
