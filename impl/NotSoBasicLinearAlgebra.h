@@ -52,7 +52,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         // Loop over rows to get the implicit scaling information.
         typename MemT::elem_t largest_elem = 0.0;
 
-        for (int j = 0; j <= dim; ++j)
+        for (int j = 0; j < dim; ++j)
         {
             typename MemT::elem_t this_elem = fabs(A(i, j));
             largest_elem = max(this_elem, largest_elem);
