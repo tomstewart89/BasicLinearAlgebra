@@ -65,6 +65,10 @@ TEST(LinearAlgebra, Inversion)
             }
         }
     }
+
+    BLA::Matrix<3, 3> singular = {1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+
+    EXPECT_FALSE(Invert(singular));
 }
 
 TEST(LinearAlgebra, DoublePrecisionInverse)
@@ -90,6 +94,10 @@ TEST(Arithmetic, Determinant)
     float det_numpy = -0.03919640039505248;
 
     EXPECT_FLOAT_EQ(Determinant(B), det_numpy);
+
+    BLA::Matrix<3, 3> singular = {1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+
+    EXPECT_FLOAT_EQ(Determinant(singular), 0.0);
 }
 
 int main(int argc, char **argv)

@@ -127,7 +127,8 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
 
         if (A(j, j) == 0.0)
         {
-            A(j, j) = 1.0e-20;
+            decomp.singular = true;
+            return decomp;
         }
 
         if (j != dim)
