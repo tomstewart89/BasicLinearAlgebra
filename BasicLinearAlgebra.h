@@ -39,8 +39,8 @@ class Matrix
     Matrix<rows, cols, MemT> &Fill(const typename MemT::elem_t &val);
 
     template <typename... TAIL>
-    void FillRowMajor(typename MemT::elem_t head, TAIL... tail);
-    void FillRowMajor();
+    void FillRowMajor(int start_idx, typename MemT::elem_t head, TAIL... tail);
+    void FillRowMajor(int start_idx);
 
     // Element Access
     typename MemT::elem_t &operator()(int row, int col = 0);

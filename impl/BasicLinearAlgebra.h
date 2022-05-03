@@ -23,7 +23,7 @@ template <int rows, int cols, class MemT>
 template <typename... TAIL>
 Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t head, TAIL... args)
 {
-    FillRowMajor(head, args...);
+    FillRowMajor(0, head, args...);
 }
 
 template <int rows, int cols, class MemT>
@@ -63,16 +63,22 @@ Matrix<rows, cols, MemT> &Matrix<rows, cols, MemT>::Fill(const typename MemT::el
 
 template <int rows, int cols, class MemT>
 template <typename... TAIL>
-void Matrix<rows, cols, MemT>::FillRowMajor(typename MemT::elem_t head, TAIL... tail)
+void Matrix<rows, cols, MemT>::FillRowMajor(int start_idx, typename MemT::elem_t head, TAIL... tail)
 {
     static_assert(rows * cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
-    (*this)((rows * cols - sizeof...(TAIL) - 1) / cols, (rows * cols - sizeof...(TAIL) - 1) % cols) = head;
-    FillRowMajor(tail...);
+
+    (*this)(start_idx / cols, start_idx % cols) = head;
+
+    FillRowMajor(++start_idx, tail...);
 }
 
 template <int rows, int cols, class MemT>
-void Matrix<rows, cols, MemT>::FillRowMajor()
+void Matrix<rows, cols, MemT>::FillRowMajor(int start_idx)
 {
+    for (int i = start_idx; i < rows * cols; ++i)
+    {
+        (*this)(i / cols, i % cols) = 0.0;
+    }
 }
 
 template <int rows, int cols, class MemT>
