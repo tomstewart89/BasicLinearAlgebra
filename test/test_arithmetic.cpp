@@ -6,12 +6,23 @@ using namespace BLA;
 
 TEST(Arithmetic, BraceInitialisation)
 {
-    Matrix<2, 2> B = {0.0, 45.34, 32.98, 1456.1222};
+    Matrix<2, 2> B{0.0, 45.34, 32.98, 1456.1222};
 
     EXPECT_FLOAT_EQ(B(0, 0), 0);
     EXPECT_FLOAT_EQ(B(0, 1), 45.34);
     EXPECT_FLOAT_EQ(B(1, 0), 32.98);
     EXPECT_FLOAT_EQ(B(1, 1), 1456.1222);
+
+    Matrix<2, 2> C{1.54, 5.98};
+
+    EXPECT_FLOAT_EQ(C(0, 0), 1.54);
+    EXPECT_FLOAT_EQ(C(0, 1), 5.98);
+    EXPECT_FLOAT_EQ(C(1, 0), 0.0);
+    EXPECT_FLOAT_EQ(C(1, 1), 0.0);
+
+    Matrix<3, 3> D{0};
+
+    EXPECT_FLOAT_EQ(Norm(D), 0.0);
 }
 
 TEST(Arithmetic, Fill)
