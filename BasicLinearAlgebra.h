@@ -22,7 +22,6 @@ class Matrix
     Matrix<rows, cols, MemT>() = default;
 
     Matrix<rows, cols, MemT>(MemT &d);
-    Matrix<rows, cols, MemT>(typename MemT::elem_t arr[rows][cols]);
 
     template <class opMemT>
     Matrix<rows, cols, MemT>(const Matrix<rows, cols, opMemT> &obj);

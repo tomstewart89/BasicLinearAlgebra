@@ -47,11 +47,8 @@ void setup()
 
     // The submatrix function actually returns a RefMatrix so if you like you can just use it directly. For example you
     // can set a section of bigMatrix using an array like so:
-    float arr[4][4] = {{23.44, 43.23, 12.45, 6.23},
-                       {93.94, 27.23, 1.44, 101.23},
-                       {1.23, 3.21, 4.56, 8.76},
-                       {12.34, 34.56, 76.54, 21.09}};
-    bigMatrix.Submatrix<4, 4>(4, 2) = arr;
+    bigMatrix.Submatrix<4, 4>(4, 2) = BLA::Matrix<4, 4>{23.44, 43.23, 12.45, 6.23, 93.94, 27.23, 1.44,  101.23,
+                                                        1.23,  3.21,  4.56,  8.76, 12.34, 34.56, 76.54, 21.09};
 
     // For all intents and purposes you can treat reference matrices as just regular matrices.
     RefMatrix<2, 4, Array<8, 8>> anotherRef =

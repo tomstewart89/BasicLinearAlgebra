@@ -25,7 +25,7 @@ void setup()
 
     // The default underlying type of the Array class's array is float. If you want to use a different type, say int for
     // example, then just pass it as a template parameter like so:
-    BLA::Matrix<3, 3, Array<3, 3, int>> intA;
+    BLA::Matrix<3, 3, Array<3, 3, int>> intA = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     // I find this to be a bit cumbersome though so I've defined a template alias called ArrayMatrix which can be used
     // like so:
@@ -33,8 +33,6 @@ void setup()
 
     // From here you'll be able to do everything you'd be able to do with a float Matrix, but with int precision and
     // memory useage.
-    int array[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    intA = array;
 
     // You can actually pass any datatype you like to the template and it'll do it's best to make a Matrix out of it.
     ArrayMatrix<3, 3, unsigned char> charA;

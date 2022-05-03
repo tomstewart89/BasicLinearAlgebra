@@ -14,12 +14,6 @@ Matrix<rows, cols, MemT>::Matrix(MemT &d) : storage(d)
 }
 
 template <int rows, int cols, class MemT>
-Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t arr[rows][cols])
-{
-    *this = arr;
-}
-
-template <int rows, int cols, class MemT>
 template <typename... TAIL>
 Matrix<rows, cols, MemT>::Matrix(typename MemT::elem_t head, TAIL... args)
 {
