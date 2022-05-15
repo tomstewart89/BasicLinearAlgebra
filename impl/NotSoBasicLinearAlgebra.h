@@ -1,4 +1,8 @@
 #pragma once
+#ifndef ARDUINO
+#include <algorithm>
+using std::min, std::max;
+#endif
 
 namespace BLA
 {
