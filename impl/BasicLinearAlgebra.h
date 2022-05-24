@@ -4,13 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef ARDUINO
 #include "Arduino.h"
-#else
-#include <iostream>
-#define endl std::endl
-#define Serial std::cout
-#endif
 
 namespace BLA
 {
@@ -320,8 +314,6 @@ Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> Matrix<rows, cols, 
     return ret;
 }
 
-#ifdef ARDUINO
-
 inline Print &operator<<(Print &strm, const int obj)
 {
     strm.print(obj);
@@ -362,22 +354,5 @@ Print &operator<<(Print &strm, const Matrix<rows, cols, MemT> &obj)
     }
     return strm;
 }
-#else
-template <int rows, int cols, class MemT>
-std::ostream& operator<< (std::ostream& strm, const Matrix<rows, cols, MemT> obj){
-    strm << '[';
-
-    for (int i = 0; i < rows; i++)
-    {
-        strm << '[';
-
-        for (int j = 0; j < cols; j++) strm << obj(i, j) << ((j == cols - 1) ? ']' : ',');
-
-        strm << (i == rows - 1 ? ']' : ',');
-    }
-    return strm;
-}
-
-#endif
 
 }  // namespace BLA
