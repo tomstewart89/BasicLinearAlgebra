@@ -26,7 +26,8 @@ struct Print
         buf.str("");
     }
 
-    Print& operator<< (std::ostream& (*pf)(std::ostream&)){
+    Print& operator<< (std::ostream& (*pf)(std::ostream&))
+    {
         buf << pf;
         return *this;
     }
