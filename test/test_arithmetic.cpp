@@ -39,6 +39,22 @@ TEST(Arithmetic, Fill)
     }
 }
 
+
+TEST(Arithmetic, OnesTest)
+{
+    Matrix<2, 2> A = Zeros<2,2>;
+    Matrix<2, 2> B = Ones<2,2>;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_FLOAT_EQ(A(i, j), 0);
+            EXPECT_FLOAT_EQ(B(i, j), 1);
+        }
+    }
+}
+
 TEST(Arithmetic, AdditionSubtraction)
 {
     Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
@@ -89,6 +105,7 @@ TEST(Arithmetic, ElementwiseOperations)
         }
     }
 }
+
 
 TEST(Arithmetic, Multiplication)
 {
