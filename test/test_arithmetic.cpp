@@ -39,7 +39,6 @@ TEST(Arithmetic, Fill)
     }
 }
 
-
 TEST(Arithmetic, OnesTest)
 {
     Matrix<2, 2> A = Zeros<2,2>;
@@ -105,7 +104,6 @@ TEST(Arithmetic, ElementwiseOperations)
         }
     }
 }
-
 
 TEST(Arithmetic, Multiplication)
 {
