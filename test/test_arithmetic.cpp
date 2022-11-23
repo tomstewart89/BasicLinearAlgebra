@@ -49,8 +49,8 @@ TEST(Arithmetic, OnesTest)
     {
         for (int j = 0; j < 2; ++j)
         {
-            EXPECT_FLOAT_EQ(A(i, j), 0);
-            EXPECT_FLOAT_EQ(B(i, j), 1);
+            EXPECT_FLOAT_EQ(A(i, j), 0.0f);
+            EXPECT_FLOAT_EQ(B(i, j), 1.0f);
         }
     }
 }
