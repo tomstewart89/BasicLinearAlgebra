@@ -42,8 +42,8 @@ TEST(Arithmetic, Fill)
 
 TEST(Arithmetic, OnesTest)
 {
-    Matrix<2, 2> A = Zeros<2,2>;
-    Matrix<2, 2> B = Ones<2,2>;
+    Matrix<2, 2> A = Zeros<2,2>();
+    Matrix<2, 2> B = Ones<2,2>();
 
     for (int i = 0; i < 2; ++i)
     {
