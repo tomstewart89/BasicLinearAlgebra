@@ -41,7 +41,7 @@ At times, it's handy to be able to instruct the matrix to do something else when
 
 If you like, you can override the way in which the elements for the matrix are stored by specifying a storage type that the Matrix class will refer to when accessing elements. For example, we can define a 2000x3000 matrix with a sparse storage policy like so:  
 ```
-Matrix<2000,3000, float, Sparse<3000,100,float> > sparseMatrix;
+Matrix<2000,3000, Sparse<3000,100,float> > sparseMatrix;
 ```
 In this case the ```Sparse<3000,100,float>``` type is the memory storage which provides storage for 100 elements which are assumed to be embedded in a matrix having 3000 columns. You can find the implementation for this class in ElementStorage.h file, but long story short, it's a hashmap.
 

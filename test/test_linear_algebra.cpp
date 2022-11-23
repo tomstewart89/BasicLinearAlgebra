@@ -100,6 +100,45 @@ TEST(Arithmetic, Determinant)
     EXPECT_FLOAT_EQ(Determinant(singular), 0.0);
 }
 
+template <typename SparseMatA, typename SparseMatB, int OutTableSize = 100>
+SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, OutTableSize> sparse_mul(const SparseMatA &A, const SparseMatB &B)
+{
+    static_assert(A.Cols == B.Rows);
+
+    SparseMatrix<A.Rows, B.Cols, OutTableSize> out;
+
+    for (int i = 0; i < A.storage.size; ++i)
+    {
+        for (int j = 0; j < B.storage.size; ++j)
+        {
+            const auto &elem_a = A.storage.table[i];
+            const auto &elem_b = B.storage.table[j];
+
+            if (elem_a.row >= 0 && elem_b.row >= 0)
+            {
+                out(elem_a.row, elem_b.col) += elem_a.val * elem_b.val;
+            }
+        }
+    }
+
+    return out;
+}
+
+TEST(Examples, SparseMatrix)
+{
+    SparseMatrix<1, 3000, 100> A;
+    SparseMatrix<3000, 1, 100> B;
+
+    A(0, 1000) = 5.0;
+    B(1000, 0) = 5.0;
+
+    auto C = sparse_mul(A, B);
+
+    Matrix<2000, 3000, Sparse<3000, 100, float> > sparseMatrix;
+
+    EXPECT_EQ(C(0, 0), 25.0);
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
