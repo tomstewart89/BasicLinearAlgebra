@@ -41,15 +41,15 @@ TEST(Arithmetic, Fill)
 
 TEST(Arithmetic, OnesTest)
 {
-    Matrix<2, 2> A = Zeros<2,2>;
-    Matrix<2, 2> B = Ones<2,2>;
+    Matrix<2, 2> A = Zeros<2,2>();
+    Matrix<2, 2> B = Ones<2,2>();
 
     for (int i = 0; i < 2; ++i)
     {
         for (int j = 0; j < 2; ++j)
         {
-            EXPECT_FLOAT_EQ(A(i, j), 0);
-            EXPECT_FLOAT_EQ(B(i, j), 1);
+            EXPECT_FLOAT_EQ(A(i, j), 0.0f);
+            EXPECT_FLOAT_EQ(B(i, j), 1.0f);
         }
     }
 }
