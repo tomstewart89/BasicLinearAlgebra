@@ -125,6 +125,9 @@ using Identity = Matrix<rows, cols, Eye<ElemT>>;
 template <int rows, int cols = 1, class ElemT = float>
 using Zeros = Matrix<rows, cols, Zero<ElemT>>;
 
+template <int rows, int cols = 1, class ElemT = float>
+using Ones = Matrix<rows, cols, One<ElemT>>;
+
 template <int rows, int cols, int tableSize = cols, class ElemT = float>
 using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
 

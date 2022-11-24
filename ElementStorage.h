@@ -59,6 +59,14 @@ struct Zero
     elem_t operator()(int row, int col) const { return 0; }
 };
 
+template <class ElemT>
+struct One
+{
+    typedef ElemT elem_t;
+
+    elem_t operator()(int row, int col) const { return 1; }
+};
+
 // This uses a hash table to look up row/col/val items. It uses an open
 // addressing collision strategy so we can avoid using dynamic memory
 template <int cols, int tableSize, class ElemT>
