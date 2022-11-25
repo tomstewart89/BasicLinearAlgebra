@@ -67,63 +67,61 @@ struct One
     elem_t operator()(int row, int col) const { return 1; }
 };
 
-// This uses a hash table to look up row/col/val items. It uses an open
-// addressing collision strategy so we can avoid using dynamic memory
 template <int cols, int tableSize, class ElemT>
 struct Sparse
 {
     typedef ElemT elem_t;
-    static elem_t outOfMemory;
+    const static int size = tableSize;
+    elem_t end;
 
-    struct HashItem
+    struct Element
     {
-        mutable int key;
-        mutable ElemT val;
+        int row, col;
+        ElemT val;
 
-        HashItem() { key = -1; }
+        Element() { row = col = -1; }
 
     } table[tableSize];
 
     elem_t &operator()(int row, int col)
     {
-        // Make a key out of the row / column
-        int key = row * cols + col;
+        int hash = (row * cols + col) % tableSize;
 
-        // Calculate the hash by taking the modulo of the key with the tableSize
-        int hash = key % tableSize;
-
-        const HashItem *item;
-
-        // Find a item with a key matching the input key
         for (int i = 0; i < tableSize; i++)
         {
-            item = table + (hash + i) % tableSize;
+            Element &item = table[(hash + i) % tableSize];
 
-            // If the element is empty or unused (val == 0) then the item doesn't
-            // exist in the table
-            if (item->key == -1 || item->val == 0)
+            if (item.row == -1 || item.val == 0)
             {
-                item->key = key;
-                item->val = 0;
-                break;
+                item.row = row;
+                item.col = col;
+                item.val = 0;
             }
 
-            // If it's key matches the input key then return it
-            if (item->key == key)
+            if (item.row == row && item.col == col)
             {
-                break;
+                return item.val;
             }
         }
 
-        // If we landed on a matching key then we're done!
-        if (item->key == key)
+        return end;
+    }
+
+    elem_t operator()(int row, int col) const
+    {
+        int hash = (row * cols + col) % tableSize;
+
+        for (int i = 0; i < tableSize; i++)
         {
-            return item->val;
+            const Element &item = table[(hash + i) % tableSize];
+
+            if (item.row == row && item.col == col)
+            {
+                return item.val;
+            }
         }
-        else
-        {
-            return Sparse<cols, tableSize, ElemT>::outOfMemory;
-        }
+
+        return 0;
     }
 };
 
