@@ -158,8 +158,7 @@ TEST(Examples, numericJacobian){
     float x2 = 0;
     Matrix<2> x_ = {x1, x2};
 
-    Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
-
+    // Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
 
     Matrix<3,2> Jacob = Jacobian<3,2>(jacobianTestFunction, x_);
     EXPECT_NEAR(Jacob(0, 0), 0, 1e-4);
@@ -169,7 +168,25 @@ TEST(Examples, numericJacobian){
     EXPECT_NEAR(Jacob(1, 1), 1, 1e-4);
 
     EXPECT_NEAR(Jacob(2, 0), 1, 1e-4);
-    EXPECT_NEAR(Jacob(2, 1), 1, 1e-4);\
+    EXPECT_NEAR(Jacob(2, 1), 1, 1e-4);
+}
+
+float gradientTestFunction(Matrix<2> x){
+    return (x(0) + x(1)) * (x(0) + x(1))  + x(1);
+}
+
+TEST(Examples, numericGradient){
+    // f = (x0 + x1)^2 + x1;
+    //df/dx = [2(x0 + x1), 2(x0 + x1) + 1]
+    float x1 = 3.00;
+    float x2 = 4.00;
+    Matrix<2> x_ = {x1, x2};
+
+    //with small enough steps (h), you run into floating point problems
+    Matrix<2,1> G = Gradient<2>(gradientTestFunction, x_, 0.0003);
+    EXPECT_NEAR(G(0), 14, 1e-2);
+    EXPECT_NEAR(G(1), 15, 1e-2);
+
 }
 
 int main(int argc, char **argv)
