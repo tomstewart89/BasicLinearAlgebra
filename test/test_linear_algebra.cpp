@@ -141,8 +141,8 @@ TEST(Examples, SparseMatrix)
 
 
 Matrix<3> jacobianTestFunction(Matrix<2> x){
-    Matrix<3> p1 = {cos(x(1)), sin(x(1)), x(1)};
-    Matrix<3> p2 = {cos(x(1) + x(2)), sin(x(1) + x(2)), x(2)};
+    Matrix<3> p1 = {cos(x(0)), sin(x(0)), x(0)};
+    Matrix<3> p2 = { cos((x(0) + x(1))) , sin((x(0) + x(1))) , x(1)};
 
     return p1 + p2; 
 }
@@ -154,16 +154,19 @@ TEST(Examples, numericJacobian){
     //       [cos(x1) + cos(x1 + x2) ,  cos(x1 + x2)]
     //       [      1                ,          1   ]]
 
-    Matrix<2> x_ = {2.55, 1.34};
+    float x1 = 0;
+    float x2 = 0;
+    Matrix<2> x_ = {x1, x2};
 
-    Matrix<3,2> Jacob = Jacobian<3,2>(&jacobianTestFunction, x_);
+    Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
 
+
+    Matrix<3,2> Jacob = Jacobian<3,2>(jacobianTestFunction, x_);
+    EXPECT_NEAR(Jacob(0, 0), 0, 1e-4);
+    EXPECT_NEAR(Jacob(0, 1), 0, 1e-4);
     
-    EXPECT_NEAR(Jacob(0, 0), 0.122788, 1e-4);
-    EXPECT_NEAR(Jacob(0, 1), 0.680473, 1e-4);
-    
-    EXPECT_NEAR(Jacob(1, 0), -1.56282709, 1e-4);
-    EXPECT_NEAR(Jacob(1, 1), -0.7327736, 1e-4);
+    EXPECT_NEAR(Jacob(1, 0), 2, 1e-4);
+    EXPECT_NEAR(Jacob(1, 1), 1, 1e-4);
 
     EXPECT_NEAR(Jacob(2, 0), 1, 1e-4);
     EXPECT_NEAR(Jacob(2, 1), 1, 1e-4);\

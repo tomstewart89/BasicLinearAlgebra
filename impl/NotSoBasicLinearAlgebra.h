@@ -274,34 +274,38 @@ typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
 }
 
 
-template <int n, int m, class MemT>
-Matrix<n, m, MemT> Jacobian( Matrix<n, 1, MemT> (*f)(Matrix<m, 1, MemT>), Matrix<m, 1, MemT> x, MemT::elem_t h = 0.0001)
-{   
-    //uses df/dx ~= ( f(x + h) - f(x) ) / h for small h
-
-    Matrix<n, 1, MemT> f_x = f(x);
+/**
+ * @brief numerically approximate the jacobian of a vector valued function. Cannot be used at the boundary of the domain
+ * 
+ * @tparam n inputs
+ * @tparam m outputs
+ * @tparam MemT 
+ * @param f vector valued functor 
+ * @param _x Point to take a derivative at
+ * @param h step size. Set at 0.0001, but for more precise applications, it can be lowered
+ * @return Matrix<n, m, MemT> 
+ */
+template <int n, int m, class MemT = Array<n, m, float>>
+Matrix<n, m, MemT> Jacobian(Matrix<n, 1, Array<n,1, typename MemT::elem_t>> (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
+{  
+    Matrix<n, 1, Array<n, 1, typename MemT::elem_t> > f_x = f(_x);
 
     Matrix<n, m, MemT> Jacob;
   
-    // Jacob = [df/dx1 df/dx2 ... df/dxn]
     for(int i = 0; i < m; i++){
-
-        Matrix<m, 1, MemT> h_vec;
+        Matrix<m, 1, Array<m, 1, typename MemT::elem_t>> h_vec = Zeros<m>();
         h_vec(i) = 1.00;
         h_vec = h_vec * h;
 
-        //f(x+h)
-        Matrix<n, 1, MemT> f_xh = f(x + h_vec);
+        Matrix<n, 1, Array<n, 1, typename MemT::elem_t> > f_xh = f(_x + h_vec);
 
-        //(f(x + h) - f(x))/h 
-        Matrix<n, 1, MemT> df = (f_xh - f_x)/h;
+        Matrix<n, 1, Array<n, 1, typename MemT::elem_t> > df = (f_xh - f_x)/h;
 
         for(int j = 0; j < n; j++){
             Jacob(j,i) = df(j);
         }
-
-        return Jacob;
     }
+    return Jacob;
 }
 
 
