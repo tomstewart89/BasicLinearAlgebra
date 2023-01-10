@@ -273,4 +273,36 @@ typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
     return sum_diag;
 }
 
+
+template <int n, int m, class MemT>
+Matrix<n, m, MemT> Jacobian( Matrix<n, 1, MemT> (*f)(Matrix<m, 1, MemT>), Matrix<m, 1, MemT> x, MemT::elem_t h = 0.0001)
+{   
+    //uses df/dx ~= ( f(x + h) - f(x) ) / h for small h
+
+    Matrix<n, 1, MemT> f_x = f(x);
+
+    Matrix<n, m, MemT> Jacob;
+  
+    // Jacob = [df/dx1 df/dx2 ... df/dxn]
+    for(int i = 0; i < m; i++){
+
+        Matrix<m, 1, MemT> h_vec;
+        h_vec(i) = 1.00;
+        h_vec = h_vec * h;
+
+        //f(x+h)
+        Matrix<n, 1, MemT> f_xh = f(x + h_vec);
+
+        //(f(x + h) - f(x))/h 
+        Matrix<n, 1, MemT> df = (f_xh - f_x)/h;
+
+        for(int j = 0; j < n; j++){
+            Jacob(j,i) = df(j);
+        }
+
+        return Jacob;
+    }
+}
+
+
 }  // namespace BLA
