@@ -339,7 +339,7 @@ Matrix<m, 1, MemT> Gradient(typename MemT::elem_t (*f)(Matrix<m, 1, Array<m,1, t
         typename MemT::elem_t df = (f_xh - f_x)/h;
 
         // Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
-        G(i) = df
+        G(i) = df;
     }
     return G;
 }
