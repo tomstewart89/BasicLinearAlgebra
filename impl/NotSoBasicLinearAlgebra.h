@@ -286,10 +286,10 @@ typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
  * @param h step size. Set at 0.0001, but for more precise applications, it can be lowered
  * @return Matrix<n, m, MemT> 
  */
-template <int n, int m, class MemT = Array<n, m, float>, class outMem = Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> >
-Matrix<n, m, MemT> Jacobian(outMem (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
+template <int n, int m, class MemT = Array<n, m, float> >
+Matrix<n, m, MemT> Jacobian(Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
 {  
-    outMem f_x = f(_x);
+    Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_x = f(_x);
 
     Matrix<n, m, MemT> Jacob;
   
@@ -298,14 +298,14 @@ Matrix<n, m, MemT> Jacobian(outMem (*f)(Matrix<m, 1, Array<m,1, typename MemT::e
         h_vec(i) = 1.00;
         h_vec = h_vec * h;
 
-        outMem f_xh = f(_x + h_vec);
+        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_xh = f(_x + h_vec);
 
-        outMem df = (f_xh - f_x)/h;
+        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> df = (f_xh - f_x)/h;
 
-        Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
+        // Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
         
         for(int j = 0; j < n; j++){
-            Jacob(j,i) = df_mat(j);
+            Jacob(j,i) = df(j);
         }
     }
     return Jacob;
@@ -324,13 +324,23 @@ Matrix<n, m, MemT> Jacobian(outMem (*f)(Matrix<m, 1, Array<m,1, typename MemT::e
 template<int m, class MemT = Array<m, 1, float>>
 Matrix<m, 1, MemT> Gradient(typename MemT::elem_t (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001){
 
-    Matrix<1, m, Array<1, m, typename MemT::elem_t>> Gt = Jacobian<1,m,MemT, typename MemT::elem_t>(f, _x, h);
-    Matrix<m, 1, MemT> G;
-
-    for(int i = 0; i < m; i++){
-        G(i) = Gt(1,i);
-    }
     
+    typename MemT::elem_t f_x = f(_x);
+
+    Matrix<m, 1, MemT> G;
+  
+    for(int i = 0; i < m; i++){
+        Matrix<m, 1, Array<m, 1, typename MemT::elem_t>> h_vec = Zeros<m>();
+        h_vec(i) = 1.00;
+        h_vec = h_vec * h;
+
+        typename MemT::elem_t f_xh = f(_x + h_vec);
+
+        typename MemT::elem_t df = (f_xh - f_x)/h;
+
+        // Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
+        G(i) = df
+    }
     return G;
 }
 
