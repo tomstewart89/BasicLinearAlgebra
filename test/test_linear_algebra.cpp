@@ -160,7 +160,7 @@ TEST(Examples, numericJacobian){
 
     // Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
 
-    Matrix<3,2> Jacob = Jacobian<3,2>(jacobianTestFunction, x_);
+    Matrix<3,2> Jacob = Jacobian<3,2>(VVF<3,2>(jacobianTestFunction), x_);
     EXPECT_NEAR(Jacob(0, 0), 0, 1e-4);
     EXPECT_NEAR(Jacob(0, 1), 0, 1e-4);
     

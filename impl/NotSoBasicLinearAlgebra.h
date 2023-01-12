@@ -274,22 +274,51 @@ typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
 }
 
 
+template<int rows, int cols, class MemT = Array<rows, cols, float>> 
+class VectorValuedFunction{
+    private:
+        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (*_f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x);
+
+    public:
+        VectorValuedFunction(){}
+
+        VectorValuedFunction(Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (&f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x)){_f = f;}
+        VectorValuedFunction(const VectorValuedFunction &V){_f = V._f;}
+        
+        ~VectorValuedFunction(){}
+
+        virtual Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> vv_f(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
+            if(_f == nullptr){
+                return Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>>();
+            }else{
+                return _f(x);
+            }
+        }
+
+        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> operator ()(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
+            return vv_f(x);
+        }
+};
+
+template<int rows, int cols, class MemT = Array<rows, cols, float>>
+using VVF = VectorValuedFunction<rows, cols, MemT>;
+
+
 /**
  * @brief numerically approximate the jacobian of a vector valued function. Cannot be used at the boundary of the domain
  * 
  * @tparam n inputs
  * @tparam m outputs
  * @tparam MemT 
- * @tparam outMem the output type
  * @param f vector valued functor 
  * @param _x Point to take a derivative at
  * @param h step size. Set at 0.0001, but for more precise applications, it can be lowered
  * @return Matrix<n, m, MemT> 
  */
 template <int n, int m, class MemT = Array<n, m, float> >
-Matrix<n, m, MemT> Jacobian(Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
+Matrix<n, m, MemT> Jacobian(VectorValuedFunction<n,m,MemT> f, Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
 {  
-    Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_x = f(_x);
+    Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_x = f.vv_f(_x);
 
     Matrix<n, m, MemT> Jacob;
   
@@ -298,7 +327,7 @@ Matrix<n, m, MemT> Jacobian(Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> (*f
         h_vec(i) = 1.00;
         h_vec = h_vec * h;
 
-        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_xh = f(_x + h_vec);
+        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_xh = f.vv_f(_x + h_vec);
 
         Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> df = (f_xh - f_x)/h;
 
