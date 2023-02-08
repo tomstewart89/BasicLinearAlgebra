@@ -339,37 +339,4 @@ Matrix<n, m, MemT> Jacobian(VectorValuedFunction<n,m,MemT> f, Matrix<m, 1, Array
     return Jacob;
 }
 
-/**
- * @brief get the gradient as a column vector
- * 
- * @tparam m 
- * @tparam MemT 
- * @param f 
- * @param _x 
- * @param h 
- * @return Matrix<m, 1, MemT> 
- */
-template<int m, class MemT = Array<m, 1, float>>
-Matrix<m, 1, MemT> Gradient(typename MemT::elem_t (*f)(Matrix<m, 1, Array<m,1, typename MemT::elem_t>> x), Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001){
-
-    
-    typename MemT::elem_t f_x = f(_x);
-
-    Matrix<m, 1, MemT> G;
-  
-    for(int i = 0; i < m; i++){
-        Matrix<m, 1, Array<m, 1, typename MemT::elem_t>> h_vec = Zeros<m>();
-        h_vec(i) = 1.00;
-        h_vec = h_vec * h;
-
-        typename MemT::elem_t f_xh = f(_x + h_vec);
-
-        typename MemT::elem_t df = (f_xh - f_x)/h;
-
-        // Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
-        G(i) = df;
-    }
-    return G;
-}
-
 }  // namespace BLA
