@@ -331,7 +331,6 @@ Matrix<n, m, MemT> Jacobian(VectorValuedFunction<n,m,MemT> f, Matrix<m, 1, Array
 
         Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> df = (f_xh - f_x)/h;
 
-        // Matrix<n,1,Array<n,1,typename MemT::elem_t>> df_mat = (Matrix<n,1,Array<n,1,typename MemT::elem_t>>) df;
         
         for(int j = 0; j < n; j++){
             Jacob(j,i) = df(j);
