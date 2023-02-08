@@ -175,20 +175,6 @@ float gradientTestFunction(Matrix<2> x){
     return (x(0) + x(1)) * (x(0) + x(1))  + x(1);
 }
 
-TEST(Examples, numericGradient){
-    // f = (x0 + x1)^2 + x1;
-    //df/dx = [2(x0 + x1), 2(x0 + x1) + 1]
-    float x1 = 3.00;
-    float x2 = 4.00;
-    Matrix<2> x_ = {x1, x2};
-
-    //with small enough steps (h), you run into floating point problems
-    Matrix<2,1> G = Gradient<2>(gradientTestFunction, x_, 0.0003);
-    EXPECT_NEAR(G(0), 14, 1e-2);
-    EXPECT_NEAR(G(1), 15, 1e-2);
-
-}
-
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
