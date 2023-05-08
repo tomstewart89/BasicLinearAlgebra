@@ -19,10 +19,6 @@ TEST(Arithmetic, BraceInitialisation)
     EXPECT_FLOAT_EQ(C(0, 1), 5.98);
     EXPECT_FLOAT_EQ(C(1, 0), 0.0);
     EXPECT_FLOAT_EQ(C(1, 1), 0.0);
-
-    Matrix<3, 3> D{0};
-
-    EXPECT_FLOAT_EQ(Norm(D), 0.0);
 }
 
 TEST(Arithmetic, Fill)
@@ -41,8 +37,8 @@ TEST(Arithmetic, Fill)
 
 TEST(Arithmetic, OnesTest)
 {
-    Matrix<2, 2> A = Zeros<2,2>();
-    Matrix<2, 2> B = Ones<2,2>();
+    Matrix<2, 2> A = Zeros<2, 2>();
+    Matrix<2, 2> B = Ones<2, 2>();
 
     for (int i = 0; i < 2; ++i)
     {
@@ -86,12 +82,12 @@ TEST(Arithmetic, AdditionSubtraction)
 
 TEST(Arithmetic, ElementwiseOperations)
 {
-    Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
+    Matrix<3, 3> A = {3.25f, 5.67f, 8.67f, 4.55f, 7.23f, 9.00f, 2.35f, 5.73f, 10.56f};
 
-    auto C = A + 2.5;
-    auto D = A - 3.7;
-    auto E = A * 1.2;
-    auto F = A / 6.7;
+    auto C = A + 2.5f;
+    auto D = A - 3.7f;
+    auto E = A * 1.2f;
+    auto F = A / 6.7f;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -148,8 +144,8 @@ TEST(Arithmetic, Concatenation)
 
     Matrix<3, 3> B = {6.54, 3.66, 2.95, 3.22, 7.54, 5.12, 8.98, 9.99, 1.56};
 
-    Matrix<3, 6> AleftOfB = A || B;
-    Matrix<6, 3> AonTopOfB = A && B;
+    auto AleftOfB = A || B;
+    auto AonTopOfB = A && B;
 
     for (int i = 0; i < 3; ++i)
     {

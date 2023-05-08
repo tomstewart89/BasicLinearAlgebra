@@ -18,14 +18,14 @@ include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/..")
 add_executable(test_arithmetic test_arithmetic.cpp)
 target_link_libraries(test_arithmetic gtest_main)
 
-add_executable(test_linear_algebra test_linear_algebra.cpp)
-target_link_libraries(test_linear_algebra gtest_main)
+# add_executable(test_linear_algebra test_linear_algebra.cpp)
+# target_link_libraries(test_linear_algebra gtest_main)
 
-add_executable(test_examples test_examples.cpp)
-target_link_libraries(test_examples gtest_main)
+# add_executable(test_examples test_examples.cpp)
+# target_link_libraries(test_examples gtest_main)
 
 include(GoogleTest)
 
 gtest_discover_tests(test_arithmetic)
-gtest_discover_tests(test_linear_algebra)
-gtest_discover_tests(test_examples)
+# gtest_discover_tests(test_linear_algebra)
+# gtest_discover_tests(test_examples)

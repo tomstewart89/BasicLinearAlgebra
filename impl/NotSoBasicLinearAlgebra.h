@@ -147,9 +147,8 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
     return decomp;
 }
 
-template <int dim, class MemT1, class MemT2>
-ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, MemT1> &decomp,
-                                                    const Matrix<dim, 1, MemT2> &b)
+template <int dim, class LUType, class BType>
+Matrix<dim, 1, > LUSolve(const LUDecomposition<dim, MemT1> &decomp, const Matrix<dim, 1, MemT2> &b)
 {
     ArrayMatrix<dim, 1, typename MemT2::elem_t> x, tmp;
 
