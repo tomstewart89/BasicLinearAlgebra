@@ -8,29 +8,36 @@
  * do a computation. Instead it'd be better to just store the non-zero elements and skip past the zeros when doing a
  * computation.
  *
- * For that reason, I've written the matrix class such that it's memory and the way it is accessed can be customised to
- * take advantage of whatever helpful properties the particular matrix might have. In this example we'll look at a
- * diagonal matrix - a matrix whose elements are zero except for those along it's diagonal (row == column)
+ * For that reason, I've written the matrix class such that we can customise the way a given matrix type retrieves its
+ * elements. In this example we'll look at a diagonal matrix - a matrix whose elements are zero except for those along
+ * it's diagonal (row == column).
  */
 
 // All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like
 // so:
 using namespace BLA;
 
-template <int Dim>
-struct DiagonalMatrix : public MatrixBase<DiagonalMatrix<Dim>, Dim, Dim, float>
+// To declare a custom matrix our class needs to inherit from MatrixBase. MatrixBase takes a few template parameters the
+// first of which is the custom matrix class itself. That's a bit confusing but just follow the template below and it'll
+// all work out!
+template <int Dim, typename DType = float>
+struct DiagonalMatrix : public MatrixBase<DiagonalMatrix<Dim>, Dim, Dim, DType>
 {
-    Matrix<Dim, 1, float> diagonal;
+    Matrix<Dim, 1, DType> diagonal;
 
-    float operator()(int row, int col) const
+    // For const matrices (ones whose elements can't be modified) you just need to implement this function:
+    DType operator()(int row, int col) const
     {
         // If it's on the diagonal and it's not larger than the matrix dimensions then return the element
         if (row == col)
             return diagonal(row);
         else
-            // Otherwise return a zero
-            return 0.f;
+            // Otherwise return zero
+            return 0.0f;
     }
+
+    // If you want to declare a matrix whose elements can be modified then you'll need to define this function:
+    // DType& operator()(int row, int col)
 };
 
 void setup()
