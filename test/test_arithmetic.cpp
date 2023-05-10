@@ -80,6 +80,25 @@ TEST(Arithmetic, AdditionSubtraction)
     }
 }
 
+TEST(Arithmetic, OtherDTypes)
+{
+    Matrix<3, 3, int> A = {3, 6, 5, 8, 34, 7, 3, 7, 9};
+
+    Matrix<3, 3, bool> B = {true, false, true, true, false, false};
+
+    auto C = A + 5;
+    auto D = B * false;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_EQ(C(i, j), A(i, j) + 5);
+            EXPECT_FALSE(D(i, j));
+        }
+    }
+}
+
 TEST(Arithmetic, ElementwiseOperations)
 {
     Matrix<3, 3> A = {3.25f, 5.67f, 8.67f, 4.55f, 7.23f, 9.00f, 2.35f, 5.73f, 10.56f};
@@ -97,6 +116,22 @@ TEST(Arithmetic, ElementwiseOperations)
             EXPECT_FLOAT_EQ(D(i, j), A(i, j) - 3.7);
             EXPECT_FLOAT_EQ(E(i, j), A(i, j) * 1.2);
             EXPECT_FLOAT_EQ(F(i, j), A(i, j) / 6.7);
+        }
+    }
+
+    C -= 2.5f;
+    D += 3.7f;
+    E /= 1.2f;
+    F *= 6.7f;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_FLOAT_EQ(C(i, j), A(i, j));
+            EXPECT_FLOAT_EQ(D(i, j), A(i, j));
+            EXPECT_FLOAT_EQ(E(i, j), A(i, j));
+            EXPECT_FLOAT_EQ(F(i, j), A(i, j));
         }
     }
 }
