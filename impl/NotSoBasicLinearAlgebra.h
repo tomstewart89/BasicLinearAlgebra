@@ -270,70 +270,31 @@ typename ParentType::DType Trace(
     return sum_diag;
 }
 
-
-template<int rows, int cols, class MemT = Array<rows, cols, float>> 
-class VectorValuedFunction{
-    private:
-        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (*_f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x);
-
-    public:
-        VectorValuedFunction(){}
-
-        VectorValuedFunction(Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (&f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x)){_f = f;}
-        VectorValuedFunction(const VectorValuedFunction &V){_f = V._f;}
-        
-        ~VectorValuedFunction(){}
-
-        virtual Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> vv_f(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
-            if(_f == nullptr){
-                return Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>>();
-            }else{
-                return _f(x);
-            }
-        }
-
-        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> operator ()(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
-            return vv_f(x);
-        }
+template <int Inputs, int Outputs, typename DType>
+struct MatrixFunctor
+{
+    virtual Matrix<Outputs, 1, DType> operator()(const Matrix<Inputs, 1, DType> &x) const = 0;
 };
 
-template<int rows, int cols, class MemT = Array<rows, cols, float>>
-using VVF = VectorValuedFunction<rows, cols, MemT>;
+template <int Inputs, int Outputs, typename InType>
+Matrix<Outputs, Inputs, typename InType::DType> Jacobian(
+    const MatrixFunctor<Inputs, Outputs, typename InType::DType> &f,
+    const MatrixBase<InType, Inputs, 1, typename InType::DType> &x, const typename InType::DType h = 1e-4)
+{
+    using DType = typename InType::DType;
 
+    Matrix<Outputs, Inputs, DType> jacobian;
+    Matrix<Outputs> f_x = f(x);
+    Matrix<Inputs, 1, DType> h_vec = Zeros<Inputs, 1, DType>();
 
-/**
- * @brief numerically approximate the jacobian of a vector valued function. Cannot be used at the boundary of the domain
- * 
- * @tparam n inputs
- * @tparam m outputs
- * @tparam MemT 
- * @param f vector valued functor 
- * @param _x Point to take a derivative at
- * @param h step size. Set at 0.0001, but for more precise applications, it can be lowered
- * @return Matrix<n, m, MemT> 
- */
-template <int n, int m, class MemT = Array<n, m, float> >
-Matrix<n, m, MemT> Jacobian(VectorValuedFunction<n,m,MemT> f, Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
-{  
-    Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_x = f.vv_f(_x);
-
-    Matrix<n, m, MemT> Jacob;
-  
-    for(int i = 0; i < m; i++){
-        Matrix<m, 1, Array<m, 1, typename MemT::elem_t>> h_vec = Zeros<m>();
-        h_vec(i) = 1.00;
-        h_vec = h_vec * h;
-
-        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_xh = f.vv_f(_x + h_vec);
-
-        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> df = (f_xh - f_x)/h;
-
-        
-        for(int j = 0; j < n; j++){
-            Jacob(j,i) = df(j);
-        }
+    for (int i = 0; i < Inputs; i++)
+    {
+        h_vec(i) = h;
+        Matrix<Outputs, 1, DType> f_xh = f(x + h_vec);
+        jacobian.Column(i) = (f_xh - f_x) / h;
+        h_vec(i) = 0;
     }
-    return Jacob;
+    return jacobian;
 }
 
 }  // namespace BLA

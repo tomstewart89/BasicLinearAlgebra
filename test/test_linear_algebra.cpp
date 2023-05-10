@@ -138,40 +138,38 @@ TEST(Examples, SparseMatrix)
     EXPECT_EQ(C(0, 0), 25.0);
 }
 
+class JacobianTestFunctor : public MatrixFunctor<2, 3, float>
+{
+    Matrix<3, 1, float> operator()(const Matrix<2, 1, float> &x) const override
+    {
+        Matrix<3> p1 = {cos(x(0)), sin(x(0)), x(0)};
+        Matrix<3> p2 = {cos((x(0) + x(1))), sin((x(0) + x(1))), x(1)};
 
-Matrix<3> jacobianTestFunction(Matrix<2> x){
-    Matrix<3> p1 = {cos(x(0)), sin(x(0)), x(0)};
-    Matrix<3> p2 = { cos((x(0) + x(1))) , sin((x(0) + x(1))) , x(1)};
+        return p1 + p2;
+    }
+};
 
-    return p1 + p2; 
-}
+TEST(Examples, numericJacobian)
+{
+    // JacobianTestFunctor(x) = [cos(x1) + cos(x1 + x2), sin(x1) + sin(x1 + x2), x1 + x2]
+    // jacobian =
+    //       [[-sin(x1) - sin(x1 + x2), -sin(x1 + x2)]
+    //        [cos(x1) + cos(x1 + x2) ,  cos(x1 + x2)]
+    //        [      1                ,          1   ]]
 
-TEST(Examples, numericJacobian){
-    //jacobianTestFunction(x) = [cos(x1) + cos(x1 + x2), sin(x1) + sin(x1 + x2), x1 + x2]
-    //jacobian = 
-    //      [[-sin(x1) - sin(x1 + x2), -sin(x1 + x2)]
-    //       [cos(x1) + cos(x1 + x2) ,  cos(x1 + x2)]
-    //       [      1                ,          1   ]]
+    Matrix<2> x = {0.0f, 0.0f};
+    JacobianTestFunctor functor;
 
-    float x1 = 0;
-    float x2 = 0;
-    Matrix<2> x_ = {x1, x2};
+    Matrix<3, 2> jacobian = Jacobian<2, 3>(JacobianTestFunctor(), x);
 
-    // Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
+    EXPECT_NEAR(jacobian(0, 0), 0, 1e-4);
+    EXPECT_NEAR(jacobian(0, 1), 0, 1e-4);
 
-    Matrix<3,2> Jacob = Jacobian<3,2>(VVF<3,2>(jacobianTestFunction), x_);
-    EXPECT_NEAR(Jacob(0, 0), 0, 1e-4);
-    EXPECT_NEAR(Jacob(0, 1), 0, 1e-4);
-    
-    EXPECT_NEAR(Jacob(1, 0), 2, 1e-4);
-    EXPECT_NEAR(Jacob(1, 1), 1, 1e-4);
+    EXPECT_NEAR(jacobian(1, 0), 2, 1e-4);
+    EXPECT_NEAR(jacobian(1, 1), 1, 1e-4);
 
-    EXPECT_NEAR(Jacob(2, 0), 1, 1e-4);
-    EXPECT_NEAR(Jacob(2, 1), 1, 1e-4);
-}
-
-float gradientTestFunction(Matrix<2> x){
-    return (x(0) + x(1)) * (x(0) + x(1))  + x(1);
+    EXPECT_NEAR(jacobian(2, 0), 1, 1e-4);
+    EXPECT_NEAR(jacobian(2, 1), 1, 1e-4);
 }
 
 int main(int argc, char **argv)
