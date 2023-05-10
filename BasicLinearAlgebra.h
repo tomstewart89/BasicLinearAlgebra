@@ -17,17 +17,9 @@ struct MatrixBase
     constexpr static int Cols = cols;
     using DType = d_type;
 
-    DType &operator()(int i, int j = 0)
-    {
-        assert(i < Rows && j < Cols);
-        return static_cast<DerivedType *>(this)->operator()(i, j);
-    }
+    DType &operator()(int i, int j = 0) { return static_cast<DerivedType *>(this)->operator()(i, j); }
 
-    DType operator()(int i, int j = 0) const
-    {
-        assert(i < Rows && j < Cols);
-        return static_cast<const DerivedType *>(this)->operator()(i, j);
-    }
+    DType operator()(int i, int j = 0) const { return static_cast<const DerivedType *>(this)->operator()(i, j); }
 
     MatrixBase() = default;
 
@@ -86,36 +78,36 @@ struct MatrixBase
     void Fill(const DType &val) { *this = val; }
 
     template <int SubRows, int SubCols>
-    MatrixRef<DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start)
+    RefMatrix<DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start)
     {
-        return MatrixRef<DerivedType, SubRows, SubCols>(static_cast<DerivedType &>(*this), row_start, col_start);
+        return RefMatrix<DerivedType, SubRows, SubCols>(static_cast<DerivedType &>(*this), row_start, col_start);
     }
 
     template <int SubRows, int SubCols>
-    MatrixRef<const DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start) const
+    RefMatrix<const DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start) const
     {
-        return MatrixRef<const DerivedType, SubRows, SubCols>(static_cast<const DerivedType &>(*this), row_start,
+        return RefMatrix<const DerivedType, SubRows, SubCols>(static_cast<const DerivedType &>(*this), row_start,
                                                               col_start);
     }
 
-    MatrixRef<DerivedType, 1, Cols> Row(int row_start)
+    RefMatrix<DerivedType, 1, Cols> Row(int row_start)
     {
-        return MatrixRef<DerivedType, 1, Cols>(static_cast<DerivedType &>(*this), row_start, 0);
+        return RefMatrix<DerivedType, 1, Cols>(static_cast<DerivedType &>(*this), row_start, 0);
     }
 
-    MatrixRef<const DerivedType, 1, Cols> Row(int row_start) const
+    RefMatrix<const DerivedType, 1, Cols> Row(int row_start) const
     {
-        return MatrixRef<const DerivedType, 1, Cols>(static_cast<const DerivedType &>(*this), row_start, 0);
+        return RefMatrix<const DerivedType, 1, Cols>(static_cast<const DerivedType &>(*this), row_start, 0);
     }
 
-    MatrixRef<DerivedType, Rows, 1> Column(int col_start)
+    RefMatrix<DerivedType, Rows, 1> Column(int col_start)
     {
-        return MatrixRef<DerivedType, Rows, 1>(static_cast<DerivedType &>(*this), 0, col_start);
+        return RefMatrix<DerivedType, Rows, 1>(static_cast<DerivedType &>(*this), 0, col_start);
     }
 
-    MatrixRef<const DerivedType, Rows, 1> Column(int col_start) const
+    RefMatrix<const DerivedType, Rows, 1> Column(int col_start) const
     {
-        return MatrixRef<const DerivedType, Rows, 1>(static_cast<const DerivedType &>(*this), 0, col_start);
+        return RefMatrix<const DerivedType, Rows, 1>(static_cast<const DerivedType &>(*this), 0, col_start);
     }
 
     MatrixTranspose<DerivedType> operator~() { return MatrixTranspose<DerivedType>(static_cast<DerivedType &>(*this)); }
@@ -145,4 +137,4 @@ struct MatrixBase
 }  // namespace BLA
 
 #include "impl/BasicLinearAlgebra.h"
-// #include "impl/NotSoBasicLinearAlgebra.h"
+#include "impl/NotSoBasicLinearAlgebra.h"

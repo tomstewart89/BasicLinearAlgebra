@@ -73,9 +73,9 @@ TEST(LinearAlgebra, Inversion)
 
 TEST(LinearAlgebra, DoublePrecisionInverse)
 {
-    ArrayMatrix<6, 6, double> A = {1. / 48.,  0,          0,         0, 0, 0, 0, 1. / 48.,  0,        0,       0, 0, 0,
-                                   -1. / 48., 1. / 48.,   0,         0, 0, 0, 0, 0,         1. / 24., 0,       0, 0, 0,
-                                   0,         -1. / 28.8, 1. / 28.8, 0, 0, 0, 0, -1. / 12., 1. / 24., 1. / 24.};
+    Matrix<6, 6, double> A = {1. / 48.,  0,          0,         0, 0, 0, 0, 1. / 48.,  0,        0,       0, 0, 0,
+                              -1. / 48., 1. / 48.,   0,         0, 0, 0, 0, 0,         1. / 24., 0,       0, 0, 0,
+                              0,         -1. / 28.8, 1. / 28.8, 0, 0, 0, 0, -1. / 12., 1. / 24., 1. / 24.};
 
     auto A_inv = Inverse(A * 1.8);
 
@@ -101,18 +101,19 @@ TEST(Arithmetic, Determinant)
 }
 
 template <typename SparseMatA, typename SparseMatB, int OutTableSize = 100>
-SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, OutTableSize> sparse_mul(const SparseMatA &A, const SparseMatB &B)
+SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, typename SparseMatA::DType, OutTableSize> sparse_mul(
+    const SparseMatA &A, const SparseMatB &B)
 {
     static_assert(A.Cols == B.Rows);
 
-    SparseMatrix<A.Rows, B.Cols, OutTableSize> out;
+    SparseMatrix<A.Rows, B.Cols, typename SparseMatA::DType, OutTableSize> out;
 
-    for (int i = 0; i < A.storage.size; ++i)
+    for (int i = 0; i < SparseMatA::Size; ++i)
     {
-        for (int j = 0; j < B.storage.size; ++j)
+        for (int j = 0; j < SparseMatB::Size; ++j)
         {
-            const auto &elem_a = A.storage.table[i];
-            const auto &elem_b = B.storage.table[j];
+            const auto &elem_a = A.table[i];
+            const auto &elem_b = B.table[j];
 
             if (elem_a.row >= 0 && elem_b.row >= 0)
             {
@@ -126,15 +127,13 @@ SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, OutTableSize> sparse_mul(const 
 
 TEST(Examples, SparseMatrix)
 {
-    SparseMatrix<1, 3000, 100> A;
-    SparseMatrix<3000, 1, 100> B;
+    SparseMatrix<1, 3000, float, 100> A;
+    SparseMatrix<3000, 1, float, 100> B;
 
     A(0, 1000) = 5.0;
     B(1000, 0) = 5.0;
 
     auto C = sparse_mul(A, B);
-
-    Matrix<2000, 3000, Sparse<3000, 100, float> > sparseMatrix;
 
     EXPECT_EQ(C(0, 0), 25.0);
 }

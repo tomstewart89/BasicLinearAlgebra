@@ -14,16 +14,8 @@ class Matrix : public MatrixBase<Matrix<Rows, Cols, DType>, Rows, Cols, DType>
    public:
     DType storage[Rows * Cols];
 
-    DType &operator()(int i, int j = 0)
-    {
-        assert(i >= 0 && j >= 0 && i < Rows && j < Cols);
-        return storage[i * Cols + j];
-    }
-    DType operator()(int i, int j = 0) const
-    {
-        assert(i >= 0 && j >= 0 && i < Rows && j < Cols);
-        return storage[i * Cols + j];
-    }
+    DType &operator()(int i, int j = 0) { return storage[i * Cols + j]; }
+    DType operator()(int i, int j = 0) const { return storage[i * Cols + j]; }
 
     Matrix() = default;
 
@@ -92,14 +84,14 @@ class Eye : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
 };
 
 template <typename RefType, int Rows, int Cols>
-class MatrixRef : public MatrixBase<MatrixRef<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType>
+class RefMatrix : public MatrixBase<RefMatrix<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType>
 {
     RefType &parent_;
     const int row_offset_;
     const int col_offset_;
 
    public:
-    explicit MatrixRef(RefType &parent, int row_offset = 0, int col_offset = 0)
+    explicit RefMatrix(RefType &parent, int row_offset = 0, int col_offset = 0)
         : parent_(parent), row_offset_(row_offset), col_offset_(col_offset)
     {
     }
@@ -108,9 +100,9 @@ class MatrixRef : public MatrixBase<MatrixRef<RefType, Rows, Cols>, Rows, Cols, 
     typename RefType::DType operator()(int i, int j) const { return parent_(i + row_offset_, j + col_offset_); }
 
     template <typename MatType>
-    MatrixRef &operator=(const MatType &mat)
+    RefMatrix &operator=(const MatType &mat)
     {
-        static_cast<MatrixBase<MatrixRef<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType> &>(*this) = mat;
+        static_cast<MatrixBase<RefMatrix<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType> &>(*this) = mat;
         return *this;
     }
 };
@@ -167,9 +159,11 @@ struct VerticalConcat : public MatrixBase<VerticalConcat<TopType, BottomType>, T
 };
 
 template <int Rows, int Cols, typename DType, int TableSize>
-struct Sparse : public MatrixBase<Sparse<Rows, Cols, DType, TableSize>, Rows, Cols, DType>
+struct SparseMatrix : public MatrixBase<SparseMatrix<Rows, Cols, DType, TableSize>, Rows, Cols, DType>
 {
     DType end;
+
+    static constexpr int Size = TableSize;
 
     struct Element
     {
@@ -222,62 +216,59 @@ struct Sparse : public MatrixBase<Sparse<Rows, Cols, DType, TableSize>, Rows, Co
     }
 };
 
-// template <int dim, class ElemT>
-// struct Permutation
-// {
-//     typedef ElemT elem_t;
+template <int Dim, class DType>
+struct PermutationMatrix : public MatrixBase<PermutationMatrix<Dim, DType>, Dim, Dim, DType>
+{
+    int idx[Dim];
 
-//     int idx[dim];
+    DType operator()(int row, int col) const { return idx[col] == row; }
+};
 
-//     elem_t operator()(int row, int col) const { return idx[col] == row; }
-// };
+template <class ParentType>
+struct LowerTriangularDiagonalOnesMatrix
+    : public MatrixBase<LowerTriangularDiagonalOnesMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
+                        typename ParentType::DType>
+{
+    const ParentType &parent;
 
-// template <class MemT>
-// struct LowerTriangleOnesDiagonal
-// {
-//     typedef typename MemT::elem_t elem_t;
+    LowerTriangularDiagonalOnesMatrix(const ParentType &obj) : parent(obj) {}
 
-//     const MemT &parent;
+    typename ParentType::DType operator()(int row, int col) const
+    {
+        if (row > col)
+        {
+            return parent(row, col);
+        }
+        else if (row == col)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+};
 
-//     LowerTriangleOnesDiagonal<MemT>(const MemT &obj) : parent(obj) {}
+template <class ParentType>
+struct UpperTriangularMatrix : public MatrixBase<UpperTriangularMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
+                                                 typename ParentType::DType>
+{
+    const ParentType &parent;
 
-//     elem_t operator()(int row, int col) const
-//     {
-//         if (row > col)
-//         {
-//             return parent(row, col);
-//         }
-//         else if (row == col)
-//         {
-//             return 1;
-//         }
-//         else
-//         {
-//             return 0;
-//         }
-//     }
-// };
+    UpperTriangularMatrix(const ParentType &obj) : parent(obj) {}
 
-// template <class MemT>
-// struct UpperTriangle
-// {
-//     typedef typename MemT::elem_t elem_t;
-
-//     const MemT &parent;
-
-//     UpperTriangle<MemT>(const MemT &obj) : parent(obj) {}
-
-//     elem_t operator()(int row, int col) const
-//     {
-//         if (row <= col)
-//         {
-//             return parent(row, col);
-//         }
-//         else
-//         {
-//             return 0;
-//         }
-//     }
-// };
+    typename ParentType::DType operator()(int row, int col) const
+    {
+        if (row <= col)
+        {
+            return parent(row, col);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+};
 
 }  // namespace BLA

@@ -42,7 +42,7 @@ MatrixBase<MatAType, MatARows, MatACols, DType> &operator*=(MatrixBase<MatAType,
 
 template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
 MatrixBase<MatAType, Rows, Cols, DType> &operator+=(MatrixBase<MatAType, Rows, Cols, DType> &matA,
-                                                    const MatrixBase<MatBType, Cols, Cols, DType> &matB)
+                                                    const MatrixBase<MatBType, Rows, Cols, DType> &matB)
 {
     for (int i = 0; i < Rows; ++i)
     {
@@ -57,7 +57,7 @@ MatrixBase<MatAType, Rows, Cols, DType> &operator+=(MatrixBase<MatAType, Rows, C
 
 template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
 MatrixBase<MatAType, Rows, Cols, DType> &operator-=(MatrixBase<MatAType, Rows, Cols, DType> &matA,
-                                                    const MatrixBase<MatBType, Cols, Cols, DType> &matB)
+                                                    const MatrixBase<MatBType, Rows, Cols, DType> &matB)
 {
     for (int i = 0; i < Rows; ++i)
     {
