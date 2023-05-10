@@ -28,12 +28,12 @@ void setup()
     auto decomp = LUDecompose(A_decomp);
 
     // You can take a look at these matrices if you like:
-    decomp.P();  // P essentially rearranges the rows of the matrix that results when we multiply L by U
-    decomp.L();  // Will have ones along its diagonal and zeros above it
-    decomp.U();  // Will have zeros below its diagonal
+    decomp.P;  // P essentially rearranges the rows of the matrix that results when we multiply L by U
+    decomp.L;  // Will have ones along its diagonal and zeros above it
+    decomp.U;  // Will have zeros below its diagonal
 
     // And if we multiply them all together we'll recover the original A matrix:
-    Serial << "reconstructed A: " << decomp.P() * decomp.L() * decomp.U() << "\n";
+    Serial << "reconstructed A: " << decomp.P * decomp.L * decomp.U << "\n";
 
     // Once we've done the decomposition we can solve for x very efficiently:
     Matrix<6> x_lusolve = LUSolve(decomp, b);

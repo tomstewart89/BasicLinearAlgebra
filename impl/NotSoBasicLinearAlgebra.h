@@ -15,26 +15,22 @@ struct LUDecomposition
 {
     bool singular;
     typename ParentType::DType parity;
-    PermutationMatrix<Dim, typename ParentType::DType> permutation;
-    LowerTriangularDiagonalOnesMatrix<ParentType> lower;
-    UpperTriangularMatrix<ParentType> upper;
+    PermutationMatrix<Dim, typename ParentType::DType> P;
+    LowerTriangularDiagonalOnesMatrix<ParentType> L;
+    UpperTriangularMatrix<ParentType> U;
 
     LUDecomposition(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
-        : lower(A), upper(A)
+        : L(static_cast<ParentType &>(A)), U(static_cast<ParentType &>(A))
     {
         static_assert(ParentType::Rows == ParentType::Cols);
     }
-
-    PermutationMatrix<ParentType::Rows, typename ParentType::DType> P() { return permutation; }
-    LowerTriangularDiagonalOnesMatrix<ParentType> L() { return lower; }
-    UpperTriangularMatrix<ParentType> U() { return upper; }
 };
 
 template <typename ParentType, int Dim>
 LUDecomposition<Dim, ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
     LUDecomposition<Dim, ParentType> decomp(A);
-    auto &idx = decomp.permutation.idx;
+    auto &idx = decomp.P.idx;
     decomp.parity = 1.0;
 
     for (int i = 0; i < Dim; ++i)
@@ -151,8 +147,8 @@ Matrix<Dim, 1, typename BType::DType> LUSolve(const LUDecomposition<Dim, LUType>
 {
     Matrix<Dim, 1, typename BType::DType> x, tmp;
 
-    auto &idx = decomp.permutation.idx;
-    auto &LU = decomp.lower.parent;
+    auto &idx = decomp.P.idx;
+    auto &LU = decomp.L.parent;
 
     // Forward substitution to solve L * y = b
     for (int i = 0; i < Dim; ++i)
@@ -239,7 +235,7 @@ typename ParentType::DType Determinant(const MatrixBase<ParentType, Dim, Dim, ty
 
     for (int i = 0; i < Dim; ++i)
     {
-        det *= decomp.upper(i, i);
+        det *= decomp.U(i, i);
     }
 
     return det;

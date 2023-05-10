@@ -15,7 +15,7 @@ TEST(LinearAlgebra, LUDecomposition)
 
     EXPECT_FALSE(decomp.singular);
 
-    auto A_reconstructed = decomp.P() * decomp.L() * decomp.U();
+    auto A_reconstructed = decomp.P * decomp.L * decomp.U;
 
     for (int i = 0; i < A.Rows; ++i)
     {
