@@ -90,12 +90,12 @@ void setup()
 
     // Or as a more real life example, here's how you might calculate an updated state estimate for a third order state
     // space model:
-    BLA::Matrix<3> x;
-    BLA::Matrix<2> u;
-    BLA::Matrix<3, 2> G;
-    BLA::Matrix<3, 3> F;
+    BLA::Matrix<3> state;
+    BLA::Matrix<2> input;
+    BLA::Matrix<3, 2> input_matrix;
+    BLA::Matrix<3, 3> state_transition_matrix;
     float dt;
-    x += (F * x + G * u) * dt;
+    state += (state_transition_matrix * state + input_matrix * input) * dt;
 
     // Enjoy!
 }

@@ -15,7 +15,7 @@ TEST(LinearAlgebra, LUDecomposition)
 
     EXPECT_FALSE(decomp.singular);
 
-    auto A_reconstructed = decomp.P() * decomp.L() * decomp.U();
+    auto A_reconstructed = decomp.P * decomp.L * decomp.U;
 
     for (int i = 0; i < A.Rows; ++i)
     {
@@ -73,9 +73,9 @@ TEST(LinearAlgebra, Inversion)
 
 TEST(LinearAlgebra, DoublePrecisionInverse)
 {
-    ArrayMatrix<6, 6, double> A = {1. / 48.,  0,          0,         0, 0, 0, 0, 1. / 48.,  0,        0,       0, 0, 0,
-                                   -1. / 48., 1. / 48.,   0,         0, 0, 0, 0, 0,         1. / 24., 0,       0, 0, 0,
-                                   0,         -1. / 28.8, 1. / 28.8, 0, 0, 0, 0, -1. / 12., 1. / 24., 1. / 24.};
+    Matrix<6, 6, double> A = {1. / 48.,  0,          0,         0, 0, 0, 0, 1. / 48.,  0,        0,       0, 0, 0,
+                              -1. / 48., 1. / 48.,   0,         0, 0, 0, 0, 0,         1. / 24., 0,       0, 0, 0,
+                              0,         -1. / 28.8, 1. / 28.8, 0, 0, 0, 0, -1. / 12., 1. / 24., 1. / 24.};
 
     auto A_inv = Inverse(A * 1.8);
 
@@ -101,18 +101,19 @@ TEST(Arithmetic, Determinant)
 }
 
 template <typename SparseMatA, typename SparseMatB, int OutTableSize = 100>
-SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, OutTableSize> sparse_mul(const SparseMatA &A, const SparseMatB &B)
+SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, typename SparseMatA::DType, OutTableSize> sparse_mul(
+    const SparseMatA &A, const SparseMatB &B)
 {
     static_assert(A.Cols == B.Rows);
 
-    SparseMatrix<A.Rows, B.Cols, OutTableSize> out;
+    SparseMatrix<A.Rows, B.Cols, typename SparseMatA::DType, OutTableSize> out;
 
-    for (int i = 0; i < A.storage.size; ++i)
+    for (int i = 0; i < SparseMatA::Size; ++i)
     {
-        for (int j = 0; j < B.storage.size; ++j)
+        for (int j = 0; j < SparseMatB::Size; ++j)
         {
-            const auto &elem_a = A.storage.table[i];
-            const auto &elem_b = B.storage.table[j];
+            const auto &elem_a = A.table[i];
+            const auto &elem_b = B.table[j];
 
             if (elem_a.row >= 0 && elem_b.row >= 0)
             {
@@ -126,53 +127,49 @@ SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, OutTableSize> sparse_mul(const 
 
 TEST(Examples, SparseMatrix)
 {
-    SparseMatrix<1, 3000, 100> A;
-    SparseMatrix<3000, 1, 100> B;
+    SparseMatrix<1, 3000, float, 100> A;
+    SparseMatrix<3000, 1, float, 100> B;
 
     A(0, 1000) = 5.0;
     B(1000, 0) = 5.0;
 
     auto C = sparse_mul(A, B);
 
-    Matrix<2000, 3000, Sparse<3000, 100, float> > sparseMatrix;
-
     EXPECT_EQ(C(0, 0), 25.0);
 }
 
+class JacobianTestFunctor : public MatrixFunctor<2, 3, float>
+{
+    Matrix<3, 1, float> operator()(const Matrix<2, 1, float> &x) const override
+    {
+        Matrix<3> p1 = {cos(x(0)), sin(x(0)), x(0)};
+        Matrix<3> p2 = {cos((x(0) + x(1))), sin((x(0) + x(1))), x(1)};
 
-Matrix<3> jacobianTestFunction(Matrix<2> x){
-    Matrix<3> p1 = {cos(x(0)), sin(x(0)), x(0)};
-    Matrix<3> p2 = { cos((x(0) + x(1))) , sin((x(0) + x(1))) , x(1)};
+        return p1 + p2;
+    }
+};
 
-    return p1 + p2; 
-}
+TEST(Examples, numericJacobian)
+{
+    // JacobianTestFunctor(x) = [cos(x1) + cos(x1 + x2), sin(x1) + sin(x1 + x2), x1 + x2]
+    // jacobian =
+    //       [[-sin(x1) - sin(x1 + x2), -sin(x1 + x2)]
+    //        [cos(x1) + cos(x1 + x2) ,  cos(x1 + x2)]
+    //        [      1                ,          1   ]]
 
-TEST(Examples, numericJacobian){
-    //jacobianTestFunction(x) = [cos(x1) + cos(x1 + x2), sin(x1) + sin(x1 + x2), x1 + x2]
-    //jacobian = 
-    //      [[-sin(x1) - sin(x1 + x2), -sin(x1 + x2)]
-    //       [cos(x1) + cos(x1 + x2) ,  cos(x1 + x2)]
-    //       [      1                ,          1   ]]
+    Matrix<2> x = {0.0f, 0.0f};
+    JacobianTestFunctor functor;
 
-    float x1 = 0;
-    float x2 = 0;
-    Matrix<2> x_ = {x1, x2};
+    Matrix<3, 2> jacobian = Jacobian<2, 3>(JacobianTestFunctor(), x);
 
-    // Matrix<3,2> correct = {-sin(x1) - sin(x1 + x2), -sin(x1 + x2), cos(x1) + cos(x1 + x2) ,  cos(x1 + x2), 1 , 1 };
+    EXPECT_NEAR(jacobian(0, 0), 0, 1e-4);
+    EXPECT_NEAR(jacobian(0, 1), 0, 1e-4);
 
-    Matrix<3,2> Jacob = Jacobian<3,2>(VVF<3,2>(jacobianTestFunction), x_);
-    EXPECT_NEAR(Jacob(0, 0), 0, 1e-4);
-    EXPECT_NEAR(Jacob(0, 1), 0, 1e-4);
-    
-    EXPECT_NEAR(Jacob(1, 0), 2, 1e-4);
-    EXPECT_NEAR(Jacob(1, 1), 1, 1e-4);
+    EXPECT_NEAR(jacobian(1, 0), 2, 1e-4);
+    EXPECT_NEAR(jacobian(1, 1), 1, 1e-4);
 
-    EXPECT_NEAR(Jacob(2, 0), 1, 1e-4);
-    EXPECT_NEAR(Jacob(2, 1), 1, 1e-4);
-}
-
-float gradientTestFunction(Matrix<2> x){
-    return (x(0) + x(1)) * (x(0) + x(1))  + x(1);
+    EXPECT_NEAR(jacobian(2, 0), 1, 1e-4);
+    EXPECT_NEAR(jacobian(2, 1), 1, 1e-4);
 }
 
 int main(int argc, char **argv)

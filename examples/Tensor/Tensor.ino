@@ -21,30 +21,27 @@ void setup()
     // for more). The Array type simply means that the Matrix stores it's elements in a big array of size rows x cols.
 
     // In any case, written in full, a Matrix declaration looks like this:
-    BLA::Matrix<3, 3, Array<3, 3, float>> floatA;
+    BLA::Matrix<3, 3, float> floatA;
 
     // The default underlying type of the Array class's array is float. If you want to use a different type, say int for
     // example, then just pass it as a template parameter like so:
-    BLA::Matrix<3, 3, Array<3, 3, int>> intA = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-    // I find this to be a bit cumbersome though so I've defined a template alias called ArrayMatrix which can be used
-    // like so:
-    ArrayMatrix<3, 3, int> intB;  // intA and intB are identical at this point
+    BLA::Matrix<3, 3, int> intA = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     // From here you'll be able to do everything you'd be able to do with a float Matrix, but with int precision and
     // memory useage.
 
     // You can actually pass any datatype you like to the template and it'll do it's best to make a Matrix out of it.
-    ArrayMatrix<3, 3, unsigned char> charA;
-    ArrayMatrix<3, 3, double> doubleA;  // etc
+    BLA::Matrix<3, 3, unsigned char> charA;
+    BLA::Matrix<3, 3, double> doubleA;  // etc
 
     // This includes parameters of type Matrix, meaning that you can declare matrices of more than two dimensions. For
     // example:
-    ArrayMatrix<4, 4, ArrayMatrix<4>> cubeA, cubeB;  // a 4x4x4 Matrix (3rd order tensor)
+    BLA::Matrix<4, 4, BLA::Matrix<4>> cubeA, cubeB;  // a 4x4x4 Matrix (3rd order tensor)
 
     // And so on:
-    ArrayMatrix<2, 2, ArrayMatrix<2, 2>> hyperA;                 // a 2x2x2x2 dimensional Matrix (4th order tensor)
-    ArrayMatrix<3, 3, ArrayMatrix<3, 3, Matrix<3, 3>>> tensorA;  // a 3x3x3x3x3x3 dimensional Matrix (6th order tensor)
+    BLA::Matrix<2, 2, BLA::Matrix<2, 2>> hyperA;  // a 2x2x2x2 dimensional Matrix (4th order tensor)
+    BLA::Matrix<3, 3, BLA::Matrix<3, 3, BLA::Matrix<3, 3>>>
+        tensorA;  // a 3x3x3x3x3x3 dimensional Matrix (6th order tensor)
 
     // You can access the elements of an arbitrary rank tensor with the brackets operator like so:
     cubeA(0, 1)(1) = cubeB(2, 3)(3) = 56.34;
@@ -55,7 +52,7 @@ void setup()
     cubeA + cubeB;
 
     // As does concatenation
-    ArrayMatrix<4, 8, ArrayMatrix<4>> cubeAleftOfcubeB = cubeA || cubeB;
+    BLA::Matrix<4, 8, BLA::Matrix<4>> cubeAleftOfcubeB = cubeA || cubeB;
 
     // You can also do multiplication on square tensors with an even rank
     for (int i = 0; i < 2; i++)
@@ -63,7 +60,7 @@ void setup()
             for (int k = 0; k < 2; k++)
                 for (int l = 0; l < 2; l++) hyperA(i, j)(k, l) = i + j + k + l;
 
-    ArrayMatrix<2, 2, ArrayMatrix<2, 2>> hyperB = (hyperA * hyperA);
+    BLA::Matrix<2, 2, BLA::Matrix<2, 2>> hyperB = (hyperA * hyperA);
 
     // Everything can be printed too
     Serial << "Hyper B: " << hyperB;

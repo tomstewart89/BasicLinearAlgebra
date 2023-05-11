@@ -25,38 +25,34 @@ As well as some more advanced operations like Transposition, Concatenation and I
 
 By default, matrices are full of floats. If that doesn't suit your application, then you can specify what kind of datatype you'd like your matrix to be made of by passing it in to the class's parameters just after the dimensions like so:
 ```
-Matrix<3,2,Array<3,2,int> > D;
+Matrix<3,2,int> D;
 ```
 Not only that, the datatype needn't be just a POD (float, bool, int etc) but it can be any class or struct you define too. So if you'd like to do matrix math with your own custom class then you can, so long as it implements the operators for addition, subtraction etc. For example, if you wanted, you could write a class to hold an imaginary number and then you could make a matrix out of it like so:
 ```
-Matrix<2,2,Array<2,2,ImaginaryNumber> > Im;
+Matrix<2,2,ImaginaryNumber> Im;
 ```
 This turned out to have intersting implications when you specify the element type as another matrix. For more on that, have a look at the [Tensor](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/Tensor/Tensor.ino) example.
 
-### Changing the Storage Policy
+### Changing the Way Elements are Retrieved
 
-By default, matrices store their elements in an C-style array which is kept inside the object. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array. 
+By default, matrices store their elements in an C-style array which is kept inside the object. Every time you access one of the elements directly using the () operator or indirectly when you do some algebra, the matrix returns the appropriate element from that array.
 
 At times, it's handy to be able to instruct the matrix to do something else when asked to retrieve an element at a particular index. For example if you know that your matrix is very sparse (only a few elements are non-zero) then you can save yourself some memory and just store the non-zero elements and return zero when asked for anything else.
 
-If you like, you can override the way in which the elements for the matrix are stored by specifying a storage type that the Matrix class will refer to when accessing elements. For example, we can define a 2000x3000 matrix with a sparse storage policy like so:  
+If you like, you can override the way in which the elements for the matrix are stored. For example, we can define a 2000x3000 matrix with a sparse storage policy like so:
 ```
-Matrix<2000,3000, Sparse<3000,100,float> > sparseMatrix;
+SparseMatrix<2000, 3000, 100, float> > sparseMatrix;
 ```
-In this case the ```Sparse<3000,100,float>``` type is the memory storage which provides storage for 100 elements which are assumed to be embedded in a matrix having 3000 columns. You can find the implementation for this class in ElementStorage.h file, but long story short, it's a hashmap.
+In this case the ```SparseMatrix``` is a `Matrix` which provides storage for 100 elements which are assumed to be embedded in a matrix having 2000 rows and 3000 columns. You can find the implementation for this class in the ElementStorage.h file, but long story short, it's a hashmap.
 
-You can implement the memory storage in whatever way you like so long as it returns some piece of memory when passed a row/column index. For more on how to implement a memory storage, have a look at the  [CustomMatrix](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/CustomMatrix/CustomMatrix.ino) example.
+You can implement the custom matrices in whatever way you like so long as it returns some element when passed a row/column index. For more on how to implement such a matrix, have a look at the [CustomMatrix](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/CustomMatrix/CustomMatrix.ino) example.
 
 ### Reference Matrices
 
 One particularly useful part of being able to override the way matrices access their elements is that it lets us define reference matrices. Reference matrices don't actually own any memory themselves, instead they return the elements of another matrix when we access them. To create a reference matrix you can use the `Submatrix` method of the matrix class like so:
 ```
-auto ref = A.Submatrix<2,2>(1,0));
+auto ref = A.Submatrix<2,2>(1,0);
 ```
-Here, `ref` is a 2x2 matrix which returns the elements in the lower 2 rows of the 3x2 matrix A defined above. I've let the compiler infer the type of ref using the 'auto' keyword but if we were to write it out ourselves it'd be:
-```
-Matrix<2,2,float, Reference<float,Array<3,2> >;
-```
-Where `Reference<float,Array<3,2>` is a memory storage which takes a reference to a 3x2 matrix whose own memory storage is an Array (the default) of size 3x2.
+Here, `ref` is a 2x2 matrix which returns the elements in the lower 2 rows of the 3x2 matrix A defined above.
 
 In general, reference matrices are useful for isolating a subsection of a larger matrix. That lets us use just that section in matrix operations with other matrices of compatible dimensions, or to collectively assign a value to a particular section of a matrix. For more information on reference matrices check out the [References](https://github.com/tomstewart89/BasicLinearAlgebra/blob/master/examples/References/References.ino) example.

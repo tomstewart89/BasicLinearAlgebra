@@ -1,21 +1,21 @@
 #pragma once
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
-#include <algorithm>
 
 struct Print
 {
     std::stringstream buf;
 
     template <typename T>
-    void print(const T &obj)
+    void print(const T& obj)
     {
         buf << obj;
     }
 
     template <typename T>
-    void println(const T &obj)
+    void println(const T& obj)
     {
         buf << obj << std::endl;
     }
@@ -26,7 +26,7 @@ struct Print
         buf.str("");
     }
 
-    Print& operator<< (std::ostream& (*pf)(std::ostream&))
+    Print& operator<<(std::ostream& (*pf)(std::ostream&))
     {
         buf << pf;
         return *this;
@@ -34,4 +34,5 @@ struct Print
 
 } Serial;
 
-using std::endl, std::max;
+using std::endl;
+using std::max;

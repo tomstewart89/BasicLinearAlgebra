@@ -8,34 +8,37 @@
  * do a computation. Instead it'd be better to just store the non-zero elements and skip past the zeros when doing a
  * computation.
  *
- * For that reason, I've written the matrix class such that it's memory and the way it is accessed can be customised to
- * take advantage of whatever helpful properties the particular matrix might have. In this example we'll look at a
- * diagonal matrix - a matrix whose elements are zero except for those along it's diagonal (row == column)
+ * For that reason, I've written the matrix class such that we can customise the way a given matrix type retrieves its
+ * elements. In this example we'll look at a diagonal matrix - a matrix whose elements are zero except for those along
+ * it's diagonal (row == column).
  */
-
-template <int dim, class ElemT>
-struct Diagonal
-{
-    mutable ElemT m[dim];
-    mutable ElemT offDiagonal;
-
-    // The only requirement on this class is that it implement the () operator like so:
-    typedef ElemT elem_t;
-
-    ElemT &operator()(int row, int col) const
-    {
-        // If it's on the diagonal and it's not larger than the matrix dimensions then return the element
-        if (row == col)
-            return m[row];
-        else
-            // Otherwise return a zero
-            return (offDiagonal = 0);
-    }
-};
 
 // All the functions in BasicLinearAlgebra are wrapped up inside the namespace BLA, so specify that we're using it like
 // so:
 using namespace BLA;
+
+// To declare a custom matrix our class needs to inherit from MatrixBase. MatrixBase takes a few template parameters the
+// first of which is the custom matrix class itself. That's a bit confusing but just follow the template below and it'll
+// all work out!
+template <int Dim, typename DType = float>
+struct DiagonalMatrix : public MatrixBase<DiagonalMatrix<Dim>, Dim, Dim, DType>
+{
+    Matrix<Dim, 1, DType> diagonal;
+
+    // For const matrices (ones whose elements can't be modified) you just need to implement this function:
+    DType operator()(int row, int col) const
+    {
+        // If it's on the diagonal and it's not larger than the matrix dimensions then return the element
+        if (row == col)
+            return diagonal(row);
+        else
+            // Otherwise return zero
+            return 0.0f;
+    }
+
+    // If you want to declare a matrix whose elements can be modified then you'll need to define this function:
+    // DType& operator()(int row, int col)
+};
 
 void setup()
 {
@@ -50,10 +53,10 @@ void setup()
 
     // Now let's declare a diagonal matrix. To do that we pass the Diagonal class from above along with whatever
     // template parameters as a template parameter to Matrix, like so:
-    BLA::Matrix<4, 4, Diagonal<4, float>> diag;
+    DiagonalMatrix<4> diag;
 
     // If we fill diag we'll get a matrix with all 1's along the diagonal, the identity matrix.
-    diag.Fill(1);
+    diag.diagonal.Fill(1);
 
     // So multiplying it with mat will do nothing:
     Serial << "still ones: " << diag * mat << "\n";
@@ -62,7 +65,7 @@ void setup()
     // (postmultiplication) of a matrix
 
     // So if we modify the diagonal
-    for (int i = 0; i < diag.Rows; i++) diag.storage(i, i) = i + 1;
+    for (int i = 0; i < diag.Rows; i++) diag.diagonal(i) = i + 1;
 
     // And multiply again, we'll see that the rows have been scaled
     Serial << "scaled rows: " << diag * mat;

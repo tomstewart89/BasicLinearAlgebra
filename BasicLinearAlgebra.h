@@ -8,137 +8,131 @@
 
 namespace BLA
 {
-template <int rows, int cols = 1, class MemT = Array<rows, cols, float>>
-class Matrix
+
+template <typename DerivedType, int rows, int cols, typename d_type>
+struct MatrixBase
 {
    public:
-    typedef MemT mem_t;
-    const static int Rows = rows;
-    const static int Cols = cols;
+    constexpr static int Rows = rows;
+    constexpr static int Cols = cols;
+    using DType = d_type;
 
-    MemT storage;
+    DType &operator()(int i, int j = 0) { return static_cast<DerivedType *>(this)->operator()(i, j); }
 
-    // Constructors
-    Matrix<rows, cols, MemT>() = default;
+    DType operator()(int i, int j = 0) const { return static_cast<const DerivedType *>(this)->operator()(i, j); }
 
-    Matrix<rows, cols, MemT>(MemT &d);
+    MatrixBase() = default;
 
-    template <class opMemT>
-    Matrix<rows, cols, MemT>(const Matrix<rows, cols, opMemT> &obj);
+    template <typename MatType>
+    MatrixBase(const MatrixBase<MatType, Rows, Cols, DType> &mat)
+    {
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                static_cast<DerivedType &>(*this)(i, j) = mat(i, j);
+            }
+        }
+    }
 
-    template <typename... TAIL>
-    Matrix(typename MemT::elem_t head, TAIL... args);
+    MatrixBase &operator=(const MatrixBase &mat)
+    {
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                static_cast<DerivedType &>(*this)(i, j) = mat(i, j);
+            }
+        }
 
-    // Assignment
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &operator=(const Matrix<rows, cols, opMemT> &obj);
+        return static_cast<DerivedType &>(*this);
+    }
 
-    Matrix<rows, cols, MemT> &operator=(typename MemT::elem_t arr[rows][cols]);
+    template <typename MatType>
+    MatrixBase &operator=(const MatrixBase<MatType, Rows, Cols, DType> &mat)
+    {
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                static_cast<DerivedType &>(*this)(i, j) = mat(i, j);
+            }
+        }
 
-    Matrix<rows, cols, MemT> &Fill(const typename MemT::elem_t &val);
+        return static_cast<DerivedType &>(*this);
+    }
 
-    template <typename... TAIL>
-    void FillRowMajor(int start_idx, typename MemT::elem_t head, TAIL... tail);
-    void FillRowMajor(int start_idx);
+    DerivedType &operator=(DType elem)
+    {
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                static_cast<DerivedType &>(*this)(i, j) = elem;
+            }
+        }
 
-    // Element Access
-    typename MemT::elem_t &operator()(int row, int col = 0);
+        return static_cast<DerivedType &>(*this);
+    }
 
-    typename MemT::elem_t operator()(int row, int col = 0) const;
+    void Fill(const DType &val) { *this = val; }
 
-    template <int subRows, int subCols>
-    Matrix<subRows, subCols, Reference<MemT>> Submatrix(int top, int left);
+    template <int SubRows, int SubCols>
+    RefMatrix<DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start)
+    {
+        return RefMatrix<DerivedType, SubRows, SubCols>(static_cast<DerivedType &>(*this), row_start, col_start);
+    }
 
-    template <int subRows, int subCols>
-    Matrix<subRows, subCols, ConstReference<MemT>> Submatrix(int top, int left) const;
+    template <int SubRows, int SubCols>
+    RefMatrix<const DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start) const
+    {
+        return RefMatrix<const DerivedType, SubRows, SubCols>(static_cast<const DerivedType &>(*this), row_start,
+                                                              col_start);
+    }
 
-    Matrix<1, cols, Reference<MemT>> Row(int i);
-    Matrix<1, cols, ConstReference<MemT>> Row(int i) const;
+    RefMatrix<DerivedType, 1, Cols> Row(int row_start)
+    {
+        return RefMatrix<DerivedType, 1, Cols>(static_cast<DerivedType &>(*this), row_start, 0);
+    }
 
-    Matrix<rows, 1, Reference<MemT>> Column(int j);
-    Matrix<rows, 1, ConstReference<MemT>> Column(int j) const;
+    RefMatrix<const DerivedType, 1, Cols> Row(int row_start) const
+    {
+        return RefMatrix<const DerivedType, 1, Cols>(static_cast<const DerivedType &>(*this), row_start, 0);
+    }
 
-    // Concatenation
-    template <int operandCols, class opMemT>
-    Matrix<rows, cols + operandCols, HorzCat<cols, MemT, opMemT>> operator||(
-        const Matrix<rows, operandCols, opMemT> &obj) const;
+    RefMatrix<DerivedType, Rows, 1> Column(int col_start)
+    {
+        return RefMatrix<DerivedType, Rows, 1>(static_cast<DerivedType &>(*this), 0, col_start);
+    }
 
-    template <int operandRows, class opMemT>
-    Matrix<rows + operandRows, cols, VertCat<rows, MemT, opMemT>> operator&&(
-        const Matrix<operandRows, cols, opMemT> &obj) const;
+    RefMatrix<const DerivedType, Rows, 1> Column(int col_start) const
+    {
+        return RefMatrix<const DerivedType, Rows, 1>(static_cast<const DerivedType &>(*this), 0, col_start);
+    }
 
-    // Addition
-    template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator+(const Matrix<rows, cols, opMemT> &obj) const;
+    MatrixTranspose<DerivedType> operator~() { return MatrixTranspose<DerivedType>(static_cast<DerivedType &>(*this)); }
 
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &operator+=(const Matrix<rows, cols, opMemT> &obj);
+    MatrixTranspose<const DerivedType> operator~() const
+    {
+        return MatrixTranspose<const DerivedType>(static_cast<const DerivedType &>(*this));
+    }
 
-    // Subtraction
-    template <class opMemT>
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-(const Matrix<rows, cols, opMemT> &obj) const;
+    template <typename OperandType, int OperandCols>
+    HorizontalConcat<DerivedType, OperandType> operator||(
+        const MatrixBase<OperandType, Rows, OperandCols, DType> &obj) const
+    {
+        return HorizontalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(*this),
+                                                          static_cast<const OperandType &>(obj));
+    }
 
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &operator-=(const Matrix<rows, cols, opMemT> &obj);
-
-    // Multiplication
-    template <int operandCols, class opMemT>
-    Matrix<rows, operandCols, Array<rows, operandCols, typename MemT::elem_t>> operator*(
-        const Matrix<cols, operandCols, opMemT> &operand) const;
-
-    template <class opMemT>
-    Matrix<rows, cols, MemT> &operator*=(const Matrix<rows, cols, opMemT> &operand);
-
-    // Negation
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-() const;
-
-    // Transposition
-    Matrix<cols, rows, Trans<MemT>> operator~() const;
-
-    // Elementwise Operations
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator+(const typename MemT::elem_t k) const;
-
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator-(const typename MemT::elem_t k) const;
-
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator*(const typename MemT::elem_t k) const;
-
-    Matrix<rows, cols, Array<rows, cols, typename MemT::elem_t>> operator/(const typename MemT::elem_t k) const;
-
-    Matrix<rows, cols, MemT> &operator+=(const typename MemT::elem_t k);
-    Matrix<rows, cols, MemT> &operator-=(const typename MemT::elem_t k);
-    Matrix<rows, cols, MemT> &operator*=(const typename MemT::elem_t k);
-    Matrix<rows, cols, MemT> &operator/=(const typename MemT::elem_t k);
+    template <typename OperandType, int OperandRows>
+    VerticalConcat<DerivedType, OperandType> operator&&(
+        const MatrixBase<OperandType, OperandRows, Cols, DType> &obj) const
+    {
+        return VerticalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(*this),
+                                                        static_cast<const OperandType &>(obj));
+    }
 };
-
-template <int rows, int cols = 1, class ElemT = float>
-using ArrayMatrix = Matrix<rows, cols, Array<rows, cols, ElemT>>;
-
-template <int rows, int cols, class ElemT = float>
-using ArrayRef = Reference<Array<rows, cols, ElemT>>;
-
-template <int rows, int cols, class ParentMemT>
-using RefMatrix = Matrix<rows, cols, Reference<ParentMemT>>;
-
-template <int rows, int cols = rows, class ElemT = float>
-using Identity = Matrix<rows, cols, Eye<ElemT>>;
-
-template <int rows, int cols = 1, class ElemT = float>
-using Zeros = Matrix<rows, cols, Zero<ElemT>>;
-
-template <int rows, int cols = 1, class ElemT = float>
-using Ones = Matrix<rows, cols, One<ElemT>>;
-
-template <int rows, int cols, int tableSize, class ElemT = float>
-using SparseMatrix = Matrix<rows, cols, Sparse<cols, tableSize, ElemT>>;
-
-template <int dim, class ElemT = float>
-using PermutationMatrix = Matrix<dim, dim, Permutation<dim, ElemT>>;
-
-template <int rows, int cols, class MemT>
-using LowerTriangularDiagonalOnesMatrix = Matrix<rows, cols, LowerTriangleOnesDiagonal<MemT>>;
-
-template <int rows, int cols, class MemT>
-using UpperTriangularMatrix = Matrix<rows, cols, UpperTriangle<MemT>>;
 
 }  // namespace BLA
 

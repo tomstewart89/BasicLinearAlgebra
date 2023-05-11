@@ -2,94 +2,183 @@
 
 namespace BLA
 {
-template <int rows, int cols = 1, class ElemT = float>
-struct Array
-{
-    typedef ElemT elem_t;
-    elem_t m[rows * cols];
 
-    elem_t &operator()(int row, int col) { return m[row * cols + col]; }
-    elem_t operator()(int row, int col) const { return m[row * cols + col]; }
+template <typename DerivedType, int rows, int cols, typename DType>
+struct MatrixBase;
+
+template <int Rows, int Cols = 1, typename DType = float>
+class Matrix : public MatrixBase<Matrix<Rows, Cols, DType>, Rows, Cols, DType>
+{
+   public:
+    DType storage[Rows * Cols];
+
+    DType &operator()(int i, int j = 0) { return storage[i * Cols + j]; }
+    DType operator()(int i, int j = 0) const { return storage[i * Cols + j]; }
+
+    Matrix() = default;
+
+    template <typename... TAIL>
+    Matrix(DType head, TAIL... args)
+    {
+        FillRowMajor(0, head, args...);
+    }
+
+    template <typename... TAIL>
+    void FillRowMajor(int start_idx, DType head, TAIL... tail)
+    {
+        static_assert(Rows * Cols > sizeof...(TAIL), "Too many arguments passed to FillRowMajor");
+
+        (*this)(start_idx / Cols, start_idx % Cols) = head;
+
+        FillRowMajor(++start_idx, tail...);
+    }
+
+    void FillRowMajor(int start_idx)
+    {
+        for (int i = start_idx; i < Rows * Cols; ++i)
+        {
+            (*this)(i / Cols, i % Cols) = 0.0;
+        }
+    }
+
+    template <typename DerivedType>
+    Matrix(const MatrixBase<DerivedType, Rows, Cols, DType> &mat)
+    {
+        static_cast<MatrixBase<Matrix<Rows, Cols, DType>, Rows, Cols, DType> &>(*this) = mat;
+    }
+
+    Matrix &operator=(const Matrix &mat)
+    {
+        static_cast<MatrixBase<Matrix<Rows, Cols, DType>, Rows, Cols, DType> &>(*this) = mat;
+        return *this;
+    }
 };
 
-template <class MemT>
-struct Reference
+template <int Rows, int Cols = 1, typename DType = float>
+class Zeros : public MatrixBase<Zeros<Rows, Cols, DType>, Rows, Cols, DType>
 {
-    typedef typename MemT::elem_t elem_t;
+   public:
+    DType operator()(int i, int j = 0) const { return 0.0; }
 
-    MemT &parent;
-    int rowOffset, colOffset;
-
-    Reference<MemT>(MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) {}
-
-    elem_t &operator()(int row, int col) { return parent(row + rowOffset, col + colOffset); }
-    elem_t operator()(int row, int col) const { return parent(row + rowOffset, col + colOffset); }
+    Zeros() = default;
 };
 
-template <class MemT>
-struct ConstReference
+template <int Rows, int Cols = 1, typename DType = float>
+class Ones : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
 {
-    typedef typename MemT::elem_t elem_t;
+   public:
+    DType operator()(int i, int j = 0) const { return 1.0; }
 
-    const MemT &parent;
-    int rowOffset, colOffset;
+    Ones() = default;
+};
 
-    ConstReference<MemT>(const MemT &obj, int rowOff, int colOff) : parent(obj), rowOffset(rowOff), colOffset(colOff) {}
-    ConstReference<MemT>(const ConstReference<MemT> &obj)
-        : parent(obj.parent), rowOffset(obj.rowOffset), colOffset(obj.colOffset)
+template <int Rows, int Cols = 1, typename DType = float>
+class Eye : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
+{
+   public:
+    DType operator()(int i, int j = 0) const { return i == j; }
+
+    Eye() = default;
+};
+
+template <typename RefType, int Rows, int Cols>
+class RefMatrix : public MatrixBase<RefMatrix<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType>
+{
+    RefType &parent_;
+    const int row_offset_;
+    const int col_offset_;
+
+   public:
+    explicit RefMatrix(RefType &parent, int row_offset = 0, int col_offset = 0)
+        : parent_(parent), row_offset_(row_offset), col_offset_(col_offset)
     {
     }
 
-    elem_t operator()(int row, int col) const { return parent(row + rowOffset, col + colOffset); }
+    typename RefType::DType &operator()(int i, int j) { return parent_(i + row_offset_, j + col_offset_); }
+    typename RefType::DType operator()(int i, int j) const { return parent_(i + row_offset_, j + col_offset_); }
+
+    template <typename MatType>
+    RefMatrix &operator=(const MatType &mat)
+    {
+        static_cast<MatrixBase<RefMatrix<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType> &>(*this) = mat;
+        return *this;
+    }
 };
 
-template <class ElemT>
-struct Eye
+template <typename RefType>
+class MatrixTranspose
+    : public MatrixBase<MatrixTranspose<RefType>, RefType::Cols, RefType::Rows, typename RefType::DType>
 {
-    typedef ElemT elem_t;
+    RefType &parent_;
 
-    elem_t operator()(int row, int col) const { return row == col; }
+   public:
+    explicit MatrixTranspose(RefType &parent) : parent_(parent) {}
+
+    typename RefType::DType &operator()(int i, int j) { return parent_(j, i); }
+    typename RefType::DType operator()(int i, int j) const { return parent_(j, i); }
+
+    template <typename MatType>
+    MatrixTranspose &operator=(const MatType &mat)
+    {
+        return static_cast<
+                   MatrixBase<MatrixTranspose<RefType>, RefType::Cols, RefType::Rows, typename RefType::DType> &>(
+                   *this) = mat;
+    }
 };
 
-template <class ElemT>
-struct Zero
+template <typename LeftType, typename RightType>
+struct HorizontalConcat : public MatrixBase<HorizontalConcat<LeftType, RightType>, LeftType::Rows,
+                                            LeftType::Cols + RightType::Cols, typename LeftType::DType>
 {
-    typedef ElemT elem_t;
+    const LeftType &left;
+    const RightType &right;
 
-    elem_t operator()(int row, int col) const { return 0; }
+    HorizontalConcat<LeftType, RightType>(const LeftType &l, const RightType &r) : left(l), right(r) {}
+
+    typename LeftType::DType operator()(int row, int col) const
+    {
+        return col < LeftType::Cols ? left(row, col) : right(row, col - LeftType::Cols);
+    }
 };
 
-template <class ElemT>
-struct One
+template <typename TopType, typename BottomType>
+struct VerticalConcat : public MatrixBase<VerticalConcat<TopType, BottomType>, TopType::Rows + BottomType::Rows,
+                                          TopType::Cols, typename TopType::DType>
 {
-    typedef ElemT elem_t;
+    const TopType &top;
+    const BottomType &bottom;
 
-    elem_t operator()(int row, int col) const { return 1; }
+    VerticalConcat<TopType, BottomType>(const TopType &t, const BottomType &b) : top(t), bottom(b) {}
+
+    typename TopType::DType operator()(int row, int col) const
+    {
+        return row < TopType::Rows ? top(row, col) : bottom(row - TopType::Rows, col);
+    }
 };
 
-template <int cols, int tableSize, class ElemT>
-struct Sparse
+template <int Rows, int Cols, typename DType, int TableSize>
+struct SparseMatrix : public MatrixBase<SparseMatrix<Rows, Cols, DType, TableSize>, Rows, Cols, DType>
 {
-    typedef ElemT elem_t;
-    const static int size = tableSize;
-    elem_t end;
+    DType end;
+
+    static constexpr int Size = TableSize;
 
     struct Element
     {
         int row, col;
-        ElemT val;
+        DType val;
 
         Element() { row = col = -1; }
 
-    } table[tableSize];
+    } table[TableSize];
 
-    elem_t &operator()(int row, int col)
+    DType &operator()(int row, int col)
     {
-        int hash = (row * cols + col) % tableSize;
+        int hash = (row * Cols + col) % TableSize;
 
-        for (int i = 0; i < tableSize; i++)
+        for (int i = 0; i < TableSize; i++)
         {
-            Element &item = table[(hash + i) % tableSize];
+            Element &item = table[(hash + i) % TableSize];
 
             if (item.row == -1 || item.val == 0)
             {
@@ -107,13 +196,13 @@ struct Sparse
         return end;
     }
 
-    elem_t operator()(int row, int col) const
+    DType operator()(int row, int col) const
     {
-        int hash = (row * cols + col) % tableSize;
+        int hash = (row * Cols + col) % TableSize;
 
-        for (int i = 0; i < tableSize; i++)
+        for (int i = 0; i < TableSize; i++)
         {
-            const Element &item = table[(hash + i) % tableSize];
+            const Element &item = table[(hash + i) % TableSize];
 
             if (item.row == row && item.col == col)
             {
@@ -125,62 +214,24 @@ struct Sparse
     }
 };
 
-template <class MemT>
-struct Trans
+template <int Dim, class DType>
+struct PermutationMatrix : public MatrixBase<PermutationMatrix<Dim, DType>, Dim, Dim, DType>
 {
-    typedef typename MemT::elem_t elem_t;
-    const MemT &parent;
+    int idx[Dim];
 
-    Trans<MemT>(const MemT &obj) : parent(obj) {}
-    Trans<MemT>(Trans<MemT> &obj) : parent(obj.parent) {}
-
-    elem_t operator()(int row, int col) const { return parent(col, row); }
+    DType operator()(int row, int col) const { return idx[col] == row; }
 };
 
-template <int leftCols, class LeftMemT, class RightMemT>
-struct HorzCat
+template <class ParentType>
+struct LowerTriangularDiagonalOnesMatrix
+    : public MatrixBase<LowerTriangularDiagonalOnesMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
+                        typename ParentType::DType>
 {
-    typedef typename LeftMemT::elem_t elem_t;
-    const LeftMemT &left;
-    const RightMemT &right;
+    const ParentType &parent;
 
-    HorzCat<leftCols, LeftMemT, RightMemT>(const LeftMemT &l, const RightMemT &r) : left(l), right(r) {}
+    LowerTriangularDiagonalOnesMatrix(const ParentType &obj) : parent(obj) {}
 
-    elem_t operator()(int row, int col) const { return col < leftCols ? left(row, col) : right(row, col - leftCols); }
-};
-
-template <int topRows, class TopMemT, class BottomMemT>
-struct VertCat
-{
-    typedef typename TopMemT::elem_t elem_t;
-    const TopMemT &top;
-    const BottomMemT &bottom;
-
-    VertCat<topRows, TopMemT, BottomMemT>(const TopMemT &t, const BottomMemT &b) : top(t), bottom(b) {}
-
-    elem_t operator()(int row, int col) const { return row < topRows ? top(row, col) : bottom(row - topRows, col); }
-};
-
-template <int dim, class ElemT>
-struct Permutation
-{
-    typedef ElemT elem_t;
-
-    int idx[dim];
-
-    elem_t operator()(int row, int col) const { return idx[col] == row; }
-};
-
-template <class MemT>
-struct LowerTriangleOnesDiagonal
-{
-    typedef typename MemT::elem_t elem_t;
-
-    const MemT &parent;
-
-    LowerTriangleOnesDiagonal<MemT>(const MemT &obj) : parent(obj) {}
-
-    elem_t operator()(int row, int col) const
+    typename ParentType::DType operator()(int row, int col) const
     {
         if (row > col)
         {
@@ -197,16 +248,15 @@ struct LowerTriangleOnesDiagonal
     }
 };
 
-template <class MemT>
-struct UpperTriangle
+template <class ParentType>
+struct UpperTriangularMatrix : public MatrixBase<UpperTriangularMatrix<ParentType>, ParentType::Rows, ParentType::Cols,
+                                                 typename ParentType::DType>
 {
-    typedef typename MemT::elem_t elem_t;
+    const ParentType &parent;
 
-    const MemT &parent;
+    UpperTriangularMatrix(const ParentType &obj) : parent(obj) {}
 
-    UpperTriangle<MemT>(const MemT &obj) : parent(obj) {}
-
-    elem_t operator()(int row, int col) const
+    typename ParentType::DType operator()(int row, int col) const
     {
         if (row <= col)
         {

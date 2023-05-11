@@ -36,7 +36,7 @@ void setup()
 
     // So for example, to create a 4x4 reference to bigMatrix starting at element (4,2) the declaration would be as
     // follows:
-    RefMatrix<4, 4, Array<8, 8>> bigMatrixRef(bigMatrix.Submatrix<4, 4>(4, 2));
+    RefMatrix<BLA::Matrix<8, 8>, 4, 4> bigMatrixRef(bigMatrix.Submatrix<4, 4>(4, 2));
 
     // If we set the (0,0) element of bigMatrixRef, we're effectively setting the (4,2) element of bigMatrix. So let's
     // do that
@@ -51,7 +51,7 @@ void setup()
                                                         1.23,  3.21,  4.56,  8.76, 12.34, 34.56, 76.54, 21.09};
 
     // For all intents and purposes you can treat reference matrices as just regular matrices.
-    RefMatrix<2, 4, Array<8, 8>> anotherRef =
+    RefMatrix<BLA::Matrix<8, 8>, 2, 4> anotherRef =
         bigMatrix.Submatrix<2, 4>(2, 1);  // this creates a 2x4 reference matrix starting at element (2,1) of bigMatrix
 
     // You can fill them

@@ -10,51 +10,45 @@ inline void bla_swap(T &a, T &b)
     b = tmp;
 }
 
-template <int dim, class MemT>
+template <int Dim, class ParentType>
 struct LUDecomposition
 {
     bool singular;
-    typename MemT::elem_t parity;
-    Permutation<dim, typename MemT::elem_t> permutation;
-    LowerTriangleOnesDiagonal<MemT> lower;
-    UpperTriangle<MemT> upper;
+    typename ParentType::DType parity;
+    PermutationMatrix<Dim, typename ParentType::DType> P;
+    LowerTriangularDiagonalOnesMatrix<ParentType> L;
+    UpperTriangularMatrix<ParentType> U;
 
-    LUDecomposition(Matrix<dim, dim, MemT> &A) : lower(A.storage), upper(A.storage) {}
-
-    PermutationMatrix<dim, typename MemT::elem_t> P()
+    LUDecomposition(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
+        : L(static_cast<ParentType &>(A)), U(static_cast<ParentType &>(A))
     {
-        return PermutationMatrix<dim, typename MemT::elem_t>(permutation);
+        static_assert(ParentType::Rows == ParentType::Cols);
     }
-    LowerTriangularDiagonalOnesMatrix<dim, dim, MemT> L()
-    {
-        return LowerTriangularDiagonalOnesMatrix<dim, dim, MemT>(lower);
-    }
-    UpperTriangularMatrix<dim, dim, MemT> U() { return UpperTriangularMatrix<dim, dim, MemT>(upper); }
 };
 
-template <int dim, class MemT>
-LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
+template <typename ParentType, int Dim>
+LUDecomposition<Dim, ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
-    LUDecomposition<dim, MemT> decomp(A);
-    auto &idx = decomp.permutation.idx;
+    LUDecomposition<Dim, ParentType> decomp(A);
+    auto &idx = decomp.P.idx;
     decomp.parity = 1.0;
 
-    for (int i = 0; i < dim; ++i)
+    for (int i = 0; i < Dim; ++i)
     {
         idx[i] = i;
     }
 
     // row_scale stores the implicit scaling of each row
-    typename MemT::elem_t row_scale[dim];
+    typename ParentType::DType row_scale[Dim];
 
-    for (int i = 0; i < dim; ++i)
+    for (int i = 0; i < Dim; ++i)
     {
         // Loop over rows to get the implicit scaling information.
-        typename MemT::elem_t largest_elem = 0.0;
+        typename ParentType::DType largest_elem = 0.0;
 
-        for (int j = 0; j < dim; ++j)
+        for (int j = 0; j < Dim; ++j)
         {
-            typename MemT::elem_t this_elem = fabs(A(i, j));
+            typename ParentType::DType this_elem = fabs(A(i, j));
             largest_elem = max(this_elem, largest_elem);
         }
 
@@ -69,12 +63,12 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
     }
 
     // This is the loop over columns of Crout’s method.
-    for (int j = 0; j < dim; ++j)
+    for (int j = 0; j < Dim; ++j)
     {
         // Calculate beta ij
         for (int i = 0; i < j; ++i)
         {
-            typename MemT::elem_t sum = 0.0;
+            typename ParentType::DType sum = 0.0;
 
             for (int k = 0; k < i; ++k)
             {
@@ -85,9 +79,9 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         }
 
         // Calcuate alpha ij (before division by the pivot)
-        for (int i = j; i < dim; ++i)
+        for (int i = j; i < Dim; ++i)
         {
-            typename MemT::elem_t sum = 0.0;
+            typename ParentType::DType sum = 0.0;
 
             for (int k = 0; k < j; ++k)
             {
@@ -98,12 +92,12 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
         }
 
         // Search for largest pivot element
-        typename MemT::elem_t largest_elem = 0.0;
+        typename ParentType::DType largest_elem = 0.0;
         int argmax = j;
 
-        for (int i = j; i < dim; i++)
+        for (int i = j; i < Dim; i++)
         {
-            typename MemT::elem_t this_elem = row_scale[i] * fabs(A(i, j));
+            typename ParentType::DType this_elem = row_scale[i] * fabs(A(i, j));
 
             if (this_elem >= largest_elem)
             {
@@ -114,7 +108,7 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
 
         if (j != argmax)
         {
-            for (int k = 0; k < dim; ++k)
+            for (int k = 0; k < Dim; ++k)
             {
                 bla_swap(A(argmax, k), A(j, k));
             }
@@ -131,12 +125,12 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
             return decomp;
         }
 
-        if (j != dim)
+        if (j != Dim)
         {
             // Now, finally, divide by the pivot element.
-            typename MemT::elem_t pivot_inv = 1.0 / A(j, j);
+            typename ParentType::DType pivot_inv = 1.0 / A(j, j);
 
-            for (int i = j + 1; i < dim; ++i)
+            for (int i = j + 1; i < Dim; ++i)
             {
                 A(i, j) *= pivot_inv;
             }
@@ -147,19 +141,19 @@ LUDecomposition<dim, MemT> LUDecompose(Matrix<dim, dim, MemT> &A)
     return decomp;
 }
 
-template <int dim, class MemT1, class MemT2>
-ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, MemT1> &decomp,
-                                                    const Matrix<dim, 1, MemT2> &b)
+template <int Dim, class LUType, class BType>
+Matrix<Dim, 1, typename BType::DType> LUSolve(const LUDecomposition<Dim, LUType> &decomp,
+                                              const MatrixBase<BType, Dim, 1, typename BType::DType> &b)
 {
-    ArrayMatrix<dim, 1, typename MemT2::elem_t> x, tmp;
+    Matrix<Dim, 1, typename BType::DType> x, tmp;
 
-    auto &idx = decomp.permutation.idx;
-    auto &LU = decomp.lower.parent;
+    auto &idx = decomp.P.idx;
+    auto &LU = decomp.L.parent;
 
     // Forward substitution to solve L * y = b
-    for (int i = 0; i < dim; ++i)
+    for (int i = 0; i < Dim; ++i)
     {
-        typename MemT2::elem_t sum = 0.0;
+        typename BType::DType sum = 0.0;
 
         for (int j = 0; j < i; ++j)
         {
@@ -170,11 +164,11 @@ ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, M
     }
 
     // Backward substitution to solve U * x = y
-    for (int i = dim - 1; i >= 0; --i)
+    for (int i = Dim - 1; i >= 0; --i)
     {
-        typename MemT2::elem_t sum = 0.0;
+        typename BType::DType sum = 0.0;
 
-        for (int j = i + 1; j < dim; ++j)
+        for (int j = i + 1; j < Dim; ++j)
         {
             sum += LU(i, j) * tmp(idx[j]);
         }
@@ -183,7 +177,7 @@ ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, M
     }
 
     // Undo the permutation
-    for (int i = 0; i < dim; ++i)
+    for (int i = 0; i < Dim; ++i)
     {
         x(i) = tmp(idx[i]);
     }
@@ -191,10 +185,10 @@ ArrayMatrix<dim, 1, typename MemT2::elem_t> LUSolve(const LUDecomposition<dim, M
     return x;
 }
 
-template <int dim, class MemT>
-bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
+template <int Dim, typename InType, typename OutType, typename DType>
+bool Invert(const MatrixBase<InType, Dim, Dim, DType> &A, MatrixBase<OutType, Dim, Dim, DType> &out)
 {
-    ArrayMatrix<dim, dim, typename MemT::elem_t> A_copy = A;
+    Matrix<Dim, Dim, DType> A_copy = A;
 
     auto decomp = LUDecompose(A_copy);
 
@@ -203,9 +197,9 @@ bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
         return false;
     }
 
-    ArrayMatrix<dim, 1, typename MemT::elem_t> b = Zeros<dim>();
+    Matrix<Dim, 1, DType> b = Zeros<Dim, 1, DType>();
 
-    for (int j = 0; j < dim; ++j)
+    for (int j = 0; j < Dim; ++j)
     {
         b(j) = 1.0;
         out.Column(j) = LUSolve(decomp, b);
@@ -215,45 +209,47 @@ bool Invert(const Matrix<dim, dim, MemT> &A, Matrix<dim, dim, MemT> &out)
     return true;
 }
 
-template <int dim, class MemT>
-bool Invert(Matrix<dim, dim, MemT> &A)
+template <int Dim, class ParentType>
+bool Invert(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
     return Invert(A, A);
 }
 
-template <int dim, class MemT>
-Matrix<dim, dim, MemT> Inverse(const Matrix<dim, dim, MemT> &A)
+template <int Dim, class ParentType>
+Matrix<Dim, Dim, typename ParentType::DType> Inverse(
+    const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
-    ArrayMatrix<dim, dim, typename MemT::elem_t> out;
+    Matrix<Dim, Dim, typename ParentType::DType> out;
     Invert(A, out);
     return out;
 }
 
-template <int dim, class MemT>
-typename MemT::elem_t Determinant(const Matrix<dim, dim, MemT> &A)
+template <typename ParentType, int Dim>
+typename ParentType::DType Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
-    Matrix<dim, dim> A_copy = A;
+    Matrix<Dim, Dim, typename ParentType::DType> A_copy = A;
 
     auto decomp = LUDecompose(A_copy);
 
-    typename MemT::elem_t det = decomp.parity;
+    typename ParentType::DType det = decomp.parity;
 
-    for (int i = 0; i < dim; ++i)
+    for (int i = 0; i < Dim; ++i)
     {
-        det *= decomp.upper(i, i);
+        det *= decomp.U(i, i);
     }
 
     return det;
 }
 
-template <int rows, int cols, class MemT>
-typename MemT::elem_t Norm(const Matrix<rows, cols, MemT> &A)
+template <typename ParentType>
+typename ParentType::DType Norm(
+    const MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
 {
-    typename MemT::elem_t sum_sq = 0.0;
+    typename ParentType::DType sum_sq = 0.0;
 
-    for (int i = 0; i < rows; ++i)
+    for (int i = 0; i < ParentType::Rows; ++i)
     {
-        for (int j = 0; j < cols; ++j)
+        for (int j = 0; j < ParentType::Cols; ++j)
         {
             sum_sq += A(i, j) * A(i, j);
         }
@@ -261,82 +257,44 @@ typename MemT::elem_t Norm(const Matrix<rows, cols, MemT> &A)
     return sqrt(sum_sq);
 }
 
-template <int rows, int cols, class MemT>
-typename MemT::elem_t Trace(const Matrix<rows, cols, MemT> &A)
+template <class ParentType>
+typename ParentType::DType Trace(
+    const MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
 {
-    typename MemT::elem_t sum_diag = 0.0;
+    typename ParentType::DType sum_diag = 0.0;
 
-    for (int i = 0; i < rows; ++i)
+    for (int i = 0; i < ParentType::Rows; ++i)
     {
         sum_diag += A(i, i);
     }
     return sum_diag;
 }
 
-
-template<int rows, int cols, class MemT = Array<rows, cols, float>> 
-class VectorValuedFunction{
-    private:
-        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (*_f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x);
-
-    public:
-        VectorValuedFunction(){}
-
-        VectorValuedFunction(Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> (&f)(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x)){_f = f;}
-        VectorValuedFunction(const VectorValuedFunction &V){_f = V._f;}
-        
-        ~VectorValuedFunction(){}
-
-        virtual Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> vv_f(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
-            if(_f == nullptr){
-                return Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>>();
-            }else{
-                return _f(x);
-            }
-        }
-
-        Matrix<rows, 1, Array<rows, 1, typename MemT::elem_t>> operator ()(Matrix<cols, 1, Array<cols,1, typename MemT::elem_t>> x){
-            return vv_f(x);
-        }
+template <int Inputs, int Outputs, typename DType>
+struct MatrixFunctor
+{
+    virtual Matrix<Outputs, 1, DType> operator()(const Matrix<Inputs, 1, DType> &x) const = 0;
 };
 
-template<int rows, int cols, class MemT = Array<rows, cols, float>>
-using VVF = VectorValuedFunction<rows, cols, MemT>;
+template <int Inputs, int Outputs, typename InType>
+Matrix<Outputs, Inputs, typename InType::DType> Jacobian(
+    const MatrixFunctor<Inputs, Outputs, typename InType::DType> &f,
+    const MatrixBase<InType, Inputs, 1, typename InType::DType> &x, const typename InType::DType h = 1e-4)
+{
+    using DType = typename InType::DType;
 
+    Matrix<Outputs, Inputs, DType> jacobian;
+    Matrix<Outputs> f_x = f(x);
+    Matrix<Inputs, 1, DType> h_vec = Zeros<Inputs, 1, DType>();
 
-/**
- * @brief numerically approximate the jacobian of a vector valued function. Cannot be used at the boundary of the domain
- * 
- * @tparam n inputs
- * @tparam m outputs
- * @tparam MemT 
- * @param f vector valued functor 
- * @param _x Point to take a derivative at
- * @param h step size. Set at 0.0001, but for more precise applications, it can be lowered
- * @return Matrix<n, m, MemT> 
- */
-template <int n, int m, class MemT = Array<n, m, float> >
-Matrix<n, m, MemT> Jacobian(VectorValuedFunction<n,m,MemT> f, Matrix<m, 1, Array<m,1, typename MemT::elem_t>> _x,typename MemT::elem_t h = 0.0001)
-{  
-    Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_x = f.vv_f(_x);
-
-    Matrix<n, m, MemT> Jacob;
-  
-    for(int i = 0; i < m; i++){
-        Matrix<m, 1, Array<m, 1, typename MemT::elem_t>> h_vec = Zeros<m>();
-        h_vec(i) = 1.00;
-        h_vec = h_vec * h;
-
-        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> f_xh = f.vv_f(_x + h_vec);
-
-        Matrix<n, 1, Array<n, 1, typename MemT::elem_t>> df = (f_xh - f_x)/h;
-
-        
-        for(int j = 0; j < n; j++){
-            Jacob(j,i) = df(j);
-        }
+    for (int i = 0; i < Inputs; i++)
+    {
+        h_vec(i) = h;
+        Matrix<Outputs, 1, DType> f_xh = f(x + h_vec);
+        jacobian.Column(i) = (f_xh - f_x) / h;
+        h_vec(i) = 0;
     }
-    return Jacob;
+    return jacobian;
 }
 
 }  // namespace BLA
