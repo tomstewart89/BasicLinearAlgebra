@@ -170,20 +170,21 @@ Matrix<Rows, Cols, DType> operator/(const MatrixBase<MatType, Rows, Cols, DType>
     return ret;
 }
 
-template <typename DerivedType, typename OperandType>
-HorizontalConcat<DerivedType, OperandType> operator||(const DownCast<DerivedType> &left,
-                                                      const DownCast<OperandType> &right)
+template <typename DerivedType, typename OperandType, int Rows, typename DType>
+HorizontalConcat<DerivedType, OperandType> operator||(
+    const MatrixBase<DerivedType, Rows, DerivedType::Cols, DType> &left,
+    const MatrixBase<OperandType, Rows, OperandType::Cols, DType> &right)
 {
-    static_assert(DerivedType::Rows == OperandType::Rows, "Number of rows must match");
     return HorizontalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(left),
                                                       static_cast<const OperandType &>(right));
 }
 
-template <typename DerivedType, typename OperandType>
-VerticalConcat<DerivedType, OperandType> operator&&(const DownCast<DerivedType> &top,
-                                                    const DownCast<OperandType> &bottom)
+template <typename DerivedType, typename OperandType, int Cols, typename DType>
+VerticalConcat<DerivedType, OperandType> operator&&(
+    const MatrixBase<DerivedType, DerivedType::Rows, Cols, DType> &top,
+    const MatrixBase<OperandType, OperandType::Rows, Cols, DType> &bottom)
+
 {
-    static_assert(DerivedType::Cols == OperandType::Cols, "Number of columns must match");
     return VerticalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(top),
                                                     static_cast<const OperandType &>(bottom));
 }

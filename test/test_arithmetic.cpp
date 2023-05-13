@@ -239,6 +239,10 @@ TEST(Arithmetic, Cast)
     auto bool_A = A.Cast<bool>();
 
     EXPECT_TRUE(All(bool_A));
+
+    Matrix<3, 3, double> A_double = A.Cast<double>();
+
+    EXPECT_LT(Norm(A * A_double.Cast<float>() - A * A), 1e-5);
 }
 
 TEST(Arithmetic, LogicalOperators)
@@ -246,10 +250,10 @@ TEST(Arithmetic, LogicalOperators)
     Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
     Matrix<3, 3> B = {3.25, 6.77, 9.67, 14.55, 0.23, 3.21, 5.67, 6.75, 11.56};
 
-    auto less_than_three = A < 3.0;
-    auto greater_than_or_equal_to_three_and_a_bit = A <= 3.25;
-    auto greater_than_one_hundred = A > 100.0;
-    auto greater_than_or_equal_to_ten_point_fiveish = A >= 10.56;
+    auto A_less_than_three = A < 3.0;
+    auto A_greater_than_or_equal_to_three_and_a_bit = A <= 3.25;
+    auto A_greater_than_one_hundred = A > 100.0;
+    auto A_greater_than_or_equal_to_ten_point_fiveish = A >= 10.56;
     auto A_less_than_B = A < B;
     auto A_less_than_or_equal_to_B = A <= B;
     auto A_greater_than_B = A > B;
@@ -260,10 +264,10 @@ TEST(Arithmetic, LogicalOperators)
     {
         for (int j = 0; j < 3; ++j)
         {
-            EXPECT_TRUE(less_than_three(i, j) == A(i, j) < 3.0);
-            EXPECT_TRUE(greater_than_or_equal_to_three_and_a_bit(i, j) == A(i, j) <= 3.25);
-            EXPECT_TRUE(greater_than_one_hundred(i, j) == A(i, j) > 100.0);
-            EXPECT_TRUE(greater_than_or_equal_to_ten_point_fiveish(i, j) == A(i, j) >= 10.56);
+            EXPECT_TRUE(A_less_than_three(i, j) == A(i, j) < 3.0);
+            EXPECT_TRUE(A_greater_than_or_equal_to_three_and_a_bit(i, j) == A(i, j) <= 3.25);
+            EXPECT_TRUE(A_greater_than_one_hundred(i, j) == A(i, j) > 100.0);
+            EXPECT_TRUE(A_greater_than_or_equal_to_ten_point_fiveish(i, j) == A(i, j) >= 10.56);
             EXPECT_TRUE(A_less_than_B(i, j) == A(i, j) < B(i, j));
             EXPECT_TRUE(A_less_than_or_equal_to_B(i, j) == A(i, j) <= B(i, j));
             EXPECT_TRUE(A_greater_than_B(i, j) == A(i, j) > B(i, j));
@@ -271,10 +275,10 @@ TEST(Arithmetic, LogicalOperators)
         }
     }
 
-    EXPECT_TRUE(!All(greater_than_one_hundred));
-    EXPECT_FALSE(Any(greater_than_one_hundred));
-    EXPECT_TRUE(Any(less_than_three));
-    EXPECT_FALSE(All(less_than_three));
+    EXPECT_TRUE(!All(A_greater_than_one_hundred));
+    EXPECT_FALSE(Any(A_greater_than_one_hundred));
+    EXPECT_TRUE(Any(A_less_than_three));
+    EXPECT_FALSE(All(A_less_than_three));
 }
 
 int main(int argc, char **argv)
