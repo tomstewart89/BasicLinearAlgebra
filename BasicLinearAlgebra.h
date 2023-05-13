@@ -86,7 +86,7 @@ struct MatrixBase
         {
             for (int j = 0; j < cols; ++j)
             {
-                ret(i, j) = static_cast<DestType>(*this)(i, j);
+                ret(i, j) = (DestType)(*this)(i, j);
             }
         }
 

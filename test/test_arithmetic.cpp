@@ -232,6 +232,15 @@ TEST(Arithmetic, Reference)
     }
 }
 
+TEST(Arithmetic, Cast)
+{
+    Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
+
+    auto bool_A = A.Cast<bool>();
+
+    EXPECT_TRUE(All(bool_A));
+}
+
 TEST(Arithmetic, LogicalOperators)
 {
     Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};
