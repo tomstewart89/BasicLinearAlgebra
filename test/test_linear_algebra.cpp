@@ -46,7 +46,7 @@ TEST(LinearAlgebra, CholeskyDecomposition)
 {
     // clang-format off
 
-    // We could fill in this lower triangle but since A is required to be symmetric they can be inferred
+    // We could fill in this lower triangle but since A is required to be symmetric it can be (and is) inferred
     // from the upper triangle
     Matrix<4, 4> A = {0.60171582, -0.20854924,  0.52925771,  0.24206045,
                       0.0,         0.33012847, -0.28941531, -0.33854164,
@@ -204,7 +204,7 @@ class JacobianTestFunctor : public MatrixFunctor<2, 3, float>
     }
 };
 
-TEST(Examples, numericJacobian)
+TEST(Examples, NumericJacobian)
 {
     // JacobianTestFunctor(x) = [cos(x1) + cos(x1 + x2), sin(x1) + sin(x1 + x2), x1 + x2]
     // jacobian =

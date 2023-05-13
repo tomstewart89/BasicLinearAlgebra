@@ -322,15 +322,14 @@ typename ParentType::DType Determinant(const MatrixBase<ParentType, Dim, Dim, ty
     return det;
 }
 
-template <typename ParentType>
-typename ParentType::DType Norm(
-    const MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
+template <typename DerivedType>
+typename DerivedType::DType Norm(const DownCast<DerivedType> &A)
 {
-    typename ParentType::DType sum_sq = 0.0;
+    typename DerivedType::DType sum_sq = 0.0;
 
-    for (int i = 0; i < ParentType::Rows; ++i)
+    for (int i = 0; i < DerivedType::Rows; ++i)
     {
-        for (int j = 0; j < ParentType::Cols; ++j)
+        for (int j = 0; j < DerivedType::Cols; ++j)
         {
             sum_sq += A(i, j) * A(i, j);
         }
@@ -338,13 +337,12 @@ typename ParentType::DType Norm(
     return sqrt(sum_sq);
 }
 
-template <class ParentType>
-typename ParentType::DType Trace(
-    const MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
+template <class DerivedType>
+typename DerivedType::DType Trace(const DownCast<DerivedType> &A)
 {
-    typename ParentType::DType sum_diag = 0.0;
+    typename DerivedType::DType sum_diag = 0.0;
 
-    for (int i = 0; i < ParentType::Rows; ++i)
+    for (int i = 0; i < DerivedType::Rows; ++i)
     {
         sum_diag += A(i, i);
     }
@@ -375,6 +373,7 @@ Matrix<Outputs, Inputs, typename InType::DType> Jacobian(
         jacobian.Column(i) = (f_xh - f_x) / h;
         h_vec(i) = 0;
     }
+
     return jacobian;
 }
 
