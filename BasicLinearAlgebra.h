@@ -77,6 +77,22 @@ struct MatrixBase
 
     void Fill(const DType &val) { *this = val; }
 
+    template <typename DestType>
+    Matrix<Rows, Cols, DestType> Cast()
+    {
+        Matrix<Rows, Cols, DestType> ret;
+
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                ret(i, j) = static_cast<DestType>(*this)(i, j);
+            }
+        }
+
+        return ret;
+    }
+
     template <int SubRows, int SubCols>
     RefMatrix<DerivedType, SubRows, SubCols> Submatrix(int row_start, int col_start)
     {
@@ -116,23 +132,10 @@ struct MatrixBase
     {
         return MatrixTranspose<const DerivedType>(static_cast<const DerivedType &>(*this));
     }
-
-    template <typename OperandType, int OperandCols>
-    HorizontalConcat<DerivedType, OperandType> operator||(
-        const MatrixBase<OperandType, Rows, OperandCols, DType> &obj) const
-    {
-        return HorizontalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(*this),
-                                                          static_cast<const OperandType &>(obj));
-    }
-
-    template <typename OperandType, int OperandRows>
-    VerticalConcat<DerivedType, OperandType> operator&&(
-        const MatrixBase<OperandType, OperandRows, Cols, DType> &obj) const
-    {
-        return VerticalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(*this),
-                                                        static_cast<const OperandType &>(obj));
-    }
 };
+
+template <typename DerivedType>
+using DownCast = MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, typename DerivedType::DType>;
 
 }  // namespace BLA
 

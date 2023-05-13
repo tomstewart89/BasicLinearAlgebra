@@ -170,6 +170,250 @@ Matrix<Rows, Cols, DType> operator/(const MatrixBase<MatType, Rows, Cols, DType>
     return ret;
 }
 
+template <typename DerivedType, typename OperandType>
+HorizontalConcat<DerivedType, OperandType> operator||(const DownCast<DerivedType> &left,
+                                                      const DownCast<OperandType> &right)
+{
+    static_assert(DerivedType::Rows == OperandType::Rows, "Number of rows must match");
+    return HorizontalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(left),
+                                                      static_cast<const OperandType &>(right));
+}
+
+template <typename DerivedType, typename OperandType>
+VerticalConcat<DerivedType, OperandType> operator&&(const DownCast<DerivedType> &top,
+                                                    const DownCast<OperandType> &bottom)
+{
+    static_assert(DerivedType::Cols == OperandType::Cols, "Number of columns must match");
+    return VerticalConcat<DerivedType, OperandType>(static_cast<const DerivedType &>(top),
+                                                    static_cast<const OperandType &>(bottom));
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, bool> operator==(const MatrixBase<MatAType, Rows, Cols, DType> &matA,
+                                    const MatrixBase<MatBType, Rows, Cols, DType> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) == matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols>
+Matrix<Rows, Cols, bool> operator&(const MatrixBase<MatAType, Rows, Cols, bool> &matA,
+                                   const MatrixBase<MatBType, Rows, Cols, bool> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) & matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols>
+Matrix<Rows, Cols, bool> operator|(const MatrixBase<MatAType, Rows, Cols, bool> &matA,
+                                   const MatrixBase<MatBType, Rows, Cols, bool> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) | matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+Matrix<DerivedType::Rows, DerivedType::Cols, bool> operator!(
+    const MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, bool> &matA)
+{
+    Matrix<DerivedType::Rows, DerivedType::Cols, bool> ret;
+
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            ret(i, j) = !matA(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, bool> operator>(const MatrixBase<MatAType, Rows, Cols, DType> &matA,
+                                   const MatrixBase<MatBType, Rows, Cols, DType> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) > matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, bool> operator<(const MatrixBase<MatAType, Rows, Cols, DType> &matA,
+                                   const MatrixBase<MatBType, Rows, Cols, DType> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) < matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, bool> operator<=(const MatrixBase<MatAType, Rows, Cols, DType> &matA,
+                                    const MatrixBase<MatBType, Rows, Cols, DType> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) <= matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename MatAType, typename MatBType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, bool> operator>=(const MatrixBase<MatAType, Rows, Cols, DType> &matA,
+                                    const MatrixBase<MatBType, Rows, Cols, DType> &matB)
+{
+    Matrix<Rows, Cols, bool> ret;
+
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = matA(i, j) >= matB(i, j);
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+Matrix<DerivedType::Rows, DerivedType::Cols, bool> operator>(const DownCast<DerivedType> &mat,
+                                                             const typename DerivedType::DType k)
+{
+    Matrix<DerivedType::Rows, DerivedType::Cols, bool> ret;
+
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            ret(i, j) = mat(i, j) > k;
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+Matrix<DerivedType::Rows, DerivedType::Cols, bool> operator>=(const DownCast<DerivedType> &mat,
+                                                              const typename DerivedType::DType k)
+{
+    Matrix<DerivedType::Rows, DerivedType::Cols, bool> ret;
+
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            ret(i, j) = mat(i, j) >= k;
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+Matrix<DerivedType::Rows, DerivedType::Cols, bool> operator<(const DownCast<DerivedType> &mat,
+                                                             const typename DerivedType::DType k)
+{
+    Matrix<DerivedType::Rows, DerivedType::Cols, bool> ret;
+
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            ret(i, j) = mat(i, j) < k;
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+Matrix<DerivedType::Rows, DerivedType::Cols, bool> operator<=(const DownCast<DerivedType> &mat,
+                                                              const typename DerivedType::DType k)
+{
+    Matrix<DerivedType::Rows, DerivedType::Cols, bool> ret;
+
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            ret(i, j) = mat(i, j) <= k;
+        }
+    }
+    return ret;
+}
+
+template <typename DerivedType>
+bool Any(const MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, bool> &matA)
+{
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            if (matA(i, j))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+template <typename DerivedType>
+bool All(const MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, bool> &matA)
+{
+    for (int i = 0; i < DerivedType::Rows; ++i)
+    {
+        for (int j = 0; j < DerivedType::Cols; ++j)
+        {
+            if (!matA(i, j))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 inline Print &operator<<(Print &strm, const int obj)
 {
     strm.print(obj);
