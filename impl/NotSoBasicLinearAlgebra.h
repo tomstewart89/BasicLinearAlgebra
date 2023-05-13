@@ -10,13 +10,13 @@ inline void bla_swap(T &a, T &b)
     b = tmp;
 }
 
-template <int Dim, class ParentType>
+template <typename ParentType>
 struct LUDecomposition
 {
     bool singular;
     typename ParentType::DType parity;
-    PermutationMatrix<Dim, typename ParentType::DType> P;
-    LowerTriangularDiagonalOnesMatrix<ParentType> L;
+    PermutationMatrix<ParentType::Rows, typename ParentType::DType> P;
+    LowerUnitriangularMatrix<ParentType> L;
     UpperTriangularMatrix<ParentType> U;
 
     LUDecomposition(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
@@ -26,10 +26,22 @@ struct LUDecomposition
     }
 };
 
-template <typename ParentType, int Dim>
-LUDecomposition<Dim, ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+template <typename ParentType>
+struct CholeskyDecomposition
 {
-    LUDecomposition<Dim, ParentType> decomp(A);
+    bool positive_definite = true;
+    LowerTriangularMatrix<ParentType> L;
+
+    CholeskyDecomposition(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
+        : L(static_cast<ParentType &>(A))
+    {
+    }
+};
+
+template <typename ParentType, int Dim>
+LUDecomposition<ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+{
+    LUDecomposition<ParentType> decomp(A);
     auto &idx = decomp.P.idx;
     decomp.parity = 1.0;
 
@@ -142,7 +154,7 @@ LUDecomposition<Dim, ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, ty
 }
 
 template <int Dim, class LUType, class BType>
-Matrix<Dim, 1, typename BType::DType> LUSolve(const LUDecomposition<Dim, LUType> &decomp,
+Matrix<Dim, 1, typename BType::DType> LUSolve(const LUDecomposition<LUType> &decomp,
                                               const MatrixBase<BType, Dim, 1, typename BType::DType> &b)
 {
     Matrix<Dim, 1, typename BType::DType> x, tmp;
@@ -180,6 +192,75 @@ Matrix<Dim, 1, typename BType::DType> LUSolve(const LUDecomposition<Dim, LUType>
     for (int i = 0; i < Dim; ++i)
     {
         x(i) = tmp(idx[i]);
+    }
+
+    return x;
+}
+
+template <typename ParentType, int Dim>
+CholeskyDecomposition<ParentType> CholeskyDecompose(MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+{
+    CholeskyDecomposition<ParentType> chol(A);
+
+    for (int i = 0; i < Dim; ++i)
+    {
+        for (int j = i; j < Dim; ++j)
+        {
+            float sum = A(i, j);
+
+            for (int k = i - 1; k >= 0; --k)
+            {
+                sum -= A(i, k) * A(j, k);
+            }
+
+            if (i == j)
+            {
+                if (sum <= 0.0)
+                {
+                    chol.positive_definite = false;
+                    return chol;
+                }
+                A(i, i) = sqrt(sum);
+            }
+            else
+            {
+                A(j, i) = sum / A(i, i);
+            }
+        }
+    }
+
+    return chol;
+}
+
+template <int Dim, class LUType, class BType>
+Matrix<Dim, 1, typename BType::DType> CholeskySolve(const CholeskyDecomposition<LUType> &decomp,
+                                                    const MatrixBase<BType, Dim, 1, typename BType::DType> &b)
+{
+    Matrix<Dim, 1, typename BType::DType> x;
+    auto &A = decomp.L.parent;
+
+    for (int i = 0; i < Dim; ++i)
+    {
+        float sum = b(i);
+
+        for (int k = i - 1; k >= 0; --k)
+        {
+            sum -= A(i, k) * x(k);
+        }
+
+        x(i) = sum / A(i, i);
+    }
+
+    for (int i = Dim - 1; i >= 0; --i)
+    {
+        float sum = x(i);
+
+        for (int k = i + 1; k < Dim; ++k)
+        {
+            sum -= A(k, i) * x(k);
+        }
+
+        x(i) = sum / A(i, i);
     }
 
     return x;
