@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Arduino.h"
-
 namespace BLA
 {
 template <typename MatAType, typename MatBType, int MatARows, int MatACols, int MatBCols, typename DType>

@@ -34,5 +34,7 @@ struct Print
 
 } Serial;
 
+inline long random(long max) { return random() % max; }
+
 using std::endl;
 using std::max;

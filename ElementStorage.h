@@ -81,6 +81,21 @@ class Eye : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
     Eye() = default;
 };
 
+template <int Rows, int Cols = 1, typename DType = float>
+class Random : public MatrixBase<Random<Rows, Cols, DType>, Rows, Cols, DType>
+{
+    constexpr static long BigVal = 1e6;
+    const DType max_value, min_value;
+
+   public:
+    DType operator()(int i, int j = 0) const
+    {
+        return static_cast<float>(random(BigVal)) / BigVal * (max_value - min_value) + min_value;
+    }
+
+    Random(const DType min_val, const DType max_val) : max_value(max_val), min_value(min_val) {}
+};
+
 template <typename RefType, int Rows, int Cols>
 class RefMatrix : public MatrixBase<RefMatrix<RefType, Rows, Cols>, Rows, Cols, typename RefType::DType>
 {

@@ -50,6 +50,18 @@ TEST(Arithmetic, OnesTest)
     }
 }
 
+TEST(Arithmetic, RandomTest)
+{
+    srand(0);
+
+    Matrix<100, 100> A = Random<100, 100>(2.5, 10.2);
+    Matrix<100, 100, int> B = Random<100, 100, int>(2, 10);
+    Matrix<100, 100, bool> C = Random<100, 100, bool>(false, true);
+
+    EXPECT_TRUE(All((A >= 2.5) & (A < 10.2)));
+    EXPECT_TRUE(All((B >= 2) & (B < 10)));
+}
+
 TEST(Arithmetic, AdditionSubtraction)
 {
     Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};

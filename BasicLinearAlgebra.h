@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Arduino.h"
 #include "ElementStorage.h"
 
 namespace BLA
