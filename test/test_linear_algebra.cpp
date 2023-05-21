@@ -215,7 +215,7 @@ TEST(Examples, NumericJacobian)
     Matrix<2> x = {0.0f, 0.0f};
     JacobianTestFunctor functor;
 
-    Matrix<3, 2> jacobian = Jacobian<2, 3>(JacobianTestFunctor(), x);
+    Matrix<3, 2> jacobian = Jacobian(JacobianTestFunctor(), x);
 
     EXPECT_NEAR(jacobian(0, 0), 0, 1e-4);
     EXPECT_NEAR(jacobian(0, 1), 0, 1e-4);
@@ -225,6 +225,31 @@ TEST(Examples, NumericJacobian)
 
     EXPECT_NEAR(jacobian(2, 0), 1, 1e-4);
     EXPECT_NEAR(jacobian(2, 1), 1, 1e-4);
+}
+
+class HessianTestFunctor : public MatrixFunctor<3, 1, float>
+{
+    Matrix<1, 1, float> operator()(const Matrix<3, 1, float> &x) const override
+    {
+        return Matrix<1>{5.0f * x(0) * x(0) + 3.5f * x(1) * x(2) + 2.0f * x(0) - x(2)};
+    }
+};
+
+TEST(Examples, NumericHessian)
+{
+    Matrix<3> x = {1.0, 2.0, 3.0};
+
+    Matrix<3, 3> hessian = Hessian(HessianTestFunctor(), x);
+
+    EXPECT_NEAR(hessian(0, 0), 10.0, 1e-3);
+    EXPECT_NEAR(hessian(0, 1), 0.0, 1e-3);
+    EXPECT_NEAR(hessian(0, 2), 0.0, 1e-3);
+    EXPECT_NEAR(hessian(1, 0), 0.0, 1e-3);
+    EXPECT_NEAR(hessian(1, 1), 0.0, 1e-3);
+    EXPECT_NEAR(hessian(1, 2), 3.5, 1e-3);
+    EXPECT_NEAR(hessian(2, 0), 0.0, 1e-3);
+    EXPECT_NEAR(hessian(2, 1), 3.5, 1e-3);
+    EXPECT_NEAR(hessian(2, 2), 0.0, 1e-3);
 }
 
 int main(int argc, char **argv)

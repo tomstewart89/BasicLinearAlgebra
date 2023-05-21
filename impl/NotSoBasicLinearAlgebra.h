@@ -377,4 +377,42 @@ Matrix<Outputs, Inputs, typename InType::DType> Jacobian(
     return jacobian;
 }
 
+template <int Inputs, typename InType>
+Matrix<Inputs, Inputs, typename InType::DType> Hessian(const MatrixFunctor<Inputs, 1, typename InType::DType> &f,
+                                                       const MatrixBase<InType, Inputs, 1, typename InType::DType> &x,
+                                                       const typename InType::DType h = 2.0)
+{
+    using DType = typename InType::DType;
+
+    const DType h_sq = h * h;
+    const DType fx = f(x)(0);
+
+    Matrix<Inputs, Inputs, DType> hessian;
+    Matrix<Inputs, 1, DType> dx = Zeros<Inputs, 1, DType>();
+    Matrix<Inputs, 1, DType> g = Zeros<Inputs, 1, DType>();
+
+    for (int i = 0; i < Inputs; ++i)
+    {
+        dx(i) = h;
+        g(i) = f(x + dx)(0);
+        dx(i) = 0;
+    }
+
+    for (int i = 0; i < Inputs; i++)
+    {
+        dx(i) += h;
+
+        for (int j = i; j < Inputs; j++)
+        {
+            dx(j) += h;
+            hessian(j, i) = hessian(i, j) = (f(x + dx)(0) - g(i) - g(j) + fx) / h_sq;
+            dx(j) -= h;
+        }
+
+        dx(i) -= h;
+    }
+
+    return hessian;
+}
+
 }  // namespace BLA
