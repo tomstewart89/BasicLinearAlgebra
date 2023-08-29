@@ -107,6 +107,7 @@ TEST(Arithmetic, ElementwiseOperations)
     auto D = A - 3.7f;
     auto E = A * 1.2f;
     auto F = A / 6.7f;
+    auto G = -A;
 
     for (int i = 0; i < 2; ++i)
     {
