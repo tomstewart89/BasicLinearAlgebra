@@ -133,9 +133,9 @@ struct MatrixBase
         return MatrixTranspose<const DerivedType>(static_cast<const DerivedType &>(*this));
     }
 
-    Matrix<Rows, Cols, DerivedType> operator-() const
+    Matrix<Rows, Cols, DType> operator-() const
     {
-        Matrix<Rows, Cols, DerivedType> ret;
+        Matrix<Rows, Cols, DType> ret;
 
         for (int i = 0; i < rows; ++i)
         {

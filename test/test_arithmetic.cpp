@@ -117,6 +117,7 @@ TEST(Arithmetic, ElementwiseOperations)
             EXPECT_FLOAT_EQ(D(i, j), A(i, j) - 3.7);
             EXPECT_FLOAT_EQ(E(i, j), A(i, j) * 1.2);
             EXPECT_FLOAT_EQ(F(i, j), A(i, j) / 6.7);
+            EXPECT_FLOAT_EQ(G(i, j), -A(i, j));
         }
     }
 
