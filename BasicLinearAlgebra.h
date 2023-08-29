@@ -132,6 +132,21 @@ struct MatrixBase
     {
         return MatrixTranspose<const DerivedType>(static_cast<const DerivedType &>(*this));
     }
+
+    Matrix<Rows, Cols, DType> operator-() const
+    {
+        Matrix<Rows, Cols, DType> ret;
+
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                ret(i, j) = -(*this)(i, j);
+            }
+        }
+
+        return ret;
+    }
 };
 
 template <typename DerivedType>
