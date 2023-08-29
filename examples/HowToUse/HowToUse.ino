@@ -73,14 +73,13 @@ void setup()
     BLA::Matrix<6, 3> AonTopOfB = A && B;
 
     // An inverse of a matrix can also be calculated for square matrices via the Invert function. This will invert
-    // the input matrix in-place and return true if the inversion was successful
+    // the input matrix in-place.
     BLA::Matrix<3, 3> C_inv = C;
     bool is_nonsingular = Invert(C_inv);
 
     // If the matrix is singular, the inversion won't work. In those cases Invert will return false.
 
-    // For convenience, there's also Inverse, which will return a new matrix for the inverse, leaving the input matrix
-    // unmodified.
+    // For convenience, there's also Inverse, which will return the inverse, leaving the input matrix unmodified.
     BLA::Matrix<3, 3> also_C_inv = Inverse(C);
 
     // If you want to print out the value of any element in the array you can do that like so:
