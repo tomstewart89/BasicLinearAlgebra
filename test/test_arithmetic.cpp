@@ -50,6 +50,23 @@ TEST(Arithmetic, OnesTest)
     }
 }
 
+TEST(Arithmetic, EyeTest)
+{
+    auto I = BLA::Eye<2, 2>();
+    auto Z = BLA::Zeros<2, 2>();
+    auto R = I + Z;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            EXPECT_FLOAT_EQ(I(i, j), i == j ? 1.0f : 0.0f);
+            EXPECT_FLOAT_EQ(Z(i, j), 0.0f);
+            EXPECT_FLOAT_EQ(R(i, j), i == j ? 1.0f : 0.0f);
+        }
+    }
+}
+
 TEST(Arithmetic, AdditionSubtraction)
 {
     Matrix<3, 3> A = {3.25, 5.67, 8.67, 4.55, 7.23, 9.00, 2.35, 5.73, 10.56};

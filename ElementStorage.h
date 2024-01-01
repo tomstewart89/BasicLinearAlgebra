@@ -73,7 +73,7 @@ class Ones : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
 };
 
 template <int Rows, int Cols = 1, typename DType = float>
-class Eye : public MatrixBase<Ones<Rows, Cols, DType>, Rows, Cols, DType>
+class Eye : public MatrixBase<Eye<Rows, Cols, DType>, Rows, Cols, DType>
 {
    public:
     DType operator()(int i, int j = 0) const { return i == j; }
