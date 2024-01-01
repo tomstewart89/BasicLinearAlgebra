@@ -159,7 +159,7 @@ template <typename SparseMatA, typename SparseMatB, int OutTableSize = 100>
 SparseMatrix<SparseMatA::Rows, SparseMatB::Cols, typename SparseMatA::DType, OutTableSize> sparse_mul(
     const SparseMatA &A, const SparseMatB &B)
 {
-    static_assert(A.Cols == B.Rows);
+    static_assert(A.Cols == B.Rows, "Incompatible dimensions for sparse matrix multiplication");
 
     SparseMatrix<A.Rows, B.Cols, typename SparseMatA::DType, OutTableSize> out;
 

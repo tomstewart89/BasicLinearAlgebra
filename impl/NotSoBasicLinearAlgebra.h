@@ -22,7 +22,7 @@ struct LUDecomposition
     LUDecomposition(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, typename ParentType::DType> &A)
         : L(static_cast<ParentType &>(A)), U(static_cast<ParentType &>(A))
     {
-        static_assert(ParentType::Rows == ParentType::Cols);
+        static_assert(ParentType::Rows == ParentType::Cols, "Input matrix must be square");
     }
 };
 
