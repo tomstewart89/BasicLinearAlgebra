@@ -4,6 +4,51 @@
 
 using namespace BLA;
 
+TEST(LinearAlgebra, CrossProduct)
+{
+    // Axis 0
+    const Matrix<3> A = {1, 2,  3};
+    const Matrix<3> B = {5, 7, 11};
+    const Matrix<3> AB_expected = {1, 4, -3};
+    const auto AB_result = CrossProduct(A, B);
+
+    for (int i = 0; i < AB_result.Rows; i++)
+    {
+        for (int j = 0; j < AB_result.Cols; j++)
+        {
+            EXPECT_FLOAT_EQ(AB_result(i, j), AB_expected(i, j));
+        }
+    }
+    // Axis 1
+    const Matrix<2, 3> C = {1,  2,  3, 5,  7, 11};
+    const Matrix<2, 3> D = {13, 17, 19, 23, 29, 31};
+    const Matrix<2, 3> CD_expected = {-13, 20, -9, -102, 98, -16};
+    const auto CD_result = CrossProduct(C, D);
+
+    for (int i = 0; i < CD_result.Rows; i++)
+    {
+        for (int j = 0; j < CD_result.Cols; j++)
+        {
+            EXPECT_FLOAT_EQ(CD_result(i, j), CD_expected(i, j));
+        }
+    }
+    // 3x3 axis selection
+    const Matrix<3, 3> E = { 1,  2,  3,  5,  7, 11, 13, 17, 19};
+    const Matrix<3, 3> F = {23, 29, 31, 37, 41, 43, 47, 53, 59};
+    const Matrix<3, 3> EF_expected = {-25, 38, -17, -150, 192, -54, -4, 126, -110};
+    const auto EF_result_ax0 = CrossProduct<0>(~E, ~F);
+    const auto EF_result_ax1 = CrossProduct<1>(E, F);
+
+    for (int i = 0; i < EF_expected.Rows; i++)
+    {
+        for (int j = 0; j < EF_expected.Cols; j++)
+        {
+            EXPECT_FLOAT_EQ(EF_result_ax0(i, j), EF_expected(j, i));
+            EXPECT_FLOAT_EQ(EF_result_ax1(i, j), EF_expected(i, j));
+        }
+    }
+}
+
 TEST(LinearAlgebra, LUDecomposition)
 {
     Matrix<7, 7> A = {16, 78, 50, 84, 70, 63, 2, 32, 33, 61, 40, 17, 96, 98, 50, 80, 78, 27, 86, 49, 57, 10, 42, 96, 44,

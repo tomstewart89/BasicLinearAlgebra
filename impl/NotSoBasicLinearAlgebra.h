@@ -10,6 +10,37 @@ inline void bla_swap(T &a, T &b)
     b = tmp;
 }
 
+template <int Axis = -1, typename ParentTypeA, typename ParentTypeB, int Rows, int Cols>
+Matrix<Rows, Cols, typename ParentTypeA::DType> CrossProduct(
+    const MatrixBase<ParentTypeA, Rows, Cols, typename ParentTypeA::DType> &matA,
+    const MatrixBase<ParentTypeB, Rows, Cols, typename ParentTypeA::DType> &matB)
+{
+    static_assert(Rows == 3 || Cols == 3, "At least one axis has be to dimension three for cross-product");
+    static_assert((Rows != 3 || Cols != 3) || (Axis == 1 || Axis == 0),
+        "For 3-by-3 matrix, the axis (zero or one) for the cross-product operations needs to be specified.");
+    static_assert((Rows == 3 && Cols == 3) || (Axis == -1),
+        "Cross-product operations can only be perfomed along with dimension three.");
+    constexpr int axis = (Rows == 3 && Cols == 3) ? Axis : Cols == 3;
+
+    Matrix<Rows, Cols, typename ParentTypeA::DType> ret;
+    if (axis == 0) {
+        for (int i = 0; i < Cols; ++i)
+        {
+            ret(0,i) = matA(1,i) * matB(2,i) - matB(1,i) * matA(2,i);
+            ret(1,i) = matA(2,i) * matB(0,i) - matB(2,i) * matA(0,i);
+            ret(2,i) = matA(0,i) * matB(1,i) - matB(0,i) * matA(1,i);
+        }
+    } else {
+        for (int i = 0; i < Rows; ++i)
+        {
+            ret(i,0) = matA(i,1) * matB(i,2) - matB(i,1) * matA(i,2);
+            ret(i,1) = matA(i,2) * matB(i,0) - matB(i,2) * matA(i,0);
+            ret(i,2) = matA(i,0) * matB(i,1) - matB(i,0) * matA(i,1);
+        }
+    }
+    return ret;
+}
+
 template <typename ParentType>
 struct LUDecomposition
 {
