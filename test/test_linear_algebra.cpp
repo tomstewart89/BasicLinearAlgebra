@@ -19,32 +19,18 @@ TEST(LinearAlgebra, CrossProduct)
             EXPECT_FLOAT_EQ(AB_result(i, j), AB_expected(i, j));
         }
     }
-    // Axis 1
-    const Matrix<2, 3> C = {1,  2,  3, 5,  7, 11};
-    const Matrix<2, 3> D = {13, 17, 19, 23, 29, 31};
-    const Matrix<2, 3> CD_expected = {-13, 20, -9, -102, 98, -16};
-    const auto CD_result = CrossProduct(C, D);
-
-    for (int i = 0; i < CD_result.Rows; i++)
-    {
-        for (int j = 0; j < CD_result.Cols; j++)
-        {
-            EXPECT_FLOAT_EQ(CD_result(i, j), CD_expected(i, j));
-        }
-    }
-    // 3x3 axis selection
+    // The cross product will always be computed on the second axis.
+    // This can be changed by transposing the matricies.
     const Matrix<3, 3> E = { 1,  2,  3,  5,  7, 11, 13, 17, 19};
     const Matrix<3, 3> F = {23, 29, 31, 37, 41, 43, 47, 53, 59};
     const Matrix<3, 3> EF_expected = {-25, 38, -17, -150, 192, -54, -4, 126, -110};
-    const auto EF_result_ax0 = CrossProduct<0>(~E, ~F);
-    const auto EF_result_ax1 = CrossProduct<1>(E, F);
+    const auto EF_result = CrossProduct(~E, ~F);
 
     for (int i = 0; i < EF_expected.Rows; i++)
     {
         for (int j = 0; j < EF_expected.Cols; j++)
         {
-            EXPECT_FLOAT_EQ(EF_result_ax0(i, j), EF_expected(j, i));
-            EXPECT_FLOAT_EQ(EF_result_ax1(i, j), EF_expected(i, j));
+            EXPECT_FLOAT_EQ(EF_result(i, j), EF_expected(j, i));
         }
     }
 }
