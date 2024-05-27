@@ -147,11 +147,23 @@ Matrix<Rows, Cols, DType> operator+(const MatrixBase<MatType, Rows, Cols, DType>
 }
 
 template <typename MatType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, DType> operator+(const DType k, const MatrixBase<MatType, Rows, Cols, DType> &mat)
+{
+    return mat + k;
+}
+
+template <typename MatType, int Rows, int Cols, typename DType>
 Matrix<Rows, Cols, DType> operator-(const MatrixBase<MatType, Rows, Cols, DType> &mat, const DType k)
 {
     Matrix<Rows, Cols, DType> ret = mat;
     ret -= k;
     return ret;
+}
+
+template <typename MatType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, DType> operator-(const DType k, const MatrixBase<MatType, Rows, Cols, DType> &mat)
+{
+    return (-mat) + k;
 }
 
 template <typename MatType, int Rows, int Cols, typename DType>
@@ -163,10 +175,30 @@ Matrix<Rows, Cols, DType> operator*(const MatrixBase<MatType, Rows, Cols, DType>
 }
 
 template <typename MatType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, DType> operator*(const DType k, const MatrixBase<MatType, Rows, Cols, DType> &mat)
+{
+    return mat * k;
+}
+
+template <typename MatType, int Rows, int Cols, typename DType>
 Matrix<Rows, Cols, DType> operator/(const MatrixBase<MatType, Rows, Cols, DType> &mat, const DType k)
 {
     Matrix<Rows, Cols, DType> ret = mat;
     ret /= k;
+    return ret;
+}
+
+template <typename MatType, int Rows, int Cols, typename DType>
+Matrix<Rows, Cols, DType> operator/(const DType k, const MatrixBase<MatType, Rows, Cols, DType> &mat)
+{
+    Matrix<Rows, Cols, DType> ret;
+    for (int i = 0; i < Rows; ++i)
+    {
+        for (int j = 0; j < Cols; ++j)
+        {
+            ret(i, j) = k / mat(i, j);
+        }
+    }
     return ret;
 }
 
