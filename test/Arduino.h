@@ -1,23 +1,43 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <iomanip>
 #include <sstream>
+
+#include "Printable.h"
 
 struct Print
 {
     std::stringstream buf;
 
     template <typename T>
-    void print(const T& obj)
+    typename std::enable_if<!std::is_base_of<Printable, T>::value, size_t>::type
+    print(const T& obj)
     {
         buf << obj;
+        return 0;
     }
 
     template <typename T>
-    void println(const T& obj)
+    typename std::enable_if<!std::is_base_of<Printable, T>::value, size_t>::type
+    println(const T& obj)
     {
         buf << obj << std::endl;
+        return 0;
+    }
+
+    size_t print(const Printable& x)
+    {
+        x.printTo(*this);
+        return 0;
+    }
+
+    size_t println(const Printable& x)
+    {
+        x.printTo(*this);
+        println("");
+        return 0;
     }
 
     void begin(int)
