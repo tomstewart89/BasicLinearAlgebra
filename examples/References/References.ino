@@ -43,7 +43,8 @@ void setup()
     bigMatrixRef(0, 0) = 45.67434;
 
     // And we can see that the original matrix has been set accordingly
-    Serial << "bigMatrix(4,2): " << bigMatrix(4, 2) << "\n";
+    Serial.print("bigMatrix(4,2): ");
+    Serial.println(bigMatrix(4, 2));
 
     // The submatrix function actually returns a RefMatrix so if you like you can just use it directly. For example you
     // can set a section of bigMatrix using an array like so:
@@ -64,17 +65,20 @@ void setup()
     Invert(bigMatrixRef);
 
     // Print them
-    Serial << "bigMatrixRef: " << bigMatrixRef << "\n";
+    Serial.print("bigMatrixRef: ");
+    Serial.println(bigMatrixRef);
 
     // You can even make a reference to a reference matrix, do arithmetic with that and then print the result
-    Serial << "result of convoluted operation: " << (anotherRef += bigMatrixRef.Submatrix<2, 4>(0, 0)) << "\n";
+    Serial.print("result of convoluted operation: ");
+    Serial.println(anotherRef += bigMatrixRef.Submatrix<2, 4>(0, 0));
 
     // The only thing that you can't (shouldn't) really do is operate on two matrix references whose underlying memory
     // overlap, particularly when doing matrix multiplication.
 
     // Lastly, let's look at what became of bigMatrix after all of this, you might be able to make out the values of
     // bigMatrixRef and anotherRef in their respective areas of bigMatrix.
-    Serial << "bigMatrix: " << bigMatrix;
+    Serial.print("bigMatrix: ");
+    Serial.print(bigMatrix);
 }
 
 void loop() {}
