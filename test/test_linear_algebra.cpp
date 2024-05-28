@@ -4,6 +4,37 @@
 
 using namespace BLA;
 
+TEST(LinearAlgebra, CrossProduct)
+{
+    // Axis 0
+    const Matrix<3> A = {1, 2,  3};
+    const Matrix<3> B = {5, 7, 11};
+    const Matrix<3> AB_expected = {1, 4, -3};
+    const auto AB_result = CrossProduct(A, B);
+
+    for (int i = 0; i < AB_result.Rows; i++)
+    {
+        for (int j = 0; j < AB_result.Cols; j++)
+        {
+            EXPECT_FLOAT_EQ(AB_result(i, j), AB_expected(i, j));
+        }
+    }
+    // The cross product will always be computed on the second axis.
+    // This can be changed by transposing the matricies.
+    const Matrix<3, 3> E = { 1,  2,  3,  5,  7, 11, 13, 17, 19};
+    const Matrix<3, 3> F = {23, 29, 31, 37, 41, 43, 47, 53, 59};
+    const Matrix<3, 3> EF_expected = {-25, 38, -17, -150, 192, -54, -4, 126, -110};
+    const auto EF_result = CrossProduct(~E, ~F);
+
+    for (int i = 0; i < EF_expected.Rows; i++)
+    {
+        for (int j = 0; j < EF_expected.Cols; j++)
+        {
+            EXPECT_FLOAT_EQ(EF_result(i, j), EF_expected(j, i));
+        }
+    }
+}
+
 TEST(LinearAlgebra, LUDecomposition)
 {
     Matrix<7, 7> A = {16, 78, 50, 84, 70, 63, 2, 32, 33, 61, 40, 17, 96, 98, 50, 80, 78, 27, 86, 49, 57, 10, 42, 96, 44,
