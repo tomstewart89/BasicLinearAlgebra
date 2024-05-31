@@ -306,7 +306,8 @@ Matrix<Dim, Dim, typename ParentType::DType> Inverse(
 }
 
 template <typename ParentType, int Dim>
-typename ParentType::DType Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+typename std::enable_if<std::is_floating_point<typename ParentType::DType>::value, typename ParentType::DType>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
 {
     Matrix<Dim, Dim, typename ParentType::DType> A_copy = A;
 
@@ -320,6 +321,46 @@ typename ParentType::DType Determinant(const MatrixBase<ParentType, Dim, Dim, ty
     }
 
     return det;
+}
+
+template <typename ParentType, int Dim>
+typename std::enable_if<std::is_integral<typename ParentType::DType>::value, typename ParentType::DType>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+{
+    // For integral types use Bareiss algorithm
+    Matrix<Dim, Dim, typename ParentType::DType> A_copy = A;
+
+    int sign = 1;
+    typename ParentType::DType prev = 1;
+
+    for (int i = 0; i < Dim; i++)
+    {
+        if (A_copy(i, i) == 0)
+        {
+            int idx = i + 1;
+            for (; idx < Dim; idx++)
+            {
+                if (A_copy(idx, i) != 0) break;
+            }
+            if (idx == Dim) return 0;
+            const BLA::Matrix<1, Dim, typename ParentType::DType> tmp = A_copy.Row(i);
+            for (int k = 0; k < Dim; k++)
+            {
+                A_copy(i, k) = A_copy(idx, k);
+                A_copy(idx, k) = tmp(1, k);
+            }
+            sign = - sign;
+        }
+        for (int j = i + 1; j < Dim; j++)
+        {
+            for (int k = i + 1; k < Dim; k++)
+            {
+                A_copy(j, k) = (A_copy(j, k) * A_copy(i, i) - A_copy(j, i) * A_copy(i, k)) / prev;
+            }
+        }
+        prev = A_copy(i, i);
+    }
+    return sign * A_copy(Dim - 1, Dim - 1);
 }
 
 template <typename DerivedType>
