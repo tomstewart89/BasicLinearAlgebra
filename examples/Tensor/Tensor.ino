@@ -63,7 +63,8 @@ void setup()
     BLA::Matrix<2, 2, BLA::Matrix<2, 2>> hyperB = (hyperA * hyperA);
 
     // Everything can be printed too
-    Serial << "Hyper B: " << hyperB;
+    Serial.print("Hyper B: ");
+    Serial.print(hyperB);
 
     // Inversion doesn't work. If it did, it'd probably take quite a while for arduino to calculate anyway so maybe it's
     // for the best

@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Arduino.h"
-
 namespace BLA
 {
 template <typename MatAType, typename MatBType, int MatARows, int MatACols, int MatBCols, typename DType>
@@ -445,47 +443,6 @@ bool All(const MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, boo
     }
 
     return true;
-}
-
-inline Print &operator<<(Print &strm, const int obj)
-{
-    strm.print(obj);
-    return strm;
-}
-
-inline Print &operator<<(Print &strm, const float obj)
-{
-    strm.print(obj);
-    return strm;
-}
-
-inline Print &operator<<(Print &strm, const char *obj)
-{
-    strm.print(obj);
-    return strm;
-}
-
-inline Print &operator<<(Print &strm, const char obj)
-{
-    strm.print(obj);
-    return strm;
-}
-
-// Stream inserter operator for printing to strings or the serial port
-template <typename DerivedType, int Rows, int Cols, typename DType>
-Print &operator<<(Print &strm, const MatrixBase<DerivedType, Rows, Cols, DType> &mat)
-{
-    strm << '[';
-
-    for (int i = 0; i < Rows; i++)
-    {
-        strm << '[';
-
-        for (int j = 0; j < Cols; j++) strm << mat(i, j) << ((j == Cols - 1) ? ']' : ',');
-
-        strm << (i == Rows - 1 ? ']' : ',');
-    }
-    return strm;
 }
 
 }  // namespace BLA

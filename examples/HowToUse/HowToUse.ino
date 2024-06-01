@@ -82,15 +82,17 @@ void setup()
     // For convenience, there's also Inverse, which will return the inverse, leaving the input matrix unmodified.
     BLA::Matrix<3, 3> also_C_inv = Inverse(C);
 
-    // If you want to print out the value of any element in the array you can do that like so:
-    Serial << "v(1): " << v(1) << '\n';
+    // If you want to print out the value of any element in the array you can do that with the Serial object:
+    Serial.print("v(1): ");
+    Serial.println(v(1));
 
-    // Alternatively, you can write the whole matrix to Serial using a C++ style inserter, like so:
-    Serial << "B: " << B << '\n';
+    // Alternatively, you can write the whole matrix to Serial, which works like so:
+    Serial.print("B: ");
+    Serial.println(B);
 
     // You can even write some quite complex compound statements very succinctly. For example:
-    // Serial << "identity matrix: " << C << C_inv << '\n';
-    Serial << "identity matrix: " << AleftOfB * AonTopOfB - (A * A + B * B) + C * C_inv;
+    Serial.print("identity matrix: ");
+    Serial.print(AleftOfB * AonTopOfB - (A * A + B * B) + C * C_inv);
 
     // Or as a more real life example, here's how you might calculate an updated state estimate for a third order state
     // space model:

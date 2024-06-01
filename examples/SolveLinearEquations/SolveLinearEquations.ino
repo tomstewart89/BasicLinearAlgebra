@@ -33,12 +33,14 @@ void setup()
     decomp.U;  // Will have zeros below its diagonal
 
     // And if we multiply them all together we'll recover the original A matrix:
-    Serial << "reconstructed A: " << decomp.P * decomp.L * decomp.U << "\n";
+    Serial.print("reconstructed A: ");
+    Serial.println(decomp.P * decomp.L * decomp.U);
 
     // Once we've done the decomposition we can solve for x very efficiently:
     Matrix<6> x_lusolve = LUSolve(decomp, b);
 
-    Serial << "x (via LU decomposition): " << x_lusolve << "\n";
+    Serial.print("x (via LU decomposition): ");
+    Serial.println(x_lusolve);
 
     // We can also recompute x for a new b vector without having to repeat the decomposition:
     Matrix<6> another_b = {23, 19, 86, 3, 23, 90};
@@ -49,7 +51,8 @@ void setup()
     Invert(A_inv);
     Matrix<6> x_Ainvb = A_inv * b;
 
-    Serial << "x (via inverse A): " << x_Ainvb;
+    Serial.print("x (via inverse A): ");
+    Serial.print(x_Ainvb);
 
     // Fun fact though, we actually calculate A_inv by running LUDecompose then calling LUSolve for each column in A.
     // This is actually no less efficient than other methods for calculating the inverse.

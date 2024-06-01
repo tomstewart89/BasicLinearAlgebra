@@ -4,13 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Arduino.h"
+#include "Printable.h"
+
 #include "ElementStorage.h"
 
 namespace BLA
 {
 
 template <typename DerivedType, int rows, int cols, typename d_type>
-struct MatrixBase
+struct MatrixBase : public Printable
 {
    public:
     constexpr static int Rows = rows;
@@ -146,6 +149,26 @@ struct MatrixBase
         }
 
         return ret;
+    }
+
+    size_t printTo(Print& p) const final
+    {
+        size_t n;
+        n = p.print('[');
+
+        for (int i = 0; i < Rows; i++)
+        {
+            n += p.print('[');
+
+            for (int j = 0; j < Cols; j++)
+            {
+                n += p.print(static_cast<const DerivedType *>(this)->operator()(i, j));
+                n += p.print((j == Cols - 1) ? ']' : ',');
+            }
+
+            n += p.print((i == Rows - 1) ? ']' : ',');
+        }
+        return n;
     }
 };
 
