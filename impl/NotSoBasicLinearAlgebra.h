@@ -5,11 +5,28 @@
 namespace BLA
 {
 template <typename T>
-inline void bla_swap(T &a, T &b)
+inline typename std::enable_if<std::is_fundamental<T>::value>::type
+Swap(T &a, T &b)
 {
     T tmp = a;
     a = b;
     b = tmp;
+}
+
+template <typename ParentType, typename Dtype>
+void Swap(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, Dtype> &A,
+          MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, Dtype> &B)
+{
+    Dtype tmp;
+    for (int i = 0; i < ParentType::Rows; i++)
+    {
+        for (int j = 0; j < ParentType::Cols; j++)
+        {
+            tmp = A(i, j);
+            A(i, j) = B(i, j);
+            B(i, j) = tmp;
+        }
+    }
 }
 
 template <typename ParentType>
@@ -122,14 +139,13 @@ LUDecomposition<ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typenam
 
         if (j != argmax)
         {
-            for (int k = 0; k < Dim; ++k)
-            {
-                bla_swap(A(argmax, k), A(j, k));
-            }
+            auto row_argmax = A.Row(argmax);
+            auto row_j = A.Row(j);
+            Swap(row_argmax, row_j);
 
             decomp.parity = -decomp.parity;
 
-            bla_swap(idx[j], idx[argmax]);
+            Swap(idx[j], idx[argmax]);
             row_scale[argmax] = row_scale[j];
         }
 
@@ -345,12 +361,9 @@ Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
                 if (A_copy(idx, i) != 0) break;
             }
             if (idx == Dim) return 0;
-            const BLA::Matrix<1, Dim, typename ParentType::DType> tmp = A_copy.Row(i);
-            for (int k = 0; k < Dim; k++)
-            {
-                A_copy(i, k) = A_copy(idx, k);
-                A_copy(idx, k) = tmp(1, k);
-            }
+            auto row_i = A_copy.Row(i);
+            auto row_idx = A_copy.Row(idx);
+            Swap(row_i, row_idx);
             sign = - sign;
         }
         for (int j = i + 1; j < Dim; j++)
