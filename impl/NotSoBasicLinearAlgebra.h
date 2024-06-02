@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace BLA
 {
 template <typename T>
@@ -305,15 +307,15 @@ Matrix<Dim, Dim, typename ParentType::DType> Inverse(
     return out;
 }
 
-template <typename ParentType, int Dim>
-typename std::enable_if<std::is_floating_point<typename ParentType::DType>::value, typename ParentType::DType>::type
-Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+template <typename ParentType, typename Dtype, int Dim>
+typename std::enable_if<std::is_floating_point<Dtype>::value, Dtype>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
 {
-    Matrix<Dim, Dim, typename ParentType::DType> A_copy = A;
+    Matrix<Dim, Dim, Dtype> A_copy = A;
 
     auto decomp = LUDecompose(A_copy);
 
-    typename ParentType::DType det = decomp.parity;
+    Dtype det = decomp.parity;
 
     for (int i = 0; i < Dim; ++i)
     {
@@ -323,15 +325,15 @@ Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &
     return det;
 }
 
-template <typename ParentType, int Dim>
-typename std::enable_if<std::is_integral<typename ParentType::DType>::value, typename ParentType::DType>::type
-Determinant(const MatrixBase<ParentType, Dim, Dim, typename ParentType::DType> &A)
+template <typename ParentType, typename Dtype, int Dim>
+typename std::enable_if<std::is_integral<Dtype>::value, Dtype>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
 {
     // For integral types use Bareiss algorithm
-    Matrix<Dim, Dim, typename ParentType::DType> A_copy = A;
+    Matrix<Dim, Dim, Dtype> A_copy = A;
 
     int sign = 1;
-    typename ParentType::DType prev = 1;
+    Dtype prev = 1;
 
     for (int i = 0; i < Dim; i++)
     {
