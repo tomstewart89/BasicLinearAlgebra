@@ -125,6 +125,10 @@ TEST(Arithmetic, ElementwiseOperations)
     auto E = A * 1.2f;
     auto F = A / 6.7f;
     auto G = -A;
+    const auto H = 2.5f + A;
+    const auto I = 3.7f - A;
+    const auto J = 1.2f * A;
+    const auto K = 6.7f / A;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -135,6 +139,10 @@ TEST(Arithmetic, ElementwiseOperations)
             EXPECT_FLOAT_EQ(E(i, j), A(i, j) * 1.2);
             EXPECT_FLOAT_EQ(F(i, j), A(i, j) / 6.7);
             EXPECT_FLOAT_EQ(G(i, j), -A(i, j));
+            EXPECT_FLOAT_EQ(H(i, j), 2.5 + A(i, j));
+            EXPECT_FLOAT_EQ(I(i, j), 3.7 - A(i, j));
+            EXPECT_FLOAT_EQ(J(i, j), 1.2 * A(i, j));
+            EXPECT_FLOAT_EQ(K(i, j), 6.7 / A(i, j));
         }
     }
 

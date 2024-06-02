@@ -59,7 +59,8 @@ void setup()
     diag.diagonal.Fill(1);
 
     // So multiplying it with mat will do nothing:
-    Serial << "still ones: " << diag * mat << "\n";
+    Serial.print("still ones: ");
+    Serial.println(diag * mat);
 
     // Diagonal matrices have the handy property of scaling either the rows (premultiplication) or columns
     // (postmultiplication) of a matrix
@@ -68,7 +69,8 @@ void setup()
     for (int i = 0; i < diag.Rows; i++) diag.diagonal(i) = i + 1;
 
     // And multiply again, we'll see that the rows have been scaled
-    Serial << "scaled rows: " << diag * mat;
+    Serial.print("scaled rows: ");
+    Serial.print(diag * mat);
 
     // Point being, if you define a class which serves up something when called upon by the () operator, you can embed
     // it in a matrix and define any kind of behaviour you like. Hopefully that'll let this library support lots more

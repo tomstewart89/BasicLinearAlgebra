@@ -29,6 +29,21 @@ void Swap(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, Dtype> &A,
     }
 }
 
+template <typename ParentTypeA, typename ParentTypeB, int Cols>
+Matrix<3, Cols, typename ParentTypeA::DType> CrossProduct(
+    const MatrixBase<ParentTypeA, 3, Cols, typename ParentTypeA::DType> &matA,
+    const MatrixBase<ParentTypeB, 3, Cols, typename ParentTypeA::DType> &matB)
+{
+    Matrix<3, Cols, typename ParentTypeA::DType> ret;
+    for (int i = 0; i < Cols; ++i)
+    {
+        ret(0,i) = matA(1,i) * matB(2,i) - matB(1,i) * matA(2,i);
+        ret(1,i) = matA(2,i) * matB(0,i) - matB(2,i) * matA(0,i);
+        ret(2,i) = matA(0,i) * matB(1,i) - matB(0,i) * matA(1,i);
+    }
+    return ret;
+}
+
 template <typename ParentType>
 struct LUDecomposition
 {
