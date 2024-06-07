@@ -1,6 +1,5 @@
 #pragma once
 
-#include <type_traits>
 namespace BLA
 {
 // This namespace exists because the header "typetraits" is not implemented in every Arduino environment.
