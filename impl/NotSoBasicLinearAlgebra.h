@@ -1,18 +1,7 @@
 #pragma once
 
-#include <type_traits>
-
 namespace BLA
 {
-template <typename T>
-inline typename std::enable_if<std::is_fundamental<T>::value>::type
-Swap(T &a, T &b)
-{
-    T tmp = a;
-    a = b;
-    b = tmp;
-}
-
 template <typename ParentType, typename Dtype>
 void Swap(MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, Dtype> &A,
           MatrixBase<ParentType, ParentType::Rows, ParentType::Cols, Dtype> &B)
@@ -160,7 +149,13 @@ LUDecomposition<ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typenam
 
             decomp.parity = -decomp.parity;
 
-            Swap(idx[j], idx[argmax]);
+            // swap indicies
+            {
+                auto tmp = idx[j];
+                idx[j] = idx[argmax];
+                idx[argmax] = tmp;
+            }
+
             row_scale[argmax] = row_scale[j];
         }
 
@@ -338,9 +333,10 @@ Matrix<Dim, Dim, typename ParentType::DType> Inverse(
     return out;
 }
 
+// LU-Decomposition only works for floating point numbers. Use Bareiss algorithm for (signed) integer types.
 template <typename ParentType, typename Dtype, int Dim>
-typename std::enable_if<std::is_floating_point<Dtype>::value, Dtype>::type
-Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
+typename Types::enable_if<Types::is_floating_point<Dtype>::value, Dtype>::type
+DeterminantLUDecomposition(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
 {
     Matrix<Dim, Dim, Dtype> A_copy = A;
 
@@ -356,11 +352,11 @@ Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
     return det;
 }
 
+// Bareiss algorithm works for all (signed) types, but for floating-point numbers LU-Decomposition is faster.
 template <typename ParentType, typename Dtype, int Dim>
-typename std::enable_if<std::is_integral<Dtype>::value, Dtype>::type
-Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
+typename Types::enable_if<Types::is_signed<Dtype>::value, Dtype>::type
+DeterminantBareissAlgorithm(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
 {
-    // For integral types use Bareiss algorithm
     Matrix<Dim, Dim, Dtype> A_copy = A;
 
     int sign = 1;
@@ -370,15 +366,15 @@ Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
     {
         if (A_copy(i, i) == 0)
         {
-            int idx = i + 1;
-            for (; idx < Dim; idx++)
+            int j = i + 1;
+            for (; j < Dim; j++)
             {
-                if (A_copy(idx, i) != 0) break;
+                if (A_copy(j, i) != 0) break;
             }
-            if (idx == Dim) return 0;
+            if (j == Dim) return 0;
             auto row_i = A_copy.Row(i);
-            auto row_idx = A_copy.Row(idx);
-            Swap(row_i, row_idx);
+            auto row_j = A_copy.Row(j);
+            Swap(row_i, row_j);
             sign = - sign;
         }
         for (int j = i + 1; j < Dim; j++)
@@ -392,6 +388,14 @@ Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A)
     }
     return sign * A_copy(Dim - 1, Dim - 1);
 }
+
+template <typename ParentType, typename Dtype, int Dim>
+typename Types::enable_if<Types::is_floating_point<Dtype>::value, Dtype>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A) { return DeterminantLUDecomposition(A); }
+
+template <typename ParentType, typename Dtype, int Dim>
+typename Types::enable_if<Types::is_signed_integer<Dtype>::value, Dtype>::type
+Determinant(const MatrixBase<ParentType, Dim, Dim, Dtype> &A) { return DeterminantBareissAlgorithm(A); }
 
 template <typename DerivedType>
 typename DerivedType::DType Norm(const DownCast<DerivedType> &A)
