@@ -184,6 +184,15 @@ TEST(Arithmetic, Determinant)
     BLA::Matrix<3, 3> singular = {1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
     EXPECT_FLOAT_EQ(Determinant(singular), 0.0);
+
+    BLA::Matrix<4, 4, int16_t> C = {8, 5, 5, 8, 3, 1, 3, 2, 1, 1, 3, 0, 3, 3, 5, 9};
+    int16_t det_C_expected = -140;
+
+    EXPECT_EQ(Determinant(C), det_C_expected);
+
+    BLA::Matrix<3, 3, int> singular_int = {1, 0, 0, 1, 0, 0, 1, 0, 0};
+
+    EXPECT_EQ(Determinant(singular_int), 0);
 }
 
 template <typename SparseMatA, typename SparseMatB, int OutTableSize = 100>

@@ -177,5 +177,6 @@ using DownCast = MatrixBase<DerivedType, DerivedType::Rows, DerivedType::Cols, t
 
 }  // namespace BLA
 
+#include "impl/Types.h"
 #include "impl/BasicLinearAlgebra.h"
 #include "impl/NotSoBasicLinearAlgebra.h"
