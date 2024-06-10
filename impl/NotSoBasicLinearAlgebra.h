@@ -149,7 +149,7 @@ LUDecomposition<ParentType> LUDecompose(MatrixBase<ParentType, Dim, Dim, typenam
 
             decomp.parity = -decomp.parity;
 
-            // swap indicies
+            // swap indices
             {
                 auto tmp = idx[j];
                 idx[j] = idx[argmax];
