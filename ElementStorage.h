@@ -133,7 +133,7 @@ struct HorizontalConcat : public MatrixBase<HorizontalConcat<LeftType, RightType
     const LeftType &left;
     const RightType &right;
 
-    HorizontalConcat<LeftType, RightType>(const LeftType &l, const RightType &r) : left(l), right(r) {}
+    HorizontalConcat(const LeftType &l, const RightType &r) : left(l), right(r) {}
 
     typename LeftType::DType operator()(int row, int col) const
     {
@@ -148,7 +148,7 @@ struct VerticalConcat : public MatrixBase<VerticalConcat<TopType, BottomType>, T
     const TopType &top;
     const BottomType &bottom;
 
-    VerticalConcat<TopType, BottomType>(const TopType &t, const BottomType &b) : top(t), bottom(b) {}
+    VerticalConcat(const TopType &t, const BottomType &b) : top(t), bottom(b) {}
 
     typename TopType::DType operator()(int row, int col) const
     {
