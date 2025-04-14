@@ -33,6 +33,18 @@ Matrix<3, Cols, typename ParentTypeA::DType> CrossProduct(
     return ret;
 }
 
+template <typename ParentTypeA, typename ParentTypeB, int Dim>
+typename ParentTypeA::DType DotProduct(
+    const MatrixBase<ParentTypeA, Dim, 1, typename ParentTypeA::DType> &vecA,
+    const MatrixBase<ParentTypeB, Dim, 1, typename ParentTypeA::DType> &vecB)
+{
+    typename ParentTypeA::DType ret = 0;
+    for (int i = 0; i < Dim; i++) {
+        ret += vecA(i) * vecB(i);
+    }
+    return ret;
+}
+
 template <typename ParentType>
 struct LUDecomposition
 {
