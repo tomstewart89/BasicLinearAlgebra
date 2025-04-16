@@ -35,6 +35,19 @@ TEST(LinearAlgebra, CrossProduct)
     }
 }
 
+TEST(LinearAlgebra, DotProduct)
+{
+    // Test with Dimension 3, int
+    Matrix<3, 1, int> A = {2, 3, 4};
+    Matrix<3, 1, int> B = {7, 8, 9};
+    EXPECT_FLOAT_EQ(DotProduct(A, B), 74);
+
+    // Test with Dimension 4, float
+    Matrix<4> C = {2.5f, -3.4f, 4.3f, 5.2f};
+    Matrix<4> D = {6.7f, 7.6f, -8.5f, 9.4f};
+    EXPECT_NEAR(DotProduct(C, D), 3.23999f, 1e-5);
+}
+
 TEST(LinearAlgebra, LUDecomposition)
 {
     Matrix<7, 7> A = {16, 78, 50, 84, 70, 63, 2, 32, 33, 61, 40, 17, 96, 98, 50, 80, 78, 27, 86, 49, 57, 10, 42, 96, 44,
